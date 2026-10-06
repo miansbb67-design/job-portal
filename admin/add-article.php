@@ -74,6 +74,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // SEO & Social
         $seo_title = trim($_POST['seo_title'] ?? '');
         $meta_description = trim($_POST['meta_description'] ?? '');
+        if (!empty($meta_description)) {
+            $meta_description = clean_seo_description($meta_description, 155);
+        } elseif (!empty($excerpt)) {
+            $meta_description = clean_seo_description($excerpt, 155);
+        }
         $keywords = trim($_POST['keywords'] ?? '');
         $canonical_url = trim($_POST['canonical_url'] ?? '');
         $robots_meta = trim($_POST['robots_meta'] ?? 'Automatic (index when published & not thin)');

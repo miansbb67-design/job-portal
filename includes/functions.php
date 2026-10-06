@@ -497,3 +497,53 @@ function generate_article_keywords($article) {
     return implode(', ', array_slice($keywords, 0, 10));
 }
 
+/**
+ * Clean and truncate meta descriptions to optimal SEO length (140-155 characters)
+ * Ensures search engines and SEO extensions (like Detailed SEO) display a green status.
+ *
+ * @param string $desc
+ * @param int $maxLength
+ * @return string
+ */
+function clean_seo_description($desc, $maxLength = 155) {
+    $desc = strip_tags((string)$desc);
+    $desc = str_replace(["\xc2\xa0", '&nbsp;', "\r\n", "\r", "\n", "\t"], ' ', $desc);
+    $desc = trim(preg_replace('/\s+/', ' ', $desc));
+
+    if (empty($desc)) {
+        return '';
+    }
+
+    if (mb_strlen($desc) <= $maxLength) {
+        return $desc;
+    }
+
+    $truncated = mb_substr($desc, 0, $maxLength);
+    $lastSpace = mb_strrpos($truncated, ' ');
+    if ($lastSpace !== false && $lastSpace > 120) {
+        $truncated = mb_substr($truncated, 0, $lastSpace);
+    }
+    return rtrim($truncated, ',.;:- ') . '.';
+}
+
+/**
+ * Clean and optimize SEO titles to stay within search engine limits (<= 60 chars)
+ *
+ * @param string $title
+ * @param int $maxLength
+ * @return string
+ */
+function clean_seo_title($title, $maxLength = 60) {
+    $title = strip_tags(trim((string)$title));
+    $title = preg_replace('/\s+/', ' ', $title);
+    if (mb_strlen($title) <= $maxLength) {
+        return $title;
+    }
+    $truncated = mb_substr($title, 0, $maxLength);
+    $lastSpace = mb_strrpos($truncated, ' ');
+    if ($lastSpace !== false && $lastSpace > 45) {
+        $truncated = mb_substr($truncated, 0, $lastSpace);
+    }
+    return rtrim($truncated, ',.;:- |');
+}
+

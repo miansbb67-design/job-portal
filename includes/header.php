@@ -15,7 +15,7 @@ if (!headers_sent()) {
 
 // Fallback SEO variables if not set by individual page
 $pageTitle = isset($pageTitle) ? h($pageTitle) . ' | ' . SITE_NAME : SITE_NAME . ' - ' . SITE_TAGLINE;
-$metaDescription = isset($metaDescription) ? h($metaDescription) : 'Find the latest government jobs, private tech openings, remote career opportunities, resume templates, and expert interview strategies.';
+$metaDescription = isset($metaDescription) ? h(clean_seo_description($metaDescription)) : 'Find the latest government jobs, private tech openings, remote career opportunities, resume templates, and expert interview strategies.';
 $metaKeywords = isset($metaKeywords) && !empty($metaKeywords) ? h($metaKeywords) : 'career advice, verified job listings, ATS resume tips, interview preparation, government exams, private tech hiring, employment guides, ' . SITE_NAME;
 $metaAuthor = isset($metaAuthor) && !empty($metaAuthor) ? h($metaAuthor) : SITE_NAME . ' Editorial Team';
 $metaPublisher = SITE_NAME;

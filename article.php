@@ -42,7 +42,7 @@ $updateViews->execute([$article['id']]);
 
 // SEO Setup
 $pageTitle = !empty($article['seo_title']) ? $article['seo_title'] : $article['title'];
-$metaDescription = !empty($article['meta_description']) ? $article['meta_description'] : $article['excerpt'];
+$metaDescription = clean_seo_description(!empty($article['meta_description']) ? $article['meta_description'] : $article['excerpt']);
 $metaKeywords = generate_article_keywords($article);
 $metaAuthor = !empty($article['author_name']) ? $article['author_name'] : SITE_NAME . ' Editorial Team';
 $articleSection = !empty($article['category_name']) ? $article['category_name'] : 'Career Advice';
