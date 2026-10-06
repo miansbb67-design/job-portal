@@ -188,6 +188,75 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         .btn-submit:hover {
             background: #047857;
         }
+        .flash-messages-container {
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .alert {
+            padding: 0.85rem 1.15rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.85rem;
+            margin-bottom: 1.25rem;
+            line-height: 1.45;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .alert-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+        }
+        .alert-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .alert-text {
+            flex: 1;
+        }
+        .alert-close {
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            cursor: pointer;
+            padding: 0.35rem;
+            margin: -0.25rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            color: currentColor;
+            opacity: 0.65;
+            transition: opacity 0.15s ease, background-color 0.15s ease;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .alert-close:hover {
+            opacity: 1;
+            background-color: rgba(0, 0, 0, 0.08) !important;
+        }
+        .alert-close:active {
+            transform: scale(0.92);
+        }
+        .alert-success {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 1.25rem;
+        }
         .alert-error {
             background: #fef2f2;
             color: #991b1b;

@@ -953,4 +953,46 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Flash Alert Auto-Dismiss (6s) & Smooth Exit
+document.addEventListener('DOMContentLoaded', () => {
+    // Delegated click dismissal
+    document.addEventListener('click', (e) => {
+        const closeBtn = e.target.closest('.alert-close');
+        if (closeBtn) {
+            e.preventDefault();
+            const alertCard = closeBtn.closest('.alert');
+            if (alertCard) {
+                alertCard.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                alertCard.style.opacity = '0';
+                alertCard.style.transform = 'translateY(-6px)';
+                setTimeout(() => alertCard.remove(), 260);
+            }
+        }
+    });
+
+    // Auto-dismiss alerts after 6 seconds with hover-pause
+    const alerts = document.querySelectorAll('.flash-messages-container .alert');
+    alerts.forEach((alertCard) => {
+        let dismissTimer = null;
+
+        const startTimer = () => {
+            dismissTimer = setTimeout(() => {
+                alertCard.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                alertCard.style.opacity = '0';
+                alertCard.style.transform = 'translateY(-6px)';
+                setTimeout(() => alertCard.remove(), 320);
+            }, 6000);
+        };
+
+        const stopTimer = () => {
+            if (dismissTimer) clearTimeout(dismissTimer);
+        };
+
+        alertCard.addEventListener('mouseenter', stopTimer);
+        alertCard.addEventListener('mouseleave', startTimer);
+        startTimer();
+    });
+});
+
+
 
