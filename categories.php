@@ -83,9 +83,7 @@ if (!empty($slug)) {
                         <article class="article-card">
                             <div class="article-thumb-wrap">
                                 <?php 
-                                $thumbPath = !empty($article['featured_image']) && file_exists(__DIR__ . '/' . $article['featured_image']) 
-                                    ? BASE_URL . '/' . $article['featured_image'] 
-                                    : BASE_URL . '/assets/images/default-article.jpg';
+                                $thumbPath = get_article_thumbnail_url($article);
                                 ?>
                                 <img src="<?= $thumbPath ?>" alt="<?= h($article['title']) ?>" class="article-thumb" loading="lazy">
                                 <span class="article-badge <?= $article['is_job_posting'] ? 'job-badge' : '' ?>">

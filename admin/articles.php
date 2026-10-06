@@ -273,16 +273,7 @@ require_once __DIR__ . '/includes/admin-header.php';
                             }
 
                             // Thumbnail image path resolution
-                            $thumbSrc = '';
-                            if (!empty($art['featured_image'])) {
-                                if (strpos($art['featured_image'], 'uploads/') === 0) {
-                                    $thumbSrc = BASE_URL . '/' . htmlspecialchars($art['featured_image']);
-                                } else {
-                                    $thumbSrc = BASE_URL . '/uploads/' . htmlspecialchars($art['featured_image']);
-                                }
-                            } else {
-                                $thumbSrc = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='80' viewBox='0 0 120 80'%3E%3Crect width='120' height='80' fill='%23064e3b'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='11' font-weight='bold' fill='%23a7f3d0' text-anchor='middle' dy='.3em'%3EARTICLE%3C/text%3E%3C/svg%3E";
-                            }
+                            $thumbSrc = get_article_thumbnail_url($art);
 
                             // Formatted date (Screenshot 1: Oct 3, 2026 12:02)
                             $dateObj = new DateTime($art['created_at']);

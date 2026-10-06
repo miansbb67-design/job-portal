@@ -304,6 +304,103 @@ function upload_featured_image($file) {
 }
 
 /**
+ * Resolve any article image path to a full public URL
+ * Handles full URLs, relative paths, uploads/, and uploads/articles/ seamlessly
+ *
+ * @param string|null $imagePath
+ * @param bool $fallback Whether to return default brand image if not found
+ * @return string
+ */
+function get_article_image_url($imagePath, $fallback = true) {
+    $defaultImage = BASE_URL . '/assets/images/default-article.jpg';
+
+    if (empty($imagePath)) {
+        return $fallback ? $defaultImage : '';
+    }
+
+    $imagePath = trim((string)$imagePath);
+
+    // Full URLs (HTTP / HTTPS)
+    if (strpos($imagePath, 'http://') === 0 || strpos($imagePath, 'https://') === 0) {
+        return $imagePath;
+    }
+
+    // Root-relative URL
+    if (strpos($imagePath, '/') === 0) {
+        return BASE_URL . $imagePath;
+    }
+
+    $cleanPath = ltrim($imagePath, '/\\');
+    $baseDir = dirname(__DIR__);
+
+    // 1. Direct path relative to site root (e.g. uploads/articles/xxx.jpg)
+    if (file_exists($baseDir . '/' . $cleanPath)) {
+        return BASE_URL . '/' . $cleanPath;
+    }
+
+    // 2. Relative to uploads/
+    if (file_exists($baseDir . '/uploads/' . $cleanPath)) {
+        return BASE_URL . '/uploads/' . $cleanPath;
+    }
+
+    // 3. Relative to uploads/articles/
+    if (file_exists($baseDir . '/uploads/articles/' . $cleanPath)) {
+        return BASE_URL . '/uploads/articles/' . $cleanPath;
+    }
+
+    // If string already begins with uploads/, use it
+    if (strpos($cleanPath, 'uploads/') === 0) {
+        return BASE_URL . '/' . $cleanPath;
+    }
+
+    if ($fallback) {
+        return $defaultImage;
+    }
+
+    return BASE_URL . '/uploads/' . $cleanPath;
+}
+
+/**
+ * Resolve article thumbnail URL with fallback hierarchy:
+ * 1. thumbnail_image
+ * 2. featured_image
+ * 3. YouTube video thumbnail (if video attached)
+ * 4. Default brand fallback image
+ *
+ * @param array|null $article
+ * @return string
+ */
+function get_article_thumbnail_url($article) {
+    $defaultImage = BASE_URL . '/assets/images/default-article.jpg';
+    if (!is_array($article)) {
+        return $defaultImage;
+    }
+
+    // 1. Check thumbnail_image
+    if (!empty($article['thumbnail_image'])) {
+        $url = get_article_image_url($article['thumbnail_image'], false);
+        if (!empty($url)) return $url;
+    }
+
+    // 2. Check featured_image
+    if (!empty($article['featured_image'])) {
+        $url = get_article_image_url($article['featured_image'], false);
+        if (!empty($url)) return $url;
+    }
+
+    // 3. Check YouTube Video thumbnail fallback
+    if (!empty($article['video_url'])) {
+        if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $article['video_url'], $match)) {
+            return 'https://img.youtube.com/vi/' . $match[1] . '/hqdefault.jpg';
+        }
+    }
+
+    // 4. Fallback image
+    return $defaultImage;
+}
+
+
+/**
  * Truncate text cleanly to given limit
  *
  * @param string $text

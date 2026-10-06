@@ -50,9 +50,7 @@ $articlePublishedTime = date('c', strtotime($article['published_at'] ?? $article
 $articleModifiedTime = date('c', strtotime($article['updated_at'] ?? $article['created_at']));
 $canonicalUrl = BASE_URL . '/article.php?slug=' . urlencode($article['slug']);
 $ogType = 'article';
-$ogImage = !empty($article['featured_image']) && file_exists(__DIR__ . '/' . $article['featured_image']) 
-    ? BASE_URL . '/' . $article['featured_image'] 
-    : BASE_URL . '/assets/images/default-article.jpg';
+$ogImage = get_article_thumbnail_url($article);
 
 // Structured Data (JSON-LD)
 // STRICT REQUIREMENT: Add JobPosting structured data ONLY when is_job_posting == 1 and essential data is present!
@@ -189,10 +187,16 @@ include __DIR__ . '/includes/header.php';
         </div>
 
         <!-- Featured Image -->
-        <?php if (!empty($article['featured_image']) && file_exists(__DIR__ . '/' . $article['featured_image'])): ?>
-            <img src="<?= BASE_URL ?>/<?= h($article['featured_image']) ?>" 
-                 alt="<?= h($article['title']) ?>" 
-                 class="single-featured-image">
+        <?php 
+        $singleFeaturedImg = get_article_thumbnail_url($article);
+        if (!empty($singleFeaturedImg)): 
+        ?>
+            <div class="single-featured-image-wrap">
+                <img src="<?= h($singleFeaturedImg) ?>" 
+                     alt="<?= h(!empty($article['image_alt']) ? $article['image_alt'] : $article['title']) ?>" 
+                     class="single-featured-image"
+                     loading="eager">
+            </div>
         <?php endif; ?>
 
         <!-- Genuine Job Posting Highlight Card (Shown ONLY for genuine Job Posts) -->
@@ -309,11 +313,9 @@ include __DIR__ . '/includes/header.php';
                 <article class="article-card">
                     <div class="article-thumb-wrap">
                         <?php 
-                        $thumbPath = !empty($rel['featured_image']) && file_exists(__DIR__ . '/' . $rel['featured_image']) 
-                            ? BASE_URL . '/' . $rel['featured_image'] 
-                            : BASE_URL . '/assets/images/default-article.jpg';
+                        $thumbPath = get_article_thumbnail_url($rel);
                         ?>
-                        <img src="<?= $thumbPath ?>" alt="<?= h($rel['title']) ?>" class="article-thumb" loading="lazy">
+                        <img src="<?= h($thumbPath) ?>" alt="<?= h($rel['title']) ?>" class="article-thumb" loading="lazy">
                         <span class="article-badge"><?= h($rel['category_name']) ?></span>
                     </div>
 

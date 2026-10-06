@@ -101,9 +101,7 @@ include __DIR__ . '/includes/header.php';
             <!-- Left: Editorial Spotlight Guide (58% width) -->
             <?php if ($spotlight): ?>
             <?php 
-                $spotThumb = !empty($spotlight['featured_image']) && file_exists(__DIR__ . '/' . $spotlight['featured_image'])
-                    ? BASE_URL . '/' . $spotlight['featured_image']
-                    : BASE_URL . '/assets/images/default-article.jpg';
+                $spotThumb = get_article_thumbnail_url($spotlight);
             ?>
             <article class="editorial-spotlight-card">
                 <div class="spotlight-media-wrap">
@@ -182,9 +180,7 @@ include __DIR__ . '/includes/header.php';
                     <!-- Trending Quick Reads -->
                     <?php foreach ($radarArticles as $rArt): ?>
                     <?php 
-                        $rThumb = !empty($rArt['featured_image']) && file_exists(__DIR__ . '/' . $rArt['featured_image'])
-                            ? BASE_URL . '/' . $rArt['featured_image']
-                            : BASE_URL . '/assets/images/default-article.jpg';
+                        $rThumb = get_article_thumbnail_url($rArt);
                     ?>
                     <div class="radar-article-row">
                         <a href="<?= BASE_URL ?>/article.php?slug=<?= h($rArt['slug']) ?>" class="radar-thumb-box">
@@ -261,9 +257,7 @@ include __DIR__ . '/includes/header.php';
         <div class="cp-card-grid-3">
             <?php foreach ($trendingGuides as $article): ?>
             <?php 
-                $thumbPath = !empty($article['featured_image']) && file_exists(__DIR__ . '/' . $article['featured_image']) 
-                    ? BASE_URL . '/' . $article['featured_image'] 
-                    : BASE_URL . '/assets/images/default-article.jpg';
+                $thumbPath = get_article_thumbnail_url($article);
             ?>
             <article class="cp-article-card">
                 <div class="cp-card-thumb-wrap">
@@ -417,9 +411,7 @@ include __DIR__ . '/includes/header.php';
         <div class="cp-card-grid-3">
             <?php foreach ($latestArticles as $article): ?>
             <?php 
-                $thumbPath = !empty($article['featured_image']) && file_exists(__DIR__ . '/' . $article['featured_image']) 
-                    ? BASE_URL . '/' . $article['featured_image'] 
-                    : BASE_URL . '/assets/images/default-article.jpg';
+                $thumbPath = get_article_thumbnail_url($article);
             ?>
             <article class="cp-article-card">
                 <div class="cp-card-thumb-wrap">

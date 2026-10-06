@@ -145,15 +145,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (in_array($mime, $allowedMimes)) {
                 $ext = pathinfo($_FILES['featured_image']['name'], PATHINFO_EXTENSION);
                 $newName = 'art_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . strtolower($ext);
-                $uploadDir = __DIR__ . '/../uploads/';
+                $uploadDir = __DIR__ . '/../uploads/articles/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
                 if (move_uploaded_file($_FILES['featured_image']['tmp_name'], $uploadDir . $newName)) {
-                    $featured_image = $newName;
+                    $featured_image = 'uploads/articles/' . $newName;
                 }
             } else {
                 $errors[] = "Invalid image format. Only JPG, PNG, WebP, and GIF are allowed.";
             }
         } elseif (isset($_POST['existing_featured_image'])) {
             $existingVal = trim($_POST['existing_featured_image']);
+            if (strpos($existingVal, BASE_URL . '/') === 0) {
+                $existingVal = substr($existingVal, strlen(BASE_URL . '/'));
+            }
             $featured_image = !empty($existingVal) ? $existingVal : null;
         }
 
@@ -167,13 +173,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (in_array($mime, $allowedMimes)) {
                 $ext = pathinfo($_FILES['thumbnail_image']['name'], PATHINFO_EXTENSION);
                 $newName = 'thumb_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . strtolower($ext);
-                $uploadDir = __DIR__ . '/../uploads/';
+                $uploadDir = __DIR__ . '/../uploads/articles/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
                 if (move_uploaded_file($_FILES['thumbnail_image']['tmp_name'], $uploadDir . $newName)) {
-                    $thumbnail_image = $newName;
+                    $thumbnail_image = 'uploads/articles/' . $newName;
                 }
             }
         } elseif (isset($_POST['existing_thumbnail_image'])) {
             $existingThumb = trim($_POST['existing_thumbnail_image']);
+            if (strpos($existingThumb, BASE_URL . '/') === 0) {
+                $existingThumb = substr($existingThumb, strlen(BASE_URL . '/'));
+            }
             $thumbnail_image = !empty($existingThumb) ? $existingThumb : null;
         }
 

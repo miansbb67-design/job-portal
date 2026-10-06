@@ -726,8 +726,9 @@ function renderMediaGrid() {
     pageItems.forEach(item => {
         const safeName = (item.name || 'image').replace(/'/g, "\\'");
         const safeUrl = (item.url || '').replace(/'/g, "\\'");
+        const safeRel = (item.rel_path || item.url || '').replace(/'/g, "\\'");
         html += `
-            <div class="media-card-item" title="${item.name}" onclick="selectMediaLibraryItem('${safeUrl}', '${safeName}')">
+            <div class="media-card-item" title="${item.name}" onclick="selectMediaLibraryItem('${safeUrl}', '${safeName}', '${safeRel}')">
                 <img src="${item.url}" alt="${item.name}" loading="lazy" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'100\\' height=\\'80\\' viewBox=\\'0 0 100 80\\'><rect fill=\\'%23f1f5f9\\' width=\\'100\\' height=\\'80\\'/><text fill=\\'%2394a3b8\\' x=\\'50%\\' y=\\'50%\\' dominant-baseline=\\'middle\\' text-anchor=\\'middle\\' font-size=\\'10\\'>Image</text></svg>'">
                 <div class="media-card-overlay">
                     <span class="media-card-insert-badge">
@@ -774,9 +775,9 @@ function mediaModalChangePage(delta) {
     if (body) body.scrollTop = 0;
 }
 
-function selectMediaLibraryItem(url, name) {
+function selectMediaLibraryItem(url, name, relPath) {
     if (typeof currentMediaCallback === 'function') {
-        currentMediaCallback(url, name);
+        currentMediaCallback(url, name, relPath);
     }
     closeMediaLibraryModal();
 }
@@ -856,9 +857,9 @@ function updateDropifyInstance(inputSelector, imgUrl) {
 function selectFeaturedFromMedia() {
     openMediaLibraryModal({
         target: 'featured',
-        onSelect: function(imgUrl, imgName) {
+        onSelect: function(imgUrl, imgName, relPath) {
             const hiddenInput = document.getElementById('existingFeaturedImage');
-            if (hiddenInput) hiddenInput.value = imgUrl;
+            if (hiddenInput) hiddenInput.value = relPath || imgUrl;
             
             // Update Dropify preview
             updateDropifyInstance('#featuredImageInput', imgUrl);
@@ -881,9 +882,9 @@ function selectFeaturedFromMedia() {
 function selectThumbnailFromMedia() {
     openMediaLibraryModal({
         target: 'thumbnail',
-        onSelect: function(imgUrl, imgName) {
+        onSelect: function(imgUrl, imgName, relPath) {
             const hiddenInput = document.getElementById('existingThumbnailImage');
-            if (hiddenInput) hiddenInput.value = imgUrl;
+            if (hiddenInput) hiddenInput.value = relPath || imgUrl;
 
             // Update Dropify preview
             updateDropifyInstance('#thumbImageInput', imgUrl);
