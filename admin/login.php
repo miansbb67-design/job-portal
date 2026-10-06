@@ -1,7 +1,8 @@
 <?php
 /**
  * Admin Panel - Authentication Login
- * Secure login with bcrypt password verification, CSRF token, and session fixation defense.
+ * Production-ready clean authentication with bcrypt password verification,
+ * CSRF token defense, and session fixation protection.
  */
 
 require_once __DIR__ . '/../config/config.php';
@@ -14,16 +15,8 @@ if (is_admin_logged_in()) {
     exit;
 }
 
-// Quick 1-Click login handler
-if (isset($_POST['quick_login'])) {
-    session_regenerate_id(true);
-    $_SESSION['admin_id'] = 1;
-    $_SESSION['admin_username'] = 'admin';
-    $_SESSION['admin_email'] = 'admin@jobportal.com';
-    set_flash('success', "Welcome back, admin! You have logged in successfully.");
-    header('Location: ' . ADMIN_URL . '/index.php');
-    exit;
-}
+$error = '';
+$usernameOrEmail = '';
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     $token = $_POST['csrf_token'] ?? '';
@@ -41,14 +34,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             $stmt->execute([$usernameOrEmail, $usernameOrEmail]);
             $admin = $stmt->fetch();
 
-            $commonPasswords = ['Admin@12345', 'admin123', 'admin', 'Admin123', 'admin@123', 'faizan', '123456'];
-            $isValid = false;
-
-            if ($admin && (password_verify($password, $admin['password_hash']) || in_array($password, $commonPasswords))) {
-                $isValid = true;
-            }
-
-            if ($isValid && $admin) {
+            if ($admin && password_verify($password, $admin['password_hash'])) {
                 // Check if account is active
                 if (($admin['status'] ?? 'active') !== 'active') {
                     log_activity('FAILED_LOGIN_INACTIVE', 'Authentication', "Login attempt for disabled account: {$admin['username']}", $admin['id']);
@@ -95,30 +81,52 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     <title>Admin Login | <?= SITE_NAME ?></title>
     <meta name="robots" content="noindex, nofollow">
 
-    <!-- Fonts -->
+    <!-- Modern Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
         body.login-page-body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: #0b1329;
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #090e1a;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 1.5rem;
             color: #0f172a;
+            position: relative;
+            overflow-x: hidden;
+        }
+        /* Subtle background radial glow */
+        body.login-page-body::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(5, 150, 105, 0.15) 0%, rgba(9, 14, 26, 0) 70%);
+            pointer-events: none;
+            z-index: 0;
         }
         .login-card {
             background: #ffffff;
             border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
             width: 100%;
-            max-width: 420px;
-            padding: 2.5rem;
+            max-width: 410px;
+            padding: 2.5rem 2.25rem;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
         .login-header {
             text-align: center;
@@ -127,25 +135,26 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         .login-brand-icon {
             width: 48px;
             height: 48px;
-            background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
             border-radius: 12px;
             color: #ffffff;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 1rem;
-            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
         }
         .login-title {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 1.5rem;
+            font-size: 1.45rem;
             font-weight: 800;
             color: #0f172a;
+            letter-spacing: -0.02em;
             margin-bottom: 0.35rem;
         }
         .login-subtitle {
             font-size: 0.85rem;
             color: #64748b;
+            font-weight: 500;
         }
         .form-group {
             margin-bottom: 1.25rem;
@@ -155,126 +164,26 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             font-size: 0.825rem;
             font-weight: 700;
             color: #334155;
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.45rem;
         }
         .form-control {
             width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 9px;
             font-size: 0.95rem;
             font-family: inherit;
             color: #0f172a;
+            background: #ffffff;
             transition: all 0.2s ease;
         }
         .form-control:focus {
             outline: none;
             border-color: #059669;
-            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.18);
         }
-        .btn-submit {
-            width: 100%;
-            background: #059669;
-            color: #ffffff;
-            border: none;
-            padding: 0.85rem;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.2s ease;
-            margin-top: 0.5rem;
-        }
-        .btn-submit:hover {
-            background: #047857;
-        }
-        .flash-messages-container {
-            margin-bottom: 1.25rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-        .alert {
-            padding: 0.85rem 1.15rem;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.85rem;
-            margin-bottom: 1.25rem;
-            line-height: 1.45;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
-            transition: opacity 0.25s ease, transform 0.25s ease;
-        }
-        .alert-content {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            flex: 1;
-        }
-        .alert-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .alert-text {
-            flex: 1;
-        }
-        .alert-close {
-            background: transparent !important;
-            border: none !important;
-            outline: none !important;
-            box-shadow: none !important;
-            cursor: pointer;
-            padding: 0.35rem;
-            margin: -0.25rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            color: currentColor;
-            opacity: 0.65;
-            transition: opacity 0.15s ease, background-color 0.15s ease;
-            flex-shrink: 0;
-            line-height: 1;
-        }
-        .alert-close:hover {
-            opacity: 1;
-            background-color: rgba(0, 0, 0, 0.08) !important;
-        }
-        .alert-close:active {
-            transform: scale(0.92);
-        }
-        .alert-success {
-            background: #ecfdf5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            margin-bottom: 1.25rem;
-        }
-        .alert-error {
-            background: #fef2f2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            margin-bottom: 1.25rem;
-        }
-        .login-tip-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            font-size: 0.8rem;
-            color: #475569;
-            margin-top: 1.25rem;
-            line-height: 1.45;
+        .form-control::placeholder {
+            color: #94a3b8;
         }
         .password-input-wrap {
             position: relative;
@@ -305,11 +214,128 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             color: #059669;
             background: #f1f5f9;
         }
+        .btn-submit {
+            width: 100%;
+            background: #059669;
+            color: #ffffff;
+            border: none;
+            padding: 0.85rem 1rem;
+            border-radius: 9px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .btn-submit:hover {
+            background: #047857;
+            box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35);
+            transform: translateY(-1px);
+        }
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+        /* Flash & Validation Alerts */
+        .flash-messages-container {
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .alert {
+            padding: 0.8rem 1rem;
+            border-radius: 9px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            line-height: 1.45;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .alert-content {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex: 1;
+        }
+        .alert-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .alert-text {
+            flex: 1;
+        }
+        .alert-close {
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
+            cursor: pointer;
+            padding: 0.25rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            color: currentColor;
+            opacity: 0.65;
+            transition: opacity 0.15s ease, background-color 0.15s ease;
+            flex-shrink: 0;
+        }
+        .alert-close:hover {
+            opacity: 1;
+            background-color: rgba(0, 0, 0, 0.08) !important;
+        }
+        .alert-success {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .alert-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            padding: 0.8rem 1rem;
+            border-radius: 9px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+        .login-back-link {
+            margin-top: 1.75rem;
+            text-align: center;
+        }
+        .login-back-link a {
+            font-size: 0.825rem;
+            color: #64748b;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .login-back-link a:hover {
+            color: #059669;
+        }
     </style>
 </head>
 <body class="login-page-body">
 
     <div class="login-card">
+        <!-- Brand Header -->
         <div class="login-header">
             <div class="login-brand-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -318,32 +344,58 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                 </svg>
             </div>
             <h1 class="login-title"><?= SITE_NAME ?> Admin</h1>
-            <p class="login-subtitle">Career &amp; Jobs Management Portal</p>
+            <p class="login-subtitle">Sign in to access your administrative dashboard</p>
         </div>
 
+        <!-- Flash Notifications -->
         <?= display_flash_messages(); ?>
 
+        <!-- Form Error Banner -->
         <?php if (!empty($error)): ?>
             <div class="alert-error" role="alert">
-                <?= h($error) ?>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                <span><?= h($error) ?></span>
             </div>
         <?php endif; ?>
 
-        <form action="<?= ADMIN_URL ?>/login.php" method="POST">
+        <!-- Clean Authentication Form -->
+        <form action="<?= ADMIN_URL ?>/login.php" method="POST" autocomplete="on">
             <?= csrf_field(); ?>
 
             <div class="form-group">
                 <label for="username" class="form-label">Username or Email</label>
-                <input type="text" id="username" name="username" class="form-control" required autofocus value="<?= !empty($usernameOrEmail) ? h($usernameOrEmail) : 'admin' ?>" placeholder="admin or faizan">
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    class="form-control" 
+                    required 
+                    autofocus 
+                    value="<?= !empty($usernameOrEmail) ? h($usernameOrEmail) : '' ?>" 
+                    placeholder="Enter your username or email"
+                    autocomplete="username"
+                >
             </div>
 
             <div class="form-group">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
                     <label for="password" class="form-label" style="margin-bottom: 0;">Password</label>
-                    <a href="<?= ADMIN_URL ?>/forgot-password.php" style="font-size: 0.8rem; color: #059669; text-decoration: none; font-weight: 700; transition: color 0.15s ease;" onmouseover="this.style.color='#047857'" onmouseout="this.style.color='#059669'">Forgot Password?</a>
+                    <a href="<?= ADMIN_URL ?>/forgot-password.php" style="font-size: 0.8rem; color: #059669; text-decoration: none; font-weight: 700; transition: color 0.15s ease;">Forgot Password?</a>
                 </div>
                 <div class="password-input-wrap">
-                    <input type="password" id="password" name="password" class="form-control" required value="admin123" placeholder="Enter password">
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        class="form-control" 
+                        required 
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                    >
                     <button type="button" id="togglePasswordBtn" class="btn-toggle-password" title="Show password" aria-label="Show password">
                         <svg id="eyeIcon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -358,35 +410,29 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             </div>
 
             <button type="submit" class="btn-submit">
-                Sign In to Dashboard &rarr;
+                <span>Sign In to Dashboard</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
             </button>
         </form>
 
-        <!-- 1-Click Direct Demo Login -->
-        <form action="<?= ADMIN_URL ?>/login.php" method="POST" style="margin-top: 0.75rem;">
-            <?= csrf_field(); ?>
-            <input type="hidden" name="quick_login" value="1">
-            <button type="submit" style="width: 100%; background: #059669; color: #ffffff; border: none; padding: 0.75rem; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.2s ease;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                <span>⚡ Instant 1-Click Login (Faizan)</span>
-            </button>
-        </form>
-
-        <div class="login-tip-box">
-            <strong>Login Credentials:</strong><br>
-            Username: <code>admin</code> or <code>faizan</code><br>
-            Password: <code>Admin@12345</code> or <code>admin123</code> (or click the 1-Click button above)
-        </div>
-
-        <div style="margin-top: 1.5rem; text-align: center;">
-            <a href="<?= BASE_URL ?>/" style="font-size: 0.85rem; color: #64748b; text-decoration: none;">
-                &larr; Return to Public Website
+        <!-- Back to Website -->
+        <div class="login-back-link">
+            <a href="<?= BASE_URL ?>/">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>Return to Public Website</span>
             </a>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Password Visibility Toggle
             const toggleBtn = document.getElementById('togglePasswordBtn');
             const passwordInput = document.getElementById('password');
             const eyeIcon = document.getElementById('eyeIcon');
