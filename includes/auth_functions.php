@@ -113,6 +113,40 @@ function get_admin_permission_keys($adminId, $forceRefresh = false) {
 }
 
 /**
+ * Fetch all permission IDs assigned to an admin
+ *
+ * @param int $adminId
+ * @return array Array of integer permission IDs
+ */
+function get_admin_permission_ids($adminId) {
+    if (!$adminId) {
+        return [];
+    }
+
+    $db = getDBConnection();
+
+    // Check admin role
+    $stmt = $db->prepare("SELECT role, status FROM admins WHERE id = ? LIMIT 1");
+    $stmt->execute([(int)$adminId]);
+    $admin = $stmt->fetch();
+
+    if (!$admin || $admin['status'] !== 'active') {
+        return [];
+    }
+
+    if ($admin['role'] === 'superadmin') {
+        // Superadmin has all permission IDs
+        $allIdsStmt = $db->query("SELECT id FROM permissions");
+        return array_map('intval', $allIdsStmt->fetchAll(PDO::FETCH_COLUMN));
+    }
+
+    // Normal admin: fetch explicitly assigned permission IDs
+    $permStmt = $db->prepare("SELECT permission_id FROM admin_permissions WHERE admin_id = ?");
+    $permStmt->execute([(int)$adminId]);
+    return array_map('intval', $permStmt->fetchAll(PDO::FETCH_COLUMN));
+}
+
+/**
  * Check if the logged-in admin has a specific permission
  * Super Admin always has full access (returns true)
  *
