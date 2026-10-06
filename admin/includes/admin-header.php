@@ -95,6 +95,9 @@ $isContentActive = in_array($currentAdminScript, ['articles.php', 'add-article.p
 
     <!-- Admin Stylesheet (with auto cache-buster) -->
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/admin.css?v=<?= filemtime(__DIR__ . '/../../assets/css/admin.css') ?>">
+
+    <!-- Dropify File Uploader Stylesheet -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/vendor/dropify/dropify.min.css">
     <script>window.ADMIN_URL = '<?= ADMIN_URL ?>';</script>
 </head>
 <body class="admin-body">

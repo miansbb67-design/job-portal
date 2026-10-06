@@ -207,6 +207,35 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             margin-top: 1.25rem;
             line-height: 1.45;
         }
+        .password-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .password-input-wrap .form-control {
+            padding-right: 2.75rem;
+        }
+        .btn-toggle-password {
+            position: absolute;
+            right: 0.65rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            padding: 0.35rem;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: color 0.15s ease, background 0.15s ease;
+        }
+        .btn-toggle-password:hover {
+            color: #059669;
+            background: #f1f5f9;
+        }
     </style>
 </head>
 <body class="login-page-body">
@@ -244,7 +273,19 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                     <label for="password" class="form-label" style="margin-bottom: 0;">Password</label>
                     <a href="<?= ADMIN_URL ?>/forgot-password.php" style="font-size: 0.8rem; color: #059669; text-decoration: none; font-weight: 700; transition: color 0.15s ease;" onmouseover="this.style.color='#047857'" onmouseout="this.style.color='#059669'">Forgot Password?</a>
                 </div>
-                <input type="password" id="password" name="password" class="form-control" required value="admin123" placeholder="Enter password">
+                <div class="password-input-wrap">
+                    <input type="password" id="password" name="password" class="form-control" required value="admin123" placeholder="Enter password">
+                    <button type="button" id="togglePasswordBtn" class="btn-toggle-password" title="Show password" aria-label="Show password">
+                        <svg id="eyeIcon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg id="eyeOffIcon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <button type="submit" class="btn-submit">
@@ -275,5 +316,26 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.getElementById('togglePasswordBtn');
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            const eyeOffIcon = document.getElementById('eyeOffIcon');
+
+            if (toggleBtn && passwordInput) {
+                toggleBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const isPassword = passwordInput.getAttribute('type') === 'password';
+                    passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+                    eyeIcon.style.display = isPassword ? 'none' : 'block';
+                    eyeOffIcon.style.display = isPassword ? 'block' : 'none';
+                    toggleBtn.setAttribute('title', isPassword ? 'Hide password' : 'Show password');
+                    toggleBtn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+                    passwordInput.focus();
+                });
+            }
+        });
+    </script>
 </body>
 </html>

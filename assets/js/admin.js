@@ -835,27 +835,42 @@ function uploadMediaFileDirectly(input) {
     });
 }
 
+// Helper to dynamically update Dropify preview from external sources (e.g. Media Library)
+function updateDropifyInstance(inputSelector, imgUrl) {
+    if (typeof jQuery !== 'undefined' && typeof jQuery.fn.dropify !== 'undefined') {
+        const $input = $(inputSelector);
+        if ($input.length) {
+            let dr = $input.data('dropify');
+            if (dr) {
+                dr.resetPreview();
+                dr.clearElement();
+                dr.settings.defaultFile = imgUrl;
+                dr.destroy();
+                dr.init();
+            }
+        }
+    }
+}
+
 // Helper for right sidebar: Select Featured Image from Media Library
 function selectFeaturedFromMedia() {
     openMediaLibraryModal({
         target: 'featured',
         onSelect: function(imgUrl, imgName) {
+            const hiddenInput = document.getElementById('existingFeaturedImage');
+            if (hiddenInput) hiddenInput.value = imgUrl;
+            
+            // Update Dropify preview
+            updateDropifyInstance('#featuredImageInput', imgUrl);
+
+            // Legacy fallback if elements exist
             const preview = document.getElementById('featuredImagePreview');
             const placeholder = document.getElementById('imagePlaceholder');
-            const hiddenInput = document.getElementById('existingFeaturedImage');
-            const removeBtn = document.getElementById('btnRemoveFeatured');
-            const removeBtnHeader = document.getElementById('btnRemoveFeaturedHeader');
-            const removeFloat = document.getElementById('btnRemoveFeaturedFloat');
-
             if (preview) {
                 preview.src = imgUrl;
                 preview.style.display = 'block';
             }
             if (placeholder) placeholder.style.display = 'none';
-            if (hiddenInput) hiddenInput.value = imgUrl;
-            if (removeBtn) removeBtn.style.display = 'inline-flex';
-            if (removeBtnHeader) removeBtnHeader.style.display = 'inline-block';
-            if (removeFloat) removeFloat.style.display = 'flex';
 
             showToast('✓ Featured image selected from library!');
         }
@@ -867,19 +882,75 @@ function selectThumbnailFromMedia() {
     openMediaLibraryModal({
         target: 'thumbnail',
         onSelect: function(imgUrl, imgName) {
-            const preview = document.getElementById('thumbMiniPreview');
             const hiddenInput = document.getElementById('existingThumbnailImage');
-            const removeBtn = document.getElementById('btnRemoveThumb');
+            if (hiddenInput) hiddenInput.value = imgUrl;
 
+            // Update Dropify preview
+            updateDropifyInstance('#thumbImageInput', imgUrl);
+
+            // Legacy fallback if elements exist
+            const preview = document.getElementById('thumbMiniPreview');
             if (preview) {
                 preview.src = imgUrl;
                 preview.style.display = 'block';
             }
-            if (hiddenInput) hiddenInput.value = imgUrl;
-            if (removeBtn) removeBtn.style.display = 'inline-flex';
 
             showToast('✓ Thumbnail selected from library!');
         }
     });
 }
+
+// Global Dropify Initialization
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof jQuery !== 'undefined' && typeof jQuery.fn.dropify !== 'undefined') {
+        // Initialize Featured Image Dropify
+        const $featuredInput = $('#featuredImageInput');
+        if ($featuredInput.length) {
+            const drFeatured = $featuredInput.dropify({
+                messages: {
+                    'default': 'Drag and drop an image here or click to browse',
+                    'replace': 'Drag and drop or click to replace image',
+                    'remove':  'Remove',
+                    'error':   'Oops, something went wrong with the file.'
+                },
+                error: {
+                    'fileSize': 'The file size is too big ({{ value }} max).',
+                    'fileExtension': 'The image format is not allowed ({{ value }} only).'
+                }
+            });
+
+            drFeatured.on('dropify.afterClear', function() {
+                const hiddenInput = document.getElementById('existingFeaturedImage');
+                if (hiddenInput) hiddenInput.value = '';
+                const altInput = document.getElementById('imageAlt');
+                if (altInput) altInput.value = '';
+                showToast('✓ Featured image cleared');
+            });
+        }
+
+        // Initialize Thumbnail Dropify
+        const $thumbInput = $('#thumbImageInput');
+        if ($thumbInput.length) {
+            const drThumb = $thumbInput.dropify({
+                messages: {
+                    'default': 'Drag and drop thumbnail (16:9) or click',
+                    'replace': 'Drag and drop or click to replace thumbnail',
+                    'remove':  'Remove',
+                    'error':   'Oops, something went wrong with the file.'
+                },
+                error: {
+                    'fileSize': 'The file size is too big ({{ value }} max).',
+                    'fileExtension': 'The image format is not allowed ({{ value }} only).'
+                }
+            });
+
+            drThumb.on('dropify.afterClear', function() {
+                const hiddenInput = document.getElementById('existingThumbnailImage');
+                if (hiddenInput) hiddenInput.value = '';
+                showToast('✓ Thumbnail cleared');
+            });
+        }
+    }
+});
+
 

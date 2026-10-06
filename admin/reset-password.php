@@ -325,12 +325,36 @@ $flashInfo = get_flash('info');
 
             <div class="form-group">
                 <label for="password" class="form-label">New Password (minimum 6 characters)</label>
-                <input type="password" id="password" name="password" class="form-control" required placeholder="Enter your new password">
+                <div class="password-input-wrap" style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <input type="password" id="password" name="password" class="form-control" required placeholder="Enter your new password" style="padding-right: 2.75rem;">
+                    <button type="button" class="btn-toggle-password" data-target="password" title="Show password" aria-label="Show password" style="position: absolute; right: 0.65rem; top: 50%; transform: translateY(-50%); background: transparent; border: none; padding: 0.35rem; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px; transition: color 0.15s ease, background 0.15s ease;">
+                        <svg class="eye-show" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg class="eye-hide" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <div class="form-group">
                 <label for="confirm_password" class="form-label">Confirm New Password</label>
-                <input type="password" id="confirm_password" name="confirm_password" class="form-control" required placeholder="Retype your new password">
+                <div class="password-input-wrap" style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" required placeholder="Retype your new password" style="padding-right: 2.75rem;">
+                    <button type="button" class="btn-toggle-password" data-target="confirm_password" title="Show password" aria-label="Show password" style="position: absolute; right: 0.65rem; top: 50%; transform: translateY(-50%); background: transparent; border: none; padding: 0.35rem; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px; transition: color 0.15s ease, background 0.15s ease;">
+                        <svg class="eye-show" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg class="eye-hide" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <button type="submit" class="btn-submit">
@@ -348,5 +372,26 @@ $flashInfo = get_flash('info');
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.btn-toggle-password').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = btn.getAttribute('data-target');
+                    const input = document.getElementById(targetId);
+                    if (!input) return;
+                    const isPass = input.getAttribute('type') === 'password';
+                    input.setAttribute('type', isPass ? 'text' : 'password');
+                    const eyeShow = btn.querySelector('.eye-show');
+                    const eyeHide = btn.querySelector('.eye-hide');
+                    if (eyeShow) eyeShow.style.display = isPass ? 'none' : 'block';
+                    if (eyeHide) eyeHide.style.display = isPass ? 'block' : 'none';
+                    btn.setAttribute('title', isPass ? 'Hide password' : 'Show password');
+                    btn.setAttribute('aria-label', isPass ? 'Hide password' : 'Show password');
+                    input.focus();
+                });
+            });
+        });
+    </script>
 </body>
 </html>

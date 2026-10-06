@@ -595,58 +595,59 @@ require_once __DIR__ . '/includes/admin-header.php';
                 </div>
             </div>
 
-            <!-- CARD 3: Featured image (Screenshot 4, 5) -->
-            <div class="composer-card">
-                <?php
-                $hasFeatured = !empty($featured_image);
-                $featuredSrc = '';
-                if ($hasFeatured) {
-                    if (strpos($featured_image, 'http://') === 0 || strpos($featured_image, 'https://') === 0 || strpos($featured_image, '/') === 0) {
-                        $featuredSrc = $featured_image;
-                    } elseif (strpos($featured_image, 'uploads/') === 0) {
-                        $featuredSrc = BASE_URL . '/' . $featured_image;
-                    } else {
-                        $featuredSrc = BASE_URL . '/uploads/' . $featured_image;
-                    }
+            <?php
+            // Resolve full URLs for Featured image and Thumbnail if existing
+            $hasFeatured = !empty($featured_image);
+            $featuredSrc = '';
+            if ($hasFeatured) {
+                if (strpos($featured_image, 'http://') === 0 || strpos($featured_image, 'https://') === 0 || strpos($featured_image, '/') === 0) {
+                    $featuredSrc = $featured_image;
+                } elseif (strpos($featured_image, 'uploads/') === 0) {
+                    $featuredSrc = BASE_URL . '/' . $featured_image;
+                } else {
+                    $featuredSrc = BASE_URL . '/uploads/' . $featured_image;
                 }
-                ?>
+            }
+
+            $hasThumb = !empty($thumbnail_image);
+            $thumbSrc = '';
+            if ($hasThumb) {
+                if (strpos($thumbnail_image, 'http://') === 0 || strpos($thumbnail_image, 'https://') === 0 || strpos($thumbnail_image, '/') === 0) {
+                    $thumbSrc = $thumbnail_image;
+                } elseif (strpos($thumbnail_image, 'uploads/') === 0) {
+                    $thumbSrc = BASE_URL . '/' . $thumbnail_image;
+                } else {
+                    $thumbSrc = BASE_URL . '/uploads/' . $thumbnail_image;
+                }
+            }
+            ?>
+
+            <!-- CARD 3: Featured image (Dropify) -->
+            <div class="composer-card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
                     <h3 class="side-card-title" style="margin:0;">Featured image</h3>
-                    <button type="button" id="btnRemoveFeaturedHeader" class="btn-remove-image-text" style="<?= !$hasFeatured ? 'display:none;' : '' ?>" onclick="removeFeaturedImage(event)">
-                        Remove
-                    </button>
                 </div>
 
-                <!-- Image Box / Upload Preview Area -->
-                <div class="featured-image-box" id="featuredImageBox">
-                    <button type="button" id="btnRemoveFeaturedFloat" class="image-remove-badge" style="<?= !$hasFeatured ? 'display:none;' : '' ?>" onclick="removeFeaturedImage(event)" title="Remove Image">&times;</button>
-                    <?php if ($hasFeatured): ?>
-                        <img id="featuredImagePreview" src="<?= h($featuredSrc) ?>" alt="Featured" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" onclick="document.getElementById('featuredImageInput').click();">
-                        <div id="imagePlaceholder" class="image-upload-empty" style="display:none;" onclick="document.getElementById('featuredImageInput').click();">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                        </div>
-                    <?php else: ?>
-                        <div id="imagePlaceholder" class="image-upload-empty" onclick="document.getElementById('featuredImageInput').click();">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                        </div>
-                        <img id="featuredImagePreview" src="" alt="Preview" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:8px;" onclick="document.getElementById('featuredImageInput').click();">
-                    <?php endif; ?>
+                <!-- Dropify Drag-and-Drop Image Uploader with Existing Image Default -->
+                <div class="dropify-wrapper-box">
+                    <input 
+                        type="file" 
+                        name="featured_image" 
+                        id="featuredImageInput" 
+                        class="dropify" 
+                        data-height="165" 
+                        data-max-file-size="4M" 
+                        data-allowed-file-extensions="jpg jpeg png webp gif"
+                        <?= $hasFeatured ? 'data-default-file="' . h($featuredSrc) . '"' : '' ?>
+                    >
+                    <input type="hidden" name="existing_featured_image" id="existingFeaturedImage" value="<?= h($featured_image ?? '') ?>">
                 </div>
 
-                <!-- Hidden file input & chosen media reference -->
-                <input type="file" name="featured_image" id="featuredImageInput" accept=".jpg,.jpeg,.png,.webp,.gif" style="display:none;" onchange="previewSelectedImage(this, 'featuredImagePreview', 'imagePlaceholder')">
-                <input type="hidden" name="existing_featured_image" id="existingFeaturedImage" value="<?= h($featured_image ?? '') ?>">
-
-                <!-- Choose / Upload Buttons Row -->
-                <div style="display:flex; gap:0.5rem; margin-top:0.65rem;">
-                    <button type="button" class="btn-choose-upload" style="flex:1;" onclick="document.getElementById('featuredImageInput').click();">
-                        Upload
-                    </button>
-                    <button type="button" class="btn-choose-upload" style="flex:1; color:#059669; border-color:#a7f3d0; background:#ecfdf5; font-weight:600;" onclick="selectFeaturedFromMedia()">
-                        Media Library
-                    </button>
-                    <button type="button" id="btnRemoveFeatured" class="btn-choose-upload btn-remove-image" style="flex:1; <?= !$hasFeatured ? 'display:none;' : '' ?>" onclick="removeFeaturedImage(event)">
-                        Remove
+                <!-- Choose from Media Library Button -->
+                <div style="margin-top:0.65rem;">
+                    <button type="button" class="btn-choose-upload" style="width:100%; color:#059669; border-color:#a7f3d0; background:#ecfdf5; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.4rem; padding:0.55rem;" onclick="selectFeaturedFromMedia()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        Choose from Media Library
                     </button>
                 </div>
 
@@ -656,45 +657,32 @@ require_once __DIR__ . '/includes/admin-header.php';
                 </div>
             </div>
 
-            <!-- CARD 4: Thumbnail (optional, 16:9) (Screenshot 4, 5) -->
+            <!-- CARD 4: Thumbnail (optional, 16:9) (Dropify) -->
             <div class="composer-card">
-                <?php
-                $hasThumb = !empty($thumbnail_image);
-                $thumbSrc = '';
-                if ($hasThumb) {
-                    if (strpos($thumbnail_image, 'http://') === 0 || strpos($thumbnail_image, 'https://') === 0 || strpos($thumbnail_image, '/') === 0) {
-                        $thumbSrc = $thumbnail_image;
-                    } elseif (strpos($thumbnail_image, 'uploads/') === 0) {
-                        $thumbSrc = BASE_URL . '/' . $thumbnail_image;
-                    } else {
-                        $thumbSrc = BASE_URL . '/uploads/' . $thumbnail_image;
-                    }
-                }
-                ?>
                 <h3 class="side-card-title">Thumbnail <span style="font-weight:400; color:#64748b; font-size:0.8rem;">(optional, 16:9)</span></h3>
 
-                <input type="hidden" name="existing_thumbnail_image" id="existingThumbnailImage" value="<?= h($thumbnail_image ?? '') ?>">
-                <div class="thumbnail-upload-row">
-                    <div class="thumb-mini-box" id="thumbMiniBox" onclick="document.getElementById('thumbImageInput').click();">
-                        <?php if ($hasThumb): ?>
-                            <img id="thumbMiniPreview" src="<?= h($thumbSrc) ?>" alt="Thumb" style="width:100%; height:100%; object-fit:cover; border-radius:6px;">
-                        <?php else: ?>
-                            <img id="thumbMiniPreview" src="" alt="Thumb" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:6px;">
-                        <?php endif; ?>
-                    </div>
-                    <button type="button" class="btn-choose-mini" onclick="document.getElementById('thumbImageInput').click();">
-                        Upload
-                    </button>
-                    <button type="button" class="btn-choose-mini" style="color:#059669; border-color:#a7f3d0; background:#ecfdf5;" onclick="selectThumbnailFromMedia()">
-                        Media Library
-                    </button>
-                    <button type="button" id="btnRemoveThumb" class="btn-choose-mini btn-remove-image" style="<?= !$hasThumb ? 'display:none;' : '' ?>" onclick="removeThumbnailImage(event)">
-                        Remove
-                    </button>
-                    <input type="file" name="thumbnail_image" id="thumbImageInput" accept=".jpg,.jpeg,.png,.webp,.gif" style="display:none;" onchange="previewSelectedImage(this, 'thumbMiniPreview')">
+                <div class="dropify-wrapper-box">
+                    <input 
+                        type="file" 
+                        name="thumbnail_image" 
+                        id="thumbImageInput" 
+                        class="dropify" 
+                        data-height="115" 
+                        data-max-file-size="4M" 
+                        data-allowed-file-extensions="jpg jpeg png webp gif"
+                        <?= $hasThumb ? 'data-default-file="' . h($thumbSrc) . '"' : '' ?>
+                    >
+                    <input type="hidden" name="existing_thumbnail_image" id="existingThumbnailImage" value="<?= h($thumbnail_image ?? '') ?>">
                 </div>
 
-                <p class="thumb-subnote">
+                <div style="margin-top:0.65rem;">
+                    <button type="button" class="btn-choose-mini" style="width:100%; color:#059669; border-color:#a7f3d0; background:#ecfdf5; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.35rem; padding:0.45rem;" onclick="selectThumbnailFromMedia()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        Choose from Media Library
+                    </button>
+                </div>
+
+                <p class="thumb-subnote" style="margin-top:0.5rem;">
                     Falls back to the featured image, then the YouTube thumbnail.
                 </p>
             </div>

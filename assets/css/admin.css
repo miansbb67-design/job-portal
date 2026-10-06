@@ -3848,5 +3848,203 @@ select.form-control {
     margin: 0;
 }
 
+/* ==========================================================================
+   DROPIFY FILE UPLOADER - MODERN EMERALD SAAS THEME
+   ========================================================================== */
+.dropify-wrapper {
+    display: block;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    height: 180px;
+    padding: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #475569;
+    background-color: #f8fafc;
+    text-align: center;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    transition: all 0.2s ease-in-out;
+}
+.dropify-wrapper:hover {
+    border-color: #059669;
+    background-color: #ecfdf5;
+}
+.dropify-wrapper.has-preview {
+    border-style: solid;
+    border-color: #e2e8f0;
+    background: #ffffff;
+    padding: 4px;
+}
+.dropify-wrapper .dropify-message {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 10px;
+}
+.dropify-wrapper .dropify-message span.file-icon {
+    font-size: 38px;
+    color: #94a3b8;
+    display: inline-block;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+.dropify-wrapper:hover .dropify-message span.file-icon {
+    color: #059669;
+    transform: translateY(-2px);
+}
+.dropify-wrapper .dropify-message p {
+    margin: 6px 0 0;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.85rem;
+}
+.dropify-wrapper .dropify-message p.dropify-error {
+    color: #dc2626;
+    font-weight: 700;
+    display: none;
+}
+.dropify-wrapper .dropify-clear {
+    display: none;
+    position: absolute;
+    opacity: 0;
+    z-index: 7;
+    top: 8px;
+    right: 8px;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    font-weight: 700;
+    border-radius: 6px;
+    color: #ffffff;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+.dropify-wrapper .dropify-clear:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+}
+.dropify-wrapper:hover .dropify-clear {
+    opacity: 1;
+}
+.dropify-wrapper .dropify-preview {
+    display: none;
+    position: absolute;
+    z-index: 1;
+    background-color: #ffffff;
+    padding: 4px;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    text-align: center;
+    border-radius: 10px;
+}
+.dropify-wrapper .dropify-preview .dropify-render img {
+    top: 50%;
+    transform: translateY(-50%);
+    position: relative;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+.dropify-wrapper .dropify-preview .dropify-infos {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(3px);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    border-radius: 10px;
+}
+.dropify-wrapper:hover .dropify-preview .dropify-infos {
+    opacity: 1;
+}
+.dropify-wrapper .dropify-preview .dropify-infos .dropify-infos-inner {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100%;
+    padding: 0 15px;
+    text-align: center;
+}
+.dropify-wrapper .dropify-preview .dropify-infos .dropify-infos-inner p {
+    padding: 0;
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.dropify-wrapper .dropify-preview .dropify-infos .dropify-infos-inner p.dropify-infos-message {
+    margin-top: 6px;
+    padding-top: 6px;
+    font-size: 11px;
+    color: #a7f3d0;
+    position: relative;
+}
+.dropify-wrapper .dropify-preview .dropify-infos .dropify-infos-inner p.dropify-infos-message::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.3);
+    width: 25px;
+    height: 1px;
+}
+.dropify-wrapper.has-error {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+}
+.dropify-wrapper .dropify-errors-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 4;
+    background: rgba(239, 68, 68, 0.9);
+    text-align: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.2s ease;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+.dropify-wrapper .dropify-errors-container.visible {
+    visibility: visible;
+    opacity: 1;
+}
+.dropify-wrapper .dropify-errors-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
 
 

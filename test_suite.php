@@ -4,7 +4,8 @@
  * Tests all public routes, admin authentication, unauthorized blocks, and database integrity.
  */
 
-$baseUrl = 'http://localhost/job-portal';
+$projectDir = basename(__DIR__);
+$baseUrl = 'http://localhost/' . $projectDir;
 
 $routes = [
     'Home Page' => '/',
