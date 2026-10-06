@@ -1,0 +1,51 @@
+# CareerPulse - Apache Configuration & SEO URL Rewrites
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Security: Block sensitive files (.sql, .git, .env, .env.example)
+    RewriteRule ^(\.git|\.env|\.env\.example|.*\.sql|config/database\.php) - [F,L]
+</IfModule>
+
+# Block access to hidden files and database dumps even if mod_rewrite is disabled
+<FilesMatch "^(\.env|\.git|.*\.sql)">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+<IfModule mod_rewrite.c>
+
+    # Article Clean URL: /article/sample-slug
+    RewriteRule ^article/([a-zA-Z0-9_-]+)/?$ article.php?slug=$1 [QSA,L]
+
+    # Category Clean URL: /category/sample-slug
+    RewriteRule ^category/([a-zA-Z0-9_-]+)/?$ categories.php?slug=$1 [QSA,L]
+
+    # Standard clean paths
+    RewriteRule ^articles/?$ articles.php [L]
+    RewriteRule ^about/?$ about.php [L]
+    RewriteRule ^contact/?$ contact.php [L]
+    RewriteRule ^privacy-policy/?$ privacy-policy.php [L]
+    RewriteRule ^cookie-policy/?$ cookie-policy.php [L]
+    RewriteRule ^cookies/?$ cookie-policy.php [L]
+    RewriteRule ^terms/?$ terms.php [L]
+    RewriteRule ^disclaimer/?$ disclaimer.php [L]
+</IfModule>
+
+# Custom 404 Error Page
+ErrorDocument 404 404.php
+
+# Disable Directory Browsing
+Options -Indexes
+
+# Security & SEO Crawl Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set X-Robots-Tag "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+</IfModule>

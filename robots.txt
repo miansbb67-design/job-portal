@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Admin Panel Disallowed from Indexing
+Disallow: /job-portal/admin/
+Disallow: /admin/
+
+# Configuration, Core and Helper Includes
+Disallow: /job-portal/config/
+Disallow: /config/
+Disallow: /job-portal/includes/
+Disallow: /includes/
+
+# Internal Search Queries (Google Guidelines: Prevent thin search results indexation)
+Disallow: /job-portal/search.php
+Disallow: /search.php
+
+# Sitemap location
+Sitemap: http://localhost/job-portal/sitemap.xml
