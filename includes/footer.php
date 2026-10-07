@@ -8,6 +8,7 @@ $footerAboutText = get_setting('site_footer_text', $footerSiteName . ' is your t
 $footerCopyrightText = get_setting('site_copyright', '© ' . date('Y') . ' ' . $footerSiteName . '. All rights reserved.');
 ?>
     <!-- Site Footer -->
+    <?php if (is_section_visible('footer')): ?>
     <footer class="site-footer">
         <div class="site-container">
             <div class="footer-top-grid">
@@ -96,6 +97,7 @@ $footerCopyrightText = get_setting('site_copyright', '© ' . date('Y') . ' ' . $
             </div>
         </div>
     </footer>
+    <?php endif; ?>
 
     <!-- Back To Top Button -->
     <button id="backToTop" class="back-to-top" aria-label="Back to top of page">
@@ -106,6 +108,6 @@ $footerCopyrightText = get_setting('site_copyright', '© ' . date('Y') . ' ' . $
     <?php include __DIR__ . '/cookie-consent.php'; ?>
 
     <!-- Main JavaScript File -->
-    <script src="<?= BASE_URL ?>/assets/js/main.js"></script>
+    <script src="<?= BASE_URL ?>/assets/js/main.js?v=<?= filemtime(__DIR__ . '/../assets/js/main.js') ?>"></script>
 </body>
 </html>

@@ -51,6 +51,7 @@ $navDb = getDBConnection();
 $badgeJobs = (int)$navDb->query("SELECT COUNT(*) FROM articles WHERE is_job_posting = 1 AND is_trash = 0")->fetchColumn();
 $badgePosts = (int)$navDb->query("SELECT COUNT(*) FROM articles WHERE (is_job_posting = 0 OR is_job_posting IS NULL) AND is_trash = 0")->fetchColumn();
 $badgeAdmins = (int)$navDb->query("SELECT COUNT(*) FROM admins")->fetchColumn();
+$badgeComments = (int)$navDb->query("SELECT COUNT(*) FROM comments WHERE status = 'pending'")->fetchColumn();
 
 // Notification System Data
 $notificationsList = [];
@@ -81,7 +82,7 @@ try {
 }
 
 // Is Content, Analytics, and SEO menus active?
-$isContentActive = in_array($currentAdminScript, ['articles.php', 'add-article.php', 'edit-article.php', 'categories.php']) || in_array($currentAdminDir, ['posts', 'jobs', 'media', 'categories']);
+$isContentActive = in_array($currentAdminScript, ['articles.php', 'add-article.php', 'edit-article.php', 'categories.php', 'comments.php']) || in_array($currentAdminDir, ['posts', 'jobs', 'media', 'categories']);
 $isAnalyticsActive = ($currentAdminScript === 'analytics.php' || $currentAdminDir === 'analytics');
 $isSeoActive = ($currentAdminScript === 'seo.php' || $currentAdminDir === 'seo');
 $currentAdminTab = $_GET['tab'] ?? 'overview';
@@ -189,8 +190,11 @@ $currentAdminTab = $_GET['tab'] ?? 'overview';
                             </a>
                         </li>
                         <li>
-                            <a href="<?= ADMIN_URL ?>/articles.php?tab=comments" class="admin-submenu-item">
-                                Comments
+                            <a href="<?= ADMIN_URL ?>/comments.php" class="admin-submenu-item <?= ($currentAdminScript === 'comments.php') ? 'active' : '' ?>" style="display:flex; justify-content:space-between; align-items:center;">
+                                <span>Comments</span>
+                                <?php if ($badgeComments > 0): ?>
+                                    <span style="background:#f59e0b; color:#fff; font-size:0.7rem; font-weight:700; padding:0.1rem 0.45rem; border-radius:10px;"><?= $badgeComments ?></span>
+                                <?php endif; ?>
                             </a>
                         </li>
                         <?php if ($canJobs): ?>
@@ -318,6 +322,12 @@ $currentAdminTab = $_GET['tab'] ?? 'overview';
                     <a href="<?= ADMIN_URL ?>/settings/index.php" class="admin-nav-item <?= ($currentAdminDir === 'settings') ? 'active' : '' ?>">
                         <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                         <span class="nav-label">Settings</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?= ADMIN_URL ?>/section-visibility.php" class="admin-nav-item <?= ($currentAdminScript === 'section-visibility.php') ? 'active' : '' ?>">
+                        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        <span class="nav-label">Section Visibility</span>
                     </a>
                 </li>
                 <?php endif; ?>

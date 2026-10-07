@@ -652,4 +652,315 @@ function format_brand_name($name = null) {
     return htmlspecialchars(substr($name, 0, $half)) . '<span class="brand-green">' . htmlspecialchars(substr($name, $half)) . '</span>';
 }
 
+/**
+ * Get reaction statistics and user reaction state for an article
+ *
+ * @param int $articleId
+ * @return array ['likes' => int, 'dislikes' => int, 'user_reaction' => 'like'|'dislike'|null]
+ */
+function get_article_reactions_data($articleId) {
+    $db = getDBConnection();
+    $articleId = (int)$articleId;
+    
+    // Get counts from articles table
+    $stmt = $db->prepare("SELECT likes, dislikes FROM articles WHERE id = ? LIMIT 1");
+    $stmt->execute([$articleId]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    $likes = (int)($row['likes'] ?? 0);
+    $dislikes = (int)($row['dislikes'] ?? 0);
+    
+    // Check if current visitor has reacted
+    $ip = function_exists('get_client_ip') ? get_client_ip() : ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+    $userReaction = null;
+    
+    $rStmt = $db->prepare("SELECT reaction_type FROM article_reactions WHERE article_id = ? AND user_ip = ? LIMIT 1");
+    $rStmt->execute([$articleId, $ip]);
+    $reactionRow = $rStmt->fetch(PDO::FETCH_ASSOC);
+    if ($reactionRow) {
+        $userReaction = $reactionRow['reaction_type'];
+    }
+    
+    return [
+        'likes' => max(0, $likes),
+        'dislikes' => max(0, $dislikes),
+        'user_reaction' => $userReaction
+    ];
+}
+
+/**
+ * Toggle or switch an article reaction (Like / Dislike)
+ *
+ * @param int $articleId
+ * @param string $type 'like' or 'dislike'
+ * @return array
+ */
+function toggle_article_reaction($articleId, $type) {
+    if (!in_array($type, ['like', 'dislike'], true)) {
+        return ['success' => false, 'message' => 'Invalid reaction type.'];
+    }
+    
+    $db = getDBConnection();
+    $articleId = (int)$articleId;
+    $ip = function_exists('get_client_ip') ? get_client_ip() : ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+    $agent = substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 255);
+    
+    // Verify article exists
+    $check = $db->prepare("SELECT id, likes, dislikes FROM articles WHERE id = ? AND is_trash = 0 LIMIT 1");
+    $check->execute([$articleId]);
+    $art = $check->fetch(PDO::FETCH_ASSOC);
+    if (!$art) {
+        return ['success' => false, 'message' => 'Article not found.'];
+    }
+    
+    // Check existing reaction
+    $rStmt = $db->prepare("SELECT id, reaction_type FROM article_reactions WHERE article_id = ? AND user_ip = ? LIMIT 1");
+    $rStmt->execute([$articleId, $ip]);
+    $existing = $rStmt->fetch(PDO::FETCH_ASSOC);
+    
+    $currentLikes = (int)$art['likes'];
+    $currentDislikes = (int)$art['dislikes'];
+    $finalUserReaction = null;
+    $action = '';
+    
+    if ($existing) {
+        if ($existing['reaction_type'] === $type) {
+            // Same reaction clicked again -> Undo / Remove reaction
+            $db->prepare("DELETE FROM article_reactions WHERE id = ?")->execute([$existing['id']]);
+            if ($type === 'like') {
+                $currentLikes = max(0, $currentLikes - 1);
+            } else {
+                $currentDislikes = max(0, $currentDislikes - 1);
+            }
+            $finalUserReaction = null;
+            $action = 'removed';
+        } else {
+            // Opposite reaction clicked -> Switch reaction
+            $db->prepare("UPDATE article_reactions SET reaction_type = ?, user_agent = ?, created_at = NOW() WHERE id = ?")
+               ->execute([$type, $agent, $existing['id']]);
+            if ($type === 'like') {
+                $currentLikes++;
+                $currentDislikes = max(0, $currentDislikes - 1);
+            } else {
+                $currentDislikes++;
+                $currentLikes = max(0, $currentLikes - 1);
+            }
+            $finalUserReaction = $type;
+            $action = 'switched';
+        }
+    } else {
+        // New reaction -> Insert
+        $db->prepare("INSERT INTO article_reactions (article_id, reaction_type, user_ip, user_agent) VALUES (?, ?, ?, ?)")
+           ->execute([$articleId, $type, $ip, $agent]);
+        if ($type === 'like') {
+            $currentLikes++;
+        } else {
+            $currentDislikes++;
+        }
+        $finalUserReaction = $type;
+        $action = 'added';
+    }
+    
+    // Update article counters
+    $db->prepare("UPDATE articles SET likes = ?, dislikes = ? WHERE id = ?")
+       ->execute([$currentLikes, $currentDislikes, $articleId]);
+    
+    return [
+        'success' => true,
+        'action' => $action,
+        'user_reaction' => $finalUserReaction,
+        'likes' => $currentLikes,
+        'dislikes' => $currentDislikes,
+        'message' => $action === 'removed' ? 'Reaction removed.' : ($type === 'like' ? 'Thanks for liking this article!' : 'Feedback received.')
+    ];
+}
+
+/**
+ * Get approved comments for an article
+ *
+ * @param int $articleId
+ * @param string $status
+ * @param int $limit
+ * @return array
+ */
+function get_article_comments($articleId, $status = 'approved', $limit = 50) {
+    $db = getDBConnection();
+    $stmt = $db->prepare("
+        SELECT id, article_id, user_name, user_email, comment_text, status, created_at
+        FROM comments
+        WHERE article_id = ? AND status = ?
+        ORDER BY created_at DESC
+        LIMIT ?
+    ");
+    $stmt->bindValue(1, (int)$articleId, PDO::PARAM_INT);
+    $stmt->bindValue(2, $status, PDO::PARAM_STR);
+    $stmt->bindValue(3, (int)$limit, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/**
+ * Get total approved comments count for an article
+ *
+ * @param int $articleId
+ * @param string $status
+ * @return int
+ */
+function get_article_comments_count($articleId, $status = 'approved') {
+    $db = getDBConnection();
+    $stmt = $db->prepare("SELECT COUNT(*) FROM comments WHERE article_id = ? AND status = ?");
+    $stmt->execute([(int)$articleId, $status]);
+    return (int)$stmt->fetchColumn();
+}
+
+/**
+ * Submit a comment on an article with anti-spam checks
+ *
+ * @param int $articleId
+ * @param string $name
+ * @param string $email
+ * @param string $commentText
+ * @return array
+ */
+function submit_article_comment($articleId, $name, $email, $commentText) {
+    $db = getDBConnection();
+    $articleId = (int)$articleId;
+    $name = trim(strip_tags((string)$name));
+    $email = trim((string)$email);
+    $commentText = trim(strip_tags((string)$commentText));
+    
+    // Validation
+    if ($articleId <= 0) {
+        return ['success' => false, 'message' => 'Invalid article specified.'];
+    }
+    if (mb_strlen($name) < 2 || mb_strlen($name) > 80) {
+        return ['success' => false, 'message' => 'Please enter your name (2 to 80 characters).'];
+    }
+    if (!empty($email) && (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 120)) {
+        return ['success' => false, 'message' => 'Please provide a valid email address.'];
+    }
+    if (mb_strlen($commentText) < 1 || mb_strlen($commentText) > 2500) {
+        return ['success' => false, 'message' => 'Comment cannot be empty (up to 2500 characters).'];
+    }
+    
+    // Fallback email if omitted
+    if (empty($email)) {
+        $email = 'reader@' . (defined('SITE_DOMAIN') ? SITE_DOMAIN : 'careernexaa.com');
+    }
+    
+    // Verify article exists and is published
+    $artStmt = $db->prepare("SELECT id FROM articles WHERE id = ? AND status = 'published' AND is_trash = 0 LIMIT 1");
+    $artStmt->execute([$articleId]);
+    if (!$artStmt->fetch()) {
+        return ['success' => false, 'message' => 'Article does not exist or is not available.'];
+    }
+    
+    $ip = function_exists('get_client_ip') ? get_client_ip() : ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+    $agent = substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 255);
+    
+    // Check if user is authenticated admin (bypass rate limits for testing & moderation)
+    $isAdmin = function_exists('is_admin_logged_in') && is_admin_logged_in();
+    
+    if (!$isAdmin) {
+        // Anti-Spam: Rate limit (max 30 comments per IP in 10 minutes)
+        $rateCheck = $db->prepare("
+            SELECT COUNT(*) FROM comments 
+            WHERE user_ip = ? AND created_at >= (NOW() - INTERVAL 10 MINUTE)
+        ");
+        $rateCheck->execute([$ip]);
+        if ((int)$rateCheck->fetchColumn() >= 30) {
+            return ['success' => false, 'message' => 'You are posting comments too quickly. Please wait a few minutes before trying again.'];
+        }
+        
+        // Duplicate check in last 15 seconds (prevents accidental double clicks)
+        $dupCheck = $db->prepare("
+            SELECT id FROM comments 
+            WHERE article_id = ? AND user_ip = ? AND comment_text = ? AND created_at >= (NOW() - INTERVAL 15 SECOND)
+            LIMIT 1
+        ");
+        $dupCheck->execute([$articleId, $ip, $commentText]);
+        if ($dupCheck->fetch()) {
+            return ['success' => false, 'message' => 'Duplicate comment detected. Please wait a few seconds before posting again.'];
+        }
+    }
+    
+    // Status: Auto-approved by default for responsive user experience
+    $status = 'approved';
+    
+    $stmt = $db->prepare("
+        INSERT INTO comments (article_id, user_name, user_email, comment_text, status, user_ip, user_agent, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+    ");
+    $stmt->execute([$articleId, $name, $email, $commentText, $status, $ip, $agent]);
+    $newId = (int)$db->lastInsertId();
+    
+    return [
+        'success' => true,
+        'message' => 'Thank you! Your comment has been posted successfully.',
+        'comment' => [
+            'id' => $newId,
+            'user_name' => $name,
+            'comment_text' => $commentText,
+            'created_at' => date('Y-m-d H:i:s'),
+            'formatted_date' => 'Just now'
+        ]
+    ];
+}
+
+/**
+ * Load all section visibility flags (cached in-memory for high performance)
+ *
+ * @return array
+ */
+function get_all_sections_visibility() {
+    static $visibilityCache = null;
+    if ($visibilityCache !== null) {
+        return $visibilityCache;
+    }
+
+    $visibilityCache = [];
+    try {
+        $db = getDBConnection();
+        $stmt = $db->query("SELECT section_key, is_enabled FROM section_visibility");
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $visibilityCache[$row['section_key']] = (int)$row['is_enabled'];
+        }
+    } catch (Exception $e) {
+        // Fallback: If table is not yet migrated, assume enabled
+    }
+
+    return $visibilityCache;
+}
+
+/**
+ * Check if a specific frontend section is visible (enabled)
+ *
+ * @param string $sectionKey
+ * @return bool
+ */
+function is_section_visible($sectionKey) {
+    $visibility = get_all_sections_visibility();
+    // Default to true (1) if key is not defined
+    if (!isset($visibility[$sectionKey])) {
+        return true;
+    }
+    return (int)$visibility[$sectionKey] === 1;
+}
+
+/**
+ * Update section visibility state
+ *
+ * @param string $sectionKey
+ * @param int|bool $isEnabled
+ * @return bool
+ */
+function set_section_visibility($sectionKey, $isEnabled) {
+    $db = getDBConnection();
+    $enabledVal = $isEnabled ? 1 : 0;
+    $stmt = $db->prepare("UPDATE section_visibility SET is_enabled = ? WHERE section_key = ?");
+    return $stmt->execute([$enabledVal, $sectionKey]);
+}
+
+
+
 

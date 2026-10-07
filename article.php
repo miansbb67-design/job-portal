@@ -40,6 +40,32 @@ if (!$article) {
 $updateViews = $db->prepare("UPDATE articles SET views = views + 1 WHERE id = ?");
 $updateViews->execute([$article['id']]);
 
+// Handle Traditional Comment Form POST (progressive enhancement fallback)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_comment'])) {
+    $token = $_POST['csrf_token'] ?? '';
+    $honeypot = trim($_POST['comments_bot_trap'] ?? ($_POST['website_url'] ?? ''));
+    if (empty($honeypot) && verify_csrf_token($token)) {
+        $cName = trim($_POST['user_name'] ?? '');
+        $cEmail = trim($_POST['user_email'] ?? '');
+        $cText = trim($_POST['comment_text'] ?? '');
+        $cRes = submit_article_comment($article['id'], $cName, $cEmail, $cText);
+        if ($cRes['success']) {
+            set_flash('success', $cRes['message']);
+        } else {
+            set_flash('error', $cRes['message']);
+        }
+    } else {
+        set_flash('error', 'Security verification failed or session expired. Please try again.');
+    }
+    header('Location: ' . BASE_URL . '/article.php?slug=' . urlencode($article['slug']) . '#comments');
+    exit;
+}
+
+// Fetch Article Reactions & Comments Data
+$reactionsData = get_article_reactions_data($article['id']);
+$articleComments = get_article_comments($article['id'], 'approved', 100);
+$commentsCount = count($articleComments);
+
 // SEO Setup
 $pageTitle = !empty($article['seo_title']) ? $article['seo_title'] : $article['title'];
 $metaDescription = clean_seo_description(!empty($article['meta_description']) ? $article['meta_description'] : $article['excerpt']);
@@ -169,6 +195,16 @@ include __DIR__ . '/includes/header.php';
             <span class="meta-dot">&bull;</span>
             <span><?= (int)$article['views'] ?> views</span>
             <span class="meta-dot">&bull;</span>
+            <a href="#comments" style="color:var(--text-muted); text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <span id="topCommentsCount"><?= $commentsCount ?></span> comments
+            </a>
+            <span class="meta-dot">&bull;</span>
+            <a href="#articleReactions" style="color:var(--primary); font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                <span id="topLikesCount"><?= (int)$reactionsData['likes'] ?></span> likes
+            </a>
+            <span class="meta-dot">&bull;</span>
             <span class="article-badge <?= $article['is_job_posting'] ? 'job-badge' : '' ?>" style="position:static;">
                 <?= $article['is_job_posting'] ? 'Job Opportunity' : h($article['category_name']) ?>
             </span>
@@ -273,6 +309,46 @@ include __DIR__ . '/includes/header.php';
             </div>
         <?php endif; ?>
 
+        <!-- Article Reactions Box (Like & Dislike) -->
+        <div class="article-reactions-box" id="articleReactions">
+            <div class="article-reactions-prompt">
+                <div class="article-reactions-prompt-icon">💡</div>
+                <div class="article-reactions-prompt-text">
+                    <h4>Was this career guide helpful?</h4>
+                    <p>Your feedback helps our editorial desk improve future publications.</p>
+                </div>
+            </div>
+            <div class="article-reactions-actions">
+                <button type="button" 
+                        class="btn-reaction btn-reaction-like <?= ($reactionsData['user_reaction'] === 'like') ? 'is-active' : '' ?>" 
+                        id="btnLike" 
+                        data-article-id="<?= (int)$article['id'] ?>" 
+                        data-type="like"
+                        aria-label="Mark as helpful">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                    </svg>
+                    <span>Helpful</span>
+                    <span class="reaction-counter" id="likeCounter"><?= (int)$reactionsData['likes'] ?></span>
+                </button>
+
+                <button type="button" 
+                        class="btn-reaction btn-reaction-dislike <?= ($reactionsData['user_reaction'] === 'dislike') ? 'is-active' : '' ?>" 
+                        id="btnDislike" 
+                        data-article-id="<?= (int)$article['id'] ?>" 
+                        data-type="dislike"
+                        aria-label="Mark as unhelpful">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path>
+                    </svg>
+                    <span>Dislike</span>
+                    <span class="reaction-counter" id="dislikeCounter"><?= (int)$reactionsData['dislikes'] ?></span>
+                </button>
+
+                <span class="reaction-feedback-msg" id="reactionFeedback" style="display:none;"></span>
+            </div>
+        </div>
+
         <!-- Social Share Bar -->
         <div class="article-share-section">
             <span style="font-weight:700; color:#ffffff; font-size:0.95rem;">Share this guide:</span>
@@ -293,6 +369,111 @@ include __DIR__ . '/includes/header.php';
         <div style="margin-top:2.5rem; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1.35rem; font-size:0.85rem; color:var(--text-muted); line-height:1.6;">
             <strong style="color:#ffffff;">Editorial Transparency & Policy Note:</strong> At <?= SITE_NAME ?>, our mission is to deliver truthful, carefully vetted career insights. All job postings and guides are verified against official company releases. For additional questions or to report out-of-date information, please visit our <a href="<?= BASE_URL ?>/contact.php">Contact Page</a>.
         </div>
+
+        <?php if (is_section_visible('article_comments')): ?>
+        <?php
+        // Pre-fill author info if logged in as admin for smooth user testing
+        $defaultCommName = '';
+        $defaultCommEmail = '';
+        if (is_admin_logged_in() && !empty($_SESSION['admin_name'])) {
+            $defaultCommName = $_SESSION['admin_name'];
+            $defaultCommEmail = $_SESSION['admin_email'] ?? '';
+        }
+        ?>
+        <!-- ================= Community Comments Section ================= -->
+        <section class="article-comments-wrap" id="comments">
+            <div class="comments-header">
+                <h3 class="comments-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Discussion & Reader Comments</span>
+                    <span class="comments-count-badge" id="sectionCommentsBadge"><?= $commentsCount ?></span>
+                </h3>
+            </div>
+
+            <!-- Comment Submission Form Card -->
+            <div class="comment-form-card">
+                <h3>Leave a Comment or Question</h3>
+                <p>Share your perspective, ask for advice, or contribute to this career guide. (Your email will remain private).</p>
+
+                <div id="commentFormAlert" style="display:none; margin-bottom:1.25rem;"></div>
+
+                <?php if (!empty($_SESSION['flash_messages'])): ?>
+                    <div style="margin-bottom:1.25rem;">
+                        <?= display_flash_messages() ?>
+                    </div>
+                <?php endif; ?>
+
+                <form id="articleCommentForm" method="POST" action="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>#comments">
+                    <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
+                    <input type="hidden" name="article_id" value="<?= (int)$article['id'] ?>">
+                    <!-- Anti-spam Honeypot (Positioned off-screen, autofill-safe) -->
+                    <input type="text" name="comments_bot_trap" value="" tabindex="-1" autocomplete="new-password" style="position:absolute; left:-9999px; opacity:0; pointer-events:none;" aria-hidden="true">
+
+                    <div class="comment-form-grid">
+                        <div class="comment-form-group">
+                            <label for="comment_user_name">Full Name <span style="color:#e11d48;">*</span></label>
+                            <input type="text" id="comment_user_name" name="user_name" value="<?= h($defaultCommName) ?>" class="comment-form-input" placeholder="e.g. Sarah Jenkins" required maxlength="80">
+                        </div>
+                        <div class="comment-form-group">
+                            <label for="comment_user_email">Email Address <span style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;">(optional)</span></label>
+                            <input type="email" id="comment_user_email" name="user_email" value="<?= h($defaultCommEmail) ?>" class="comment-form-input" placeholder="e.g. sarah@example.com" maxlength="120">
+                        </div>
+                    </div>
+
+                    <div class="comment-form-group" style="margin-bottom:1.5rem;">
+                        <label for="comment_text">Your Comment <span style="color:#e11d48;">*</span></label>
+                        <textarea id="comment_text" name="comment_text" class="comment-form-textarea" placeholder="Share your experience, interview questions, or feedback about this guide..." required maxlength="2500"></textarea>
+                    </div>
+
+                    <button type="submit" name="submit_comment" class="comment-btn-submit" id="btnSubmitComment">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                        <span>Post Comment</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Published Comments List -->
+            <div class="comment-items-list" id="commentsList">
+                <?php if (empty($articleComments)): ?>
+                    <div class="comments-empty-state" id="commentsEmptyState">
+                        <span class="comments-empty-icon">💬</span>
+                        <h4 style="margin:0 0 0.35rem; font-size:1.1rem; color:var(--secondary); font-weight:700;">No comments yet</h4>
+                        <p style="margin:0; font-size:0.9rem;">Be the first reader to share your feedback or ask a question!</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($articleComments as $comm): ?>
+                        <?php 
+                        $initials = '';
+                        $parts = preg_split('/\s+/', trim($comm['user_name']));
+                        if (!empty($parts[0])) $initials .= mb_substr($parts[0], 0, 1);
+                        if (!empty($parts[1])) $initials .= mb_substr($parts[1], 0, 1);
+                        if (empty($initials)) $initials = 'U';
+                        ?>
+                        <div class="comment-single-item" id="comment-<?= (int)$comm['id'] ?>">
+                            <div class="comment-avatar-bubble">
+                                <?= h(strtoupper($initials)) ?>
+                            </div>
+                            <div class="comment-item-body">
+                                <div class="comment-item-header">
+                                    <span class="comment-item-author"><?= h($comm['user_name']) ?></span>
+                                    <span class="comment-item-badge">Verified Reader</span>
+                                    <span class="comment-item-time"><?= date('M j, Y \a\t g:i A', strtotime($comm['created_at'])) ?></span>
+                                </div>
+                                <div class="comment-item-content">
+                                    <?= nl2br(h($comm['comment_text'])) ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </section>
+        <?php endif; ?>
 
     </div>
 </div>

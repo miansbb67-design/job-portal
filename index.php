@@ -94,12 +94,17 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <!-- ================= Main Content Showcase ================= -->
+<?php 
+$showHeroFeatured = is_section_visible('hero_featured') && !empty($spotlight);
+$showLiveRadar    = is_section_visible('live_job_radar');
+?>
+<?php if ($showHeroFeatured || $showLiveRadar): ?>
 <section class="cp-hero-section">
     <div class="site-container">
         <!-- Hero Feature Split Showcase -->
-        <div class="hero-showcase-grid">
+        <div class="hero-showcase-grid" style="<?= (!$showHeroFeatured || !$showLiveRadar) ? 'grid-template-columns: 1fr;' : '' ?>">
             <!-- Left: Editorial Spotlight Guide (58% width) -->
-            <?php if ($spotlight): ?>
+            <?php if ($showHeroFeatured): ?>
             <?php 
                 $spotThumb = get_article_thumbnail_url($spotlight);
             ?>
@@ -143,6 +148,7 @@ include __DIR__ . '/includes/header.php';
             <?php endif; ?>
 
             <!-- Right: Career Pulse Radar & Live Alerts (42% width) -->
+            <?php if ($showLiveRadar): ?>
             <div class="career-radar-widget">
                 <div class="radar-widget-header">
                     <div class="radar-title-group">
@@ -201,11 +207,14 @@ include __DIR__ . '/includes/header.php';
                     <?php endforeach; ?>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 </section>
+<?php endif; ?>
 
 <!-- ================= Section 1: Explore by Career Track (6 Cards) ================= -->
+<?php if (is_section_visible('top_categories') && !empty($categories)): ?>
 <section class="page-section">
     <div class="site-container">
         <div class="section-header-row">
@@ -241,9 +250,10 @@ include __DIR__ . '/includes/header.php';
         </div>
     </div>
 </section>
+<?php endif; ?>
 
 <!-- ================= Section 2: Trending Career Strategies (3-Column Grid) ================= -->
-<?php if (!empty($trendingGuides)): ?>
+<?php if (is_section_visible('trending_guides') && !empty($trendingGuides)): ?>
 <section class="page-section page-section-alt">
     <div class="site-container">
         <div class="section-header-row">
@@ -304,7 +314,7 @@ include __DIR__ . '/includes/header.php';
 <?php endif; ?>
 
 <!-- ================= Section 3: Verified Job Openings & Hiring Alerts ================= -->
-<?php if (!empty($activeJobs)): ?>
+<?php if (is_section_visible('jobs_section') && !empty($activeJobs)): ?>
 <section class="page-section">
     <div class="site-container">
         <div class="section-header-row">
@@ -357,6 +367,7 @@ include __DIR__ . '/includes/header.php';
 <?php endif; ?>
 
 <!-- ================= Section 4: Career Success Toolkit Banner ================= -->
+<?php if (is_section_visible('career_toolkit')): ?>
 <div class="site-container">
     <section class="career-toolkit-section">
         <div class="site-container">
@@ -396,8 +407,10 @@ include __DIR__ . '/includes/header.php';
         </div>
     </section>
 </div>
+<?php endif; ?>
 
 <!-- ================= Section 5: Latest Articles & Guides ================= -->
+<?php if (is_section_visible('latest_articles') && !empty($latestArticles)): ?>
 <section class="page-section">
     <div class="site-container">
         <div class="section-header-row">
@@ -464,5 +477,6 @@ include __DIR__ . '/includes/header.php';
         </div>
     </div>
 </section>
+<?php endif; ?>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

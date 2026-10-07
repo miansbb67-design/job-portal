@@ -88,8 +88,9 @@ $headerCategories = get_all_categories();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- Main Stylesheet -->
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
+
+    <script>window.BASE_URL = '<?= BASE_URL ?>';</script>
 
     <?php if (isset($extraHead)) echo $extraHead; ?>
 </head>
@@ -98,6 +99,7 @@ $headerCategories = get_all_categories();
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
 
     <!-- Main Header & Navigation -->
+    <?php if (is_section_visible('header')): ?>
     <header class="site-header" id="site-header">
         <div class="header-inner">
             <!-- Brand Logo -->
@@ -182,6 +184,7 @@ $headerCategories = get_all_categories();
             </div>
         </nav>
     </header>
+    <?php endif; ?>
 
     <!-- Global Flash Notification Container -->
     <div class="site-container">

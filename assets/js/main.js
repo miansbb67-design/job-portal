@@ -105,4 +105,240 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => alert.remove(), 400);
         }, 6000);
     });
+
+    // 5. Interactive Article Reactions (Like / Dislike)
+    const reactionButtons = document.querySelectorAll('.btn-reaction');
+    const reactionFeedback = document.getElementById('reactionFeedback');
+
+    reactionButtons.forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const articleId = btn.getAttribute('data-article-id');
+            const reactionType = btn.getAttribute('data-type');
+            const csrfTokenInput = document.querySelector('input[name="csrf_token"]');
+            const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
+
+            if (!articleId || !reactionType) return;
+
+            // Immediate UI responsiveness
+            btn.style.transform = 'scale(0.92)';
+            setTimeout(() => btn.style.transform = '', 150);
+
+            try {
+                let apiBase = window.BASE_URL || '';
+                try {
+                    if (apiBase.startsWith('http')) {
+                        const u = new URL(apiBase);
+                        apiBase = u.pathname.replace(/\/+$/, '');
+                    }
+                } catch (e) {}
+                apiBase = apiBase.replace(/\/+$/, '');
+
+                const response = await fetch(`${apiBase}/api/react.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        article_id: parseInt(articleId, 10),
+                        type: reactionType,
+                        csrf_token: csrfToken
+                    })
+                });
+
+                const data = await response.json();
+                if (data && data.success) {
+                    // Update counters
+                    const likeCounter = document.getElementById('likeCounter');
+                    const dislikeCounter = document.getElementById('dislikeCounter');
+                    const topLikesCount = document.getElementById('topLikesCount');
+
+                    if (likeCounter) likeCounter.textContent = data.likes;
+                    if (dislikeCounter) dislikeCounter.textContent = data.dislikes;
+                    if (topLikesCount) topLikesCount.textContent = data.likes;
+
+                    // Update active button state
+                    const btnLike = document.getElementById('btnLike');
+                    const btnDislike = document.getElementById('btnDislike');
+
+                    if (btnLike && btnDislike) {
+                        btnLike.classList.remove('is-active');
+                        btnDislike.classList.remove('is-active');
+
+                        if (data.user_reaction === 'like') {
+                            btnLike.classList.add('is-active');
+                        } else if (data.user_reaction === 'dislike') {
+                            btnDislike.classList.add('is-active');
+                        }
+                    }
+
+                    // Show temporary feedback toast
+                    if (reactionFeedback) {
+                        reactionFeedback.textContent = data.message || 'Updated';
+                        reactionFeedback.style.display = 'inline-block';
+                        reactionFeedback.style.opacity = '1';
+                        setTimeout(() => {
+                            reactionFeedback.style.opacity = '0';
+                            setTimeout(() => reactionFeedback.style.display = 'none', 300);
+                        }, 2500);
+                    }
+                } else if (data && data.message) {
+                    alert(data.message);
+                }
+            } catch (err) {
+                console.error('Reaction error:', err);
+            }
+        });
+    });
+
+    // 6. Interactive Article Comment Submission via AJAX
+    const commentForm = document.getElementById('articleCommentForm');
+    if (commentForm) {
+        commentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('btnSubmitComment');
+            const alertBox = document.getElementById('commentFormAlert');
+            const nameInput = document.getElementById('comment_user_name');
+            const emailInput = document.getElementById('comment_user_email');
+            const textInput = document.getElementById('comment_text');
+            const commentsList = document.getElementById('commentsList');
+            const emptyState = document.getElementById('commentsEmptyState');
+            const sectionBadge = document.getElementById('sectionCommentsBadge');
+            const topCommentsCount = document.getElementById('topCommentsCount');
+
+            const name = nameInput ? nameInput.value.trim() : '';
+            const email = emailInput ? emailInput.value.trim() : '';
+            const commentText = textInput ? textInput.value.trim() : '';
+            const csrfTokenInput = commentForm.querySelector('input[name="csrf_token"]');
+            const articleIdInput = commentForm.querySelector('input[name="article_id"]');
+            const honeypotInput = commentForm.querySelector('input[name="comments_bot_trap"]') || commentForm.querySelector('input[name="website_url"]');
+
+            if (!name || !commentText) {
+                if (alertBox) {
+                    alertBox.innerHTML = '<div style="background:#fff1f2; color:#be123c; border:1px solid #fecdd3; padding:0.85rem 1.25rem; border-radius:8px; font-size:0.875rem; font-weight:600;">Please fill out your name and comment.</div>';
+                    alertBox.style.display = 'block';
+                }
+                return;
+            }
+
+            // Disable button & show spinner
+            const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg>
+                    <span>Posting Comment...</span>
+                `;
+            }
+
+            try {
+                let apiBase = window.BASE_URL || '';
+                try {
+                    if (apiBase.startsWith('http')) {
+                        const u = new URL(apiBase);
+                        apiBase = u.pathname.replace(/\/+$/, '');
+                    }
+                } catch (e) {}
+                apiBase = apiBase.replace(/\/+$/, '');
+
+                const response = await fetch(`${apiBase}/api/comment.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        article_id: parseInt(articleIdInput ? articleIdInput.value : 0, 10),
+                        user_name: name,
+                        user_email: email,
+                        comment_text: commentText,
+                        csrf_token: csrfTokenInput ? csrfTokenInput.value : '',
+                        comments_bot_trap: honeypotInput ? honeypotInput.value : ''
+                    })
+                });
+
+                const data = await response.json();
+
+                // If new CSRF token returned, update form token
+                if (data && data.new_csrf_token && csrfTokenInput) {
+                    csrfTokenInput.value = data.new_csrf_token;
+                }
+
+                if (response.ok && data && data.success) {
+                    // Show success alert
+                    if (alertBox) {
+                        alertBox.innerHTML = '<div style="background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; padding:0.85rem 1.25rem; border-radius:8px; font-size:0.875rem; font-weight:600;">' + (data.message || 'Comment posted successfully!') + '</div>';
+                        alertBox.style.display = 'block';
+                    }
+
+                    // Remove empty state if present
+                    if (emptyState) emptyState.remove();
+
+                    // Compute Initials
+                    const nameParts = name.split(/\s+/);
+                    let initials = (nameParts[0] ? nameParts[0][0] : '') + (nameParts[1] ? nameParts[1][0] : '');
+                    if (!initials) initials = 'U';
+                    initials = initials.toUpperCase();
+
+                    // Escape function
+                    const escapeHtml = (str) => {
+                        const div = document.createElement('div');
+                        div.textContent = str;
+                        return div.innerHTML;
+                    };
+
+                    // Prepend new comment
+                    if (commentsList) {
+                        const newCommentEl = document.createElement('div');
+                        newCommentEl.className = 'comment-single-item';
+                        newCommentEl.style.animation = 'fadeIn 0.4s ease';
+                        newCommentEl.innerHTML = `
+                            <div class="comment-avatar-bubble">${escapeHtml(initials)}</div>
+                            <div class="comment-item-body">
+                                <div class="comment-item-header">
+                                    <span class="comment-item-author">${escapeHtml(name)}</span>
+                                    <span class="comment-item-badge">Verified Reader</span>
+                                    <span class="comment-item-time">Just now</span>
+                                </div>
+                                <div class="comment-item-content">${escapeHtml(commentText).replace(/\n/g, '<br>')}</div>
+                            </div>
+                        `;
+                        commentsList.prepend(newCommentEl);
+                        newCommentEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+
+                    // Increment badge counts
+                    if (sectionBadge) {
+                        const cur = parseInt(sectionBadge.textContent || '0', 10);
+                        sectionBadge.textContent = cur + 1;
+                    }
+                    if (topCommentsCount) {
+                        const cur = parseInt(topCommentsCount.textContent || '0', 10);
+                        topCommentsCount.textContent = cur + 1;
+                    }
+
+                    // Reset comment text
+                    if (textInput) textInput.value = '';
+                } else {
+                    if (alertBox) {
+                        alertBox.innerHTML = '<div style="background:#fff1f2; color:#be123c; border:1px solid #fecdd3; padding:0.85rem 1.25rem; border-radius:8px; font-size:0.875rem; font-weight:600;">' + (data.message || 'Failed to post comment.') + '</div>';
+                        alertBox.style.display = 'block';
+                    }
+                }
+            } catch (err) {
+                console.error('Comment submission error:', err);
+                if (alertBox) {
+                    alertBox.innerHTML = '<div style="background:#fff1f2; color:#be123c; border:1px solid #fecdd3; padding:0.85rem 1.25rem; border-radius:8px; font-size:0.875rem; font-weight:600;">An unexpected network error occurred. Please try again.</div>';
+                    alertBox.style.display = 'block';
+                }
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                }
+            }
+        });
+    }
 });

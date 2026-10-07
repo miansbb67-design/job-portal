@@ -1,11 +1,11 @@
-# CareerPulse - Jobs & Career Articles Blog Website
+# CareerNexaa - Jobs & Career Articles Blog Website
 ## Mukammal Project Architecture aur Technical Documentation (Roman Urdu)
 
 ---
 
 ## 1. Executive Project Summary (Project Ka Kholasa)
 
-**CareerPulse** ek enterprise-grade, responsive, aur Google AdSense / SEO policy compliant **Jobs, Employment aur Career Articles Blog Platform** hai jisko **HTML5, Vanilla CSS3, Vanilla JavaScript (ES6+), PHP 8.x, aur MySQL (MariaDB)** ke sath develop kiya gaya hai. 
+**CareerNexaa** ek enterprise-grade, responsive, aur Google AdSense / SEO policy compliant **Jobs, Employment aur Career Articles Blog Platform** hai jisko **HTML5, Vanilla CSS3, Vanilla JavaScript (ES6+), PHP 8.x, aur MySQL (MariaDB)** ke sath develop kiya gaya hai. 
 
 Is application ko banate waqt modern web standards ka sakhti se khayal rakha gaya hai aur kisi bhi heavy external framework (jaise Tailwind CSS, Bootstrap, React, ya jQuery) ka sahara nahi liya gaya. Is ka faida ye hai ke website super fast load hoti hai, code saaf aur asan rehta hai, aur security bohot mazboot rehti hai.
 
@@ -510,11 +510,11 @@ Website ko live server (cPanel, DirectAdmin, VPS, Cloud Hosting, ya Shared Hosti
 
 ### Step 2: Live Server Par Database Create Aur Import Karna
 1. Apne hosting **cPanel** me login karein.
-2. **"MySQL Databases"** ya **"MySQL Database Wizard"** me ja kar ek new database banayein (e.g. `yourname_careerpulse`).
+2. **"MySQL Databases"** ya **"MySQL Database Wizard"** me ja kar ek new database banayein (e.g. `yourname_careernexaa`).
 3. Ek new database user aur strong password banayein, aur user ko is database ke **"ALL PRIVILEGES"** assign karein.
 4. cPanel me **"phpMyAdmin"** open karein aur jo database abhi banaya hai us par click karein.
 5. Top menu me **"Import"** button par click karein aur `database.sql` file choose karein.
-6. Bottom me **"Go"** ya **"Import"** par click kar dein. Tamam tables (`admins`, `roles`, `permissions`, `categories`, `articles`, `activity_logs`, `settings`) sahi tarah import ho jayenge.
+6. Bottom me **"Go"** ya **"Import"** par click kar dein. Tamam tables (`admins`, `roles`, `permissions`, `categories`, `articles`, `comments`, `article_reactions`, `activity_logs`, `settings`) sahi tarah import ho jayenge.
 
 ### Step 3: Website Files Upload Karna
 1. Apne project ke tamam files aur folders ka ek ZIP archive banayein (e.g. `job-portal.zip`).
@@ -528,7 +528,7 @@ Website ko live server (cPanel, DirectAdmin, VPS, Cloud Hosting, ya Shared Hosti
    APP_ENV=production
    APP_URL=https://yourdomain.com
    DB_HOST=localhost
-   DB_NAME=yourname_careerpulse
+   DB_NAME=yourname_careernexaa
    DB_USER=yourname_dbuser
    DB_PASS=YourStrongPassword!@#
    DB_CHARSET=utf8mb4

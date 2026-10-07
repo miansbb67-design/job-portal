@@ -18,6 +18,11 @@ if (!is_super_admin() && !has_permission('posts.view') && !has_permission('jobs.
 $db = getDBConnection();
 $filterVideo = isset($_GET['video']) ? (int)$_GET['video'] : 0;
 
+if (isset($_GET['tab']) && $_GET['tab'] === 'comments') {
+    header('Location: ' . ADMIN_URL . '/comments.php');
+    exit;
+}
+
 // Action Handlers (Move to Trash, Restore, Toggle Status, Delete)
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     $token = $_POST['csrf_token'] ?? '';

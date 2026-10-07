@@ -37,6 +37,8 @@ $totalJobs = (int)$db->query("SELECT COUNT(*) FROM articles WHERE is_job_posting
 $totalBlogPosts = (int)$db->query("SELECT COUNT(*) FROM articles WHERE is_job_posting = 0 OR is_job_posting IS NULL")->fetchColumn();
 $totalCategories = (int)$db->query("SELECT COUNT(*) FROM categories")->fetchColumn();
 $totalViews = (int)$db->query("SELECT COALESCE(SUM(views), 0) FROM articles")->fetchColumn();
+$totalComments = (int)$db->query("SELECT COUNT(*) FROM comments")->fetchColumn();
+$pendingComments = (int)$db->query("SELECT COUNT(*) FROM comments WHERE status = 'pending'")->fetchColumn();
 
 // Super Admin Exclusive Metrics & Feeds
 $totalAdmins = 0;
@@ -181,6 +183,11 @@ $recentArticles = $recentStmt->fetchAll();
             <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.04em;">Categories</div>
             <div style="font-size:1.6rem; font-weight:800; color:#0f172a; margin-top:0.2rem;"><?= $totalCategories ?></div>
             <div style="font-size:0.75rem; color:#64748b; margin-top:0.25rem;"><a href="<?= ADMIN_URL ?>/categories.php" style="color:#0284c7; text-decoration:none; font-weight:600;">Manage categories &rarr;</a></div>
+        </div>
+        <div style="background:#ffffff; border:1px solid var(--admin-border); border-radius:10px; padding:1.1rem; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+            <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.04em;">Reader Comments</div>
+            <div style="font-size:1.6rem; font-weight:800; color:#0f172a; margin-top:0.2rem;"><?= $totalComments ?></div>
+            <div style="font-size:0.75rem; color:#64748b; margin-top:0.25rem;"><a href="<?= ADMIN_URL ?>/comments.php" style="color:#0284c7; text-decoration:none; font-weight:600;">Moderate comments <?= $pendingComments > 0 ? "<span style='color:#f59e0b; font-weight:700;'>({$pendingComments} pending)</span>" : '' ?> &rarr;</a></div>
         </div>
     </div>
 
