@@ -57,7 +57,7 @@ include __DIR__ . '/includes/header.php';
             <ul>
                 <li><code>PHPSESSID</code>: Manages encrypted session states and security handshakes between your browser and our web server. (Duration: Session)</li>
                 <li><code>csrf_token</code>: Validates that form submissions originate from authentic users rather than malicious scripts. (Duration: Session)</li>
-                <li><code>careerpulse_cookie_consent</code>: Stores your accepted cookie preferences so the notification banner does not repeat on every page load. (Duration: 1 Year)</li>
+                <li><code>careernexaa_cookie_consent</code>: Stores your accepted cookie preferences so the notification banner does not repeat on every page load. (Duration: 1 Year)</li>
             </ul>
 
             <h3>B. Performance & Analytics Cookies</h3>

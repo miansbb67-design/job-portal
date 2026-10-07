@@ -1,7 +1,7 @@
 <?php
 /**
  * Public Website - Editorial & Job Opportunities Disclaimer
- * Establishes that CareerPulse is an educational informational portal, not a recruitment agency.
+ * Establishes that CareerNexaa is an educational informational portal, not a recruitment agency.
  */
 
 require_once __DIR__ . '/config/config.php';
@@ -9,7 +9,7 @@ require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/functions.php';
 
 $pageTitle = "Disclaimer | " . SITE_NAME;
-$metaDescription = "Important disclaimer regarding job opportunities, career guidance, and third-party recruitment links on CareerPulse.";
+$metaDescription = "Important disclaimer regarding job opportunities, career guidance, and third-party recruitment links on CareerNexaa.";
 
 include __DIR__ . '/includes/header.php';
 ?>

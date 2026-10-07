@@ -2,6 +2,7 @@
 /**
  * Public Website - Search Results Page
  * Full-text keyword search across titles, content, excerpts, and companies.
+ * Hardened against SQL wildcard injection, XSS, and high-frequency scraping.
  */
 
 require_once __DIR__ . '/config/config.php';
@@ -9,37 +10,72 @@ require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/ads-placeholder.php';
 
-$query = isset($_GET['q']) ? trim($_GET['q']) : '';
-$db = getDBConnection();
+// 1. Sanitize & clamp query input (Max 100 characters, strip control characters)
+$rawQuery = isset($_GET['q']) ? (string)$_GET['q'] : '';
+$cleanQuery = preg_replace('/[\x00-\x1F\x7F]/u', '', $rawQuery);
+$securityNotice = '';
 
-$articles = [];
-$totalResults = 0;
-
-if (!empty($query)) {
-    $searchPattern = '%' . $query . '%';
-    $sql = "
-        SELECT a.*, c.name as category_name, c.slug as category_slug, adm.username as author_name
-        FROM articles a
-        JOIN categories c ON a.category_id = c.id
-        JOIN admins adm ON a.author_id = adm.id
-        WHERE a.status = 'published' AND (
-            a.title LIKE ? OR 
-            a.excerpt LIKE ? OR 
-            a.content LIKE ? OR 
-            a.job_company LIKE ? OR
-            c.name LIKE ?
-        )
-        ORDER BY a.published_at DESC
-        LIMIT 30
-    ";
-    $stmt = $db->prepare($sql);
-    $stmt->execute([$searchPattern, $searchPattern, $searchPattern, $searchPattern, $searchPattern]);
-    $articles = $stmt->fetchAll();
-    $totalResults = count($articles);
+// Exploit & Script Injection Neutralizer
+if (preg_match('/(<script|javascript:|data:text\/html|onload=|onerror=|<iframe|<embed|union\s+select)/i', $rawQuery)) {
+    $cleanQuery = strip_tags($cleanQuery);
+    $cleanQuery = preg_replace('/[<>"\'%;()&+]/', ' ', $cleanQuery);
+    $securityNotice = "Security notice: Prohibited script tags were neutralized from your query.";
 }
 
-$pageTitle = !empty($query) ? "Search: " . h($query) : "Search Articles & Job Guides";
-$metaDescription = "Search verified job openings, resume tips, and career exam frameworks on CareerPulse.";
+$query = trim(mb_substr($cleanQuery, 0, 100));
+
+$db = getDBConnection();
+$articles = [];
+$totalResults = 0;
+$searchError = '';
+
+// 2. Anti-scraping rate limiter (Max 40 searches per 60 seconds per session)
+if (!isset($_SESSION['search_requests'])) {
+    $_SESSION['search_requests'] = [];
+}
+$now = time();
+$_SESSION['search_requests'] = array_filter($_SESSION['search_requests'], function($ts) use ($now) {
+    return ($now - $ts) < 60;
+});
+
+if (!empty($query)) {
+    if (count($_SESSION['search_requests']) >= 40) {
+        $searchError = "Search rate limit reached. Please wait a moment before searching again.";
+    } elseif (mb_strlen($query) < 2) {
+        $searchError = "Please enter at least 2 characters to search.";
+    } else {
+        $_SESSION['search_requests'][] = $now;
+
+        // Escape SQL LIKE wildcards (%, _, \) to prevent wildcard bombing / DoS
+        $escapedQuery = addcslashes($query, '%_\\');
+        $searchPattern = '%' . $escapedQuery . '%';
+
+        $sql = "
+            SELECT a.*, c.name as category_name, c.slug as category_slug, adm.username as author_name
+            FROM articles a
+            JOIN categories c ON a.category_id = c.id
+            JOIN admins adm ON a.author_id = adm.id
+            WHERE a.status = 'published' AND (
+                a.title LIKE ? OR 
+                a.excerpt LIKE ? OR 
+                a.content LIKE ? OR 
+                a.job_company LIKE ? OR
+                c.name LIKE ?
+            )
+            ORDER BY a.published_at DESC
+            LIMIT 30
+        ";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$searchPattern, $searchPattern, $searchPattern, $searchPattern, $searchPattern]);
+        $articles = $stmt->fetchAll();
+        $totalResults = count($articles);
+    }
+}
+
+// SEO Meta Variables
+$siteBrand = get_site_name();
+$pageTitle = !empty($query) ? "Search: " . $query : "Search Articles & Job Guides";
+$metaDescription = "Search verified job openings, career exam frameworks, and interview guides on " . $siteBrand . ".";
 
 include __DIR__ . '/includes/header.php';
 ?>
@@ -55,17 +91,40 @@ include __DIR__ . '/includes/header.php';
 
 <section class="page-section">
     <div class="site-container">
-        <!-- Search Bar with Value -->
+        <!-- Search Bar with Hardened Input -->
         <div style="max-width: 680px; margin: 0 auto 3rem;">
-            <form action="<?= BASE_URL ?>/search.php" method="GET" style="display:flex; gap:0.5rem;">
-                <input type="text" name="q" value="<?= h($query) ?>" class="form-control" placeholder="Search by job title, company, skill, or exam..." required style="padding:0.85rem 1.25rem;">
+            <form action="<?= BASE_URL ?>/search.php" method="GET" style="display:flex; gap:0.5rem;" role="search">
+                <input 
+                    type="search" 
+                    name="q" 
+                    value="<?= h($query) ?>" 
+                    class="form-control" 
+                    placeholder="Search by job title, company, skill, or exam..." 
+                    maxlength="100" 
+                    autocomplete="off"
+                    oninput="this.value = this.value.replace(/[<>]/g, '')"
+                    required 
+                    style="padding:0.85rem 1.25rem;"
+                >
                 <button type="submit" class="btn btn-primary" style="padding:0.85rem 1.5rem; flex-shrink:0;">
                     Search
                 </button>
             </form>
         </div>
 
-        <?php if (!empty($query)): ?>
+        <?php if (!empty($securityNotice)): ?>
+            <div class="alert alert-info" style="max-width:680px; margin:0 auto 1.5rem; text-align:center;">
+                <?= h($securityNotice) ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($searchError)): ?>
+            <div class="alert alert-warning" style="max-width:680px; margin:0 auto 2rem; text-align:center;">
+                <?= h($searchError) ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($query) && empty($searchError)): ?>
             <div class="section-header">
                 <div class="section-title-wrap">
                     <h2>Found <?= $totalResults ?> <?= $totalResults === 1 ? 'Article' : 'Articles' ?></h2>
@@ -133,7 +192,7 @@ include __DIR__ . '/includes/header.php';
                 </div>
             <?php endif; ?>
 
-        <?php else: ?>
+        <?php elseif (empty($searchError)): ?>
             <div style="text-align:center; padding:2rem 0;">
                 <p style="color:var(--text-muted); font-size:1.1rem;">Please enter a search term above to explore guides and articles.</p>
             </div>

@@ -1,7 +1,7 @@
 <?php
 /**
  * Super Admin & Role / Permission Authorization System
- * CareerPulse Jobs & Career Platform
+ * CareerNexaa Jobs & Career Platform
  */
 
 require_once __DIR__ . '/../config/database.php';

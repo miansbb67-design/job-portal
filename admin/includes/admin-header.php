@@ -15,7 +15,10 @@ if (!headers_sent()) {
 }
 
 $currentAdminScript = basename($_SERVER['PHP_SELF']);
-$adminTitle = isset($adminPageTitle) ? h($adminPageTitle) . ' | Admin - ' . SITE_NAME : 'Admin Dashboard | ' . SITE_NAME;
+$adminSiteName = get_site_name();
+$adminSiteLogoUrl = get_site_logo_url();
+$adminSiteFaviconUrl = get_site_favicon_url();
+$adminTitle = isset($adminPageTitle) ? h($adminPageTitle) . ' | Admin - ' . $adminSiteName : 'Admin Dashboard | ' . $adminSiteName;
 
 // User details & initials
 $isSuperAdmin = is_super_admin();
@@ -77,8 +80,11 @@ try {
     $notificationsList = [];
 }
 
-// Is Content menu active?
+// Is Content, Analytics, and SEO menus active?
 $isContentActive = in_array($currentAdminScript, ['articles.php', 'add-article.php', 'edit-article.php', 'categories.php']) || in_array($currentAdminDir, ['posts', 'jobs', 'media', 'categories']);
+$isAnalyticsActive = ($currentAdminScript === 'analytics.php' || $currentAdminDir === 'analytics');
+$isSeoActive = ($currentAdminScript === 'seo.php' || $currentAdminDir === 'seo');
+$currentAdminTab = $_GET['tab'] ?? 'overview';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -87,6 +93,11 @@ $isContentActive = in_array($currentAdminScript, ['articles.php', 'add-article.p
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $adminTitle ?></title>
     <meta name="robots" content="noindex, nofollow">
+
+    <!-- Admin Favicon -->
+    <link rel="icon" type="image/svg+xml" href="<?= BASE_URL ?>/favicon.svg">
+    <link rel="alternate icon" type="image/x-icon" href="<?= BASE_URL ?>/favicon.ico">
+    <link rel="apple-touch-icon" href="<?= BASE_URL ?>/favicon.svg">
 
     <!-- Modern Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -98,6 +109,9 @@ $isContentActive = in_array($currentAdminScript, ['articles.php', 'add-article.p
 
     <!-- Dropify File Uploader Stylesheet -->
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/vendor/dropify/dropify.min.css">
+
+    <!-- Summernote WYSIWYG Editor Stylesheet -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/vendor/summernote/summernote-lite.min.css">
     <script>window.ADMIN_URL = '<?= ADMIN_URL ?>';</script>
 </head>
 <body class="admin-body">
@@ -109,16 +123,20 @@ $isContentActive = in_array($currentAdminScript, ['articles.php', 'add-article.p
     <aside class="admin-sidebar" id="adminSidebar">
         <!-- Sidebar Brand / Logo Header -->
         <div class="admin-sidebar-brand">
-            <a href="<?= ADMIN_URL ?>/index.php" class="admin-brand-link">
-                <div class="admin-brand-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                    </svg>
-                </div>
-                <div class="admin-brand-text">
-                    <span class="admin-brand-title"><?= SITE_NAME ?></span>
-                </div>
+            <a href="<?= ADMIN_URL ?>/index.php" class="admin-brand-link" style="display:flex; align-items:center; gap:0.75rem; text-decoration:none; overflow:hidden;">
+                <?php if (!empty($adminSiteLogoUrl)): ?>
+                    <img src="<?= h($adminSiteLogoUrl) ?>" alt="<?= h($adminSiteName) ?>" style="max-height:36px; max-width:140px; object-fit:contain; display:block;">
+                <?php else: ?>
+                    <div class="admin-brand-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>
+                    </div>
+                    <div class="admin-brand-text">
+                        <span class="admin-brand-title"><?= h($adminSiteName) ?></span>
+                    </div>
+                <?php endif; ?>
             </a>
             <!-- Mobile Close Button -->
             <button type="button" class="admin-sidebar-close" onclick="toggleSidebarDrawer()" aria-label="Close sidebar">
@@ -185,22 +203,96 @@ $isContentActive = in_array($currentAdminScript, ['articles.php', 'add-article.p
                     </ul>
                 </li>
 
-                <!-- 3. Analytics -->
-                <li>
-                    <a href="<?= ADMIN_URL ?>/index.php#analytics" class="admin-nav-item">
+                <!-- 3. Analytics (Accordion matching Screenshot 2) -->
+                <li class="admin-nav-group <?= $isAnalyticsActive ? 'open' : '' ?>" id="groupAnalytics">
+                    <button type="button" class="admin-nav-item group-toggle" onclick="toggleNavGroup(this)">
                         <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
                         <span class="nav-label">Analytics</span>
-                        <svg class="chevron-icon right" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                    </a>
+                        <svg class="chevron-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <ul class="admin-submenu">
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/analytics.php?tab=overview" class="admin-submenu-item <?= ($isAnalyticsActive && ($currentAdminTab === 'overview' || empty($currentAdminTab))) ? 'active' : '' ?>">
+                                Overview
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/analytics.php?tab=realtime" class="admin-submenu-item <?= ($isAnalyticsActive && $currentAdminTab === 'realtime') ? 'active' : '' ?>">
+                                Real-Time
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/analytics.php?tab=traffic" class="admin-submenu-item <?= ($isAnalyticsActive && $currentAdminTab === 'traffic') ? 'active' : '' ?>">
+                                Traffic
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/analytics.php?tab=content" class="admin-submenu-item <?= ($isAnalyticsActive && $currentAdminTab === 'content') ? 'active' : '' ?>">
+                                Content
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/analytics.php?tab=videos" class="admin-submenu-item <?= ($isAnalyticsActive && $currentAdminTab === 'videos') ? 'active' : '' ?>">
+                                Video Analytics
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/analytics.php?tab=audience" class="admin-submenu-item <?= ($isAnalyticsActive && $currentAdminTab === 'audience') ? 'active' : '' ?>">
+                                Audience
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/analytics.php?tab=sources" class="admin-submenu-item <?= ($isAnalyticsActive && $currentAdminTab === 'sources') ? 'active' : '' ?>">
+                                Sources
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/analytics.php?tab=search" class="admin-submenu-item <?= ($isAnalyticsActive && $currentAdminTab === 'search') ? 'active' : '' ?>">
+                                Site Search
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/analytics.php?tab=reports" class="admin-submenu-item <?= ($isAnalyticsActive && $currentAdminTab === 'reports') ? 'active' : '' ?>">
+                                Reports &amp; Export
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
-                <!-- 4. SEO -->
-                <li>
-                    <a href="<?= ADMIN_URL ?>/index.php#seo" class="admin-nav-item">
+                <!-- 4. SEO (Accordion matching Screenshot 1) -->
+                <li class="admin-nav-group <?= $isSeoActive ? 'open' : '' ?>" id="groupSeo">
+                    <button type="button" class="admin-nav-item group-toggle" onclick="toggleNavGroup(this)">
                         <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                         <span class="nav-label">SEO</span>
-                        <svg class="chevron-icon right" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                    </a>
+                        <svg class="chevron-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <ul class="admin-submenu">
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/seo.php?tab=overview" class="admin-submenu-item <?= ($isSeoActive && ($currentAdminTab === 'overview' || empty($currentAdminTab))) ? 'active' : '' ?>">
+                                SEO Overview
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/seo.php?tab=search-console" class="admin-submenu-item <?= ($isSeoActive && $currentAdminTab === 'search-console') ? 'active' : '' ?>">
+                                Search Console
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/seo.php?tab=sitemap" class="admin-submenu-item <?= ($isSeoActive && $currentAdminTab === 'sitemap') ? 'active' : '' ?>">
+                                Sitemap
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/seo.php?tab=redirects" class="admin-submenu-item <?= ($isSeoActive && $currentAdminTab === 'redirects') ? 'active' : '' ?>">
+                                Redirects
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/seo.php?tab=broken-links" class="admin-submenu-item <?= ($isSeoActive && $currentAdminTab === 'broken-links') ? 'active' : '' ?>">
+                                Broken Links
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
                 <!-- 5. Pages -->

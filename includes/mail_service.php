@@ -9,7 +9,7 @@
  * Supports both Composer Autoloader and Manual Include setups.
  *
  * @author Expert PHP Backend Developer
- * @package CareerPulse
+ * @package CareerNexaa
  */
 
 // Step 1: Load PHPMailer (Composer Autoloader or Manual Include)
@@ -94,8 +94,8 @@ function send_smtp_email(array $options): array {
     $smtpPass = getenv('SMTP_PASS') ?: '';
     
     // Resolve From Name and Email
-    $defaultFromEmail = getenv('SMTP_FROM_EMAIL') ?: ($smtpUser ?: 'no-reply@careerpulse.com');
-    $defaultFromName  = getenv('SMTP_FROM_NAME') ?: (defined('SITE_NAME') ? SITE_NAME : 'CareerPulse');
+    $defaultFromEmail = getenv('SMTP_FROM_EMAIL') ?: ($smtpUser ?: 'no-reply@careernexaa.com');
+    $defaultFromName  = getenv('SMTP_FROM_NAME') ?: (defined('SITE_NAME') ? SITE_NAME : 'CareerNexaa');
 
     $fromEmail = !empty($options['from_email']) && filter_var($options['from_email'], FILTER_VALIDATE_EMAIL)
         ? $options['from_email']
@@ -107,7 +107,7 @@ function send_smtp_email(array $options): array {
 
     // ANTI-SPAM RULE 1: SPF & DMARC Alignment for Gmail SMTP
     // When sending via smtp.gmail.com, Google enforces envelope From to match authenticated Gmail account.
-    // If From is mismatched (e.g. sending as @careerpulse.com from @gmail.com SMTP), receivers mark it as spoofing/spam.
+    // If From is mismatched (e.g. sending as @careernexaa.com from @gmail.com SMTP), receivers mark it as spoofing/spam.
     $originalFromEmail = $fromEmail;
     if (strpos(strtolower($smtpHost), 'gmail.com') !== false && !empty($smtpUser) && filter_var($smtpUser, FILTER_VALIDATE_EMAIL)) {
         $fromEmail = $smtpUser;

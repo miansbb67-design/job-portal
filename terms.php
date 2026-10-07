@@ -9,7 +9,7 @@ require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/functions.php';
 
 $pageTitle = "Terms and Conditions";
-$metaDescription = "Terms and Conditions for accessing and using the CareerPulse website and career guidance resources.";
+$metaDescription = "Terms and Conditions for accessing and using the CareerNexaa website and career guidance resources.";
 $metaKeywords = "terms and conditions, user agreement, terms of service, cookie conditions, acceptable use, " . SITE_NAME;
 
 include __DIR__ . '/includes/header.php';

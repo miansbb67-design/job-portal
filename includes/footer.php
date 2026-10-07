@@ -1,23 +1,33 @@
     </main>
     <!-- Main Content Area Ends -->
 
+<?php
+$footerSiteName = get_site_name();
+$footerLogoUrl  = get_site_logo_url();
+$footerAboutText = get_setting('site_footer_text', $footerSiteName . ' is your trusted portal for verified job vacancies, competitive exam guides, and career growth strategies.');
+$footerCopyrightText = get_setting('site_copyright', '© ' . date('Y') . ' ' . $footerSiteName . '. All rights reserved.');
+?>
     <!-- Site Footer -->
     <footer class="site-footer">
         <div class="site-container">
             <div class="footer-top-grid">
                 <!-- Col 1: Brand & Mission -->
                 <div class="footer-col brand-col">
-                    <a href="<?= BASE_URL ?>/" class="site-brand footer-logo">
-                        <div class="brand-icon">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                            </svg>
-                        </div>
-                        <span class="brand-name"><?= SITE_NAME ?></span>
+                    <a href="<?= BASE_URL ?>/" class="site-brand footer-logo" style="display:inline-flex; align-items:center; text-decoration:none;">
+                        <?php if (!empty($footerLogoUrl)): ?>
+                            <img src="<?= h($footerLogoUrl) ?>" alt="<?= h($footerSiteName) ?>" style="max-height:38px; width:auto; object-fit:contain; display:block;">
+                        <?php else: ?>
+                            <div class="brand-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                </svg>
+                            </div>
+                            <span class="brand-name"><?= format_brand_name($footerSiteName) ?></span>
+                        <?php endif; ?>
                     </a>
                     <p class="footer-text">
-                        <?= SITE_NAME ?> is your trusted portal for verified job vacancies, competitive exam guides, and career growth strategies.
+                        <?= h($footerAboutText) ?>
                     </p>
                     <div class="footer-badges">
                         <span class="trust-badge">&#10003; 100% Free Career Resource</span>
@@ -74,7 +84,7 @@
 
             <div class="footer-bottom">
                 <p class="copyright-text">
-                    &copy; <?= date('Y') ?> <?= SITE_NAME ?>. All rights reserved. Designed for professional career growth.
+                    <?= h($footerCopyrightText) ?>
                 </p>
                 <div class="footer-legal-inline">
                     <a href="<?= BASE_URL ?>/privacy-policy.php">Privacy</a> &bull; 

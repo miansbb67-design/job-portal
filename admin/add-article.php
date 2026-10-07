@@ -300,66 +300,20 @@ require_once __DIR__ . '/includes/admin-header.php';
                     </p>
                 </div>
 
-                <!-- Rich Text Toolbar -->
-                <div class="rich-editor-toolbar" id="editorToolbar">
-                    <!-- Heading Selector -->
-                    <select class="toolbar-select" id="toolFormatSelect" onchange="applyBlockFormat(this.value)">
-                        <option value="p">Normal</option>
-                        <option value="h2">Heading 2</option>
-                        <option value="h3">Heading 3</option>
-                        <option value="h4">Heading 4</option>
-                    </select>
-
-                    <span class="toolbar-sep"></span>
-
-                    <!-- Formatting buttons (Screenshot 1 matching icons) -->
-                    <button type="button" class="tool-btn" data-action="bold" title="Bold (Ctrl+B)"><b>B</b></button>
-                    <button type="button" class="tool-btn" data-action="italic" title="Italic (Ctrl+I)"><i>I</i></button>
-                    <button type="button" class="tool-btn" data-action="underline" title="Underline (Ctrl+U)"><u>U</u></button>
-                    <button type="button" class="tool-btn" data-action="strike" title="Strikethrough"><s>S</s></button>
-
-                    <span class="toolbar-sep"></span>
-
-                    <button type="button" class="tool-btn" data-action="quote" title="Quote block">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path></svg>
-                    </button>
-                    <button type="button" class="tool-btn" data-action="code" title="Code snippet">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-                    </button>
-
-                    <span class="toolbar-sep"></span>
-
-                    <button type="button" class="tool-btn" data-action="ol" title="Ordered list">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="10" y1="6" x2="21" y2="6"></line><line x1="10" y1="12" x2="21" y2="12"></line><line x1="10" y1="18" x2="21" y2="18"></line><path d="M4 6h1v4"></path><path d="M4 10h2"></path><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>
-                    </button>
-                    <button type="button" class="tool-btn" data-action="ul" title="Unordered list">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-                    </button>
-                    <button type="button" class="tool-btn" data-action="align" title="Align text">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="17" y1="18" x2="3" y2="18"></line></svg>
-                    </button>
-
-                    <span class="toolbar-sep"></span>
-
-                    <button type="button" class="tool-btn" data-action="link" title="Insert link">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                    </button>
-                    <button type="button" class="tool-btn" data-action="image" title="Media Library (Insert Image)">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                    </button>
-                    <button type="button" class="tool-btn" data-action="video" title="Insert Video Embed">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
-                    </button>
-                    <button type="button" class="tool-btn" data-action="clean" title="Clear formatting">T<sub>x</sub></button>
-
-                    <div style="margin-left:auto; display:flex; gap:0.4rem;">
-                        <button type="button" class="tool-btn-template" id="btnJobTemplate" title="Insert pre-structured Job template">+ Job Template</button>
-                        <button type="button" class="tool-btn-template" id="btnGuideTemplate" title="Insert pre-structured Guide template">+ Guide Template</button>
+                <!-- Editor Subheader & Quick Templates -->
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+                    <div style="font-size:0.85rem; font-weight:700; color:#334155; display:flex; align-items:center; gap:0.4rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        Summernote Visual WYSIWYG Editor
+                    </div>
+                    <div style="display:flex; gap:0.4rem;">
+                        <button type="button" class="tool-btn-template" id="btnJobTemplate" title="Insert pre-structured Job Circular template">+ Job Template</button>
+                        <button type="button" class="tool-btn-template" id="btnGuideTemplate" title="Insert pre-structured Career Guide template">+ Guide Template</button>
                     </div>
                 </div>
 
-                <!-- Textarea Editor -->
-                <textarea name="content" id="articleContent" class="form-textarea-content" rows="18" placeholder="Compose high quality, original content here..."><?= h($content) ?></textarea>
+                <!-- Summernote WYSIWYG Editor Textarea -->
+                <textarea name="content" id="articleContent" class="form-textarea-content" rows="18" placeholder="Compose high quality, original content here..."><?= htmlspecialchars($content ?? '') ?></textarea>
 
                 <!-- Word counter bar -->
                 <div class="composer-word-stats">

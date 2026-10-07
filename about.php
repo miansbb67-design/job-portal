@@ -8,8 +8,8 @@ require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/functions.php';
 
-$pageTitle = "About CareerPulse | Our Mission & Editorial Standards";
-$metaDescription = "Learn about CareerPulse, an independent career and jobs guidance platform helping job seekers navigate modern hiring, interviews, and civil exams.";
+$pageTitle = "About CareerNexaa | Our Mission & Editorial Standards";
+$metaDescription = "Learn about CareerNexaa, an independent career and jobs guidance platform helping job seekers navigate modern hiring, interviews, and civil exams.";
 
 include __DIR__ . '/includes/header.php';
 ?>

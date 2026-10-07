@@ -1513,6 +1513,116 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
 }
 
+/* Summernote Content & Image Formatting in Frontend */
+.article-prose img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1.25rem 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.2s ease;
+}
+
+/* Alignment support (Summernote float classes and inline styles) */
+.article-prose img[style*="float: left"],
+.article-prose img[style*="float:left"],
+.article-prose .note-float-left {
+    float: left;
+    margin: 0.5rem 1.5rem 1.25rem 0;
+}
+
+.article-prose img[style*="float: right"],
+.article-prose img[style*="float:right"],
+.article-prose .note-float-right {
+    float: right;
+    margin: 0.5rem 0 1.25rem 1.5rem;
+}
+
+.article-prose img[style*="float: none"],
+.article-prose img[style*="float:none"],
+.article-prose .note-float-none {
+    display: block;
+    margin: 1.5rem auto;
+    float: none;
+    clear: both;
+}
+
+/* Clearfix for floating images */
+.article-prose::after,
+.article-prose p::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Table formatting from Summernote */
+.article-prose table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.75rem 0;
+    font-size: 0.95rem;
+    overflow-x: auto;
+    display: table;
+}
+
+.article-prose table th,
+.article-prose table td {
+    border: 1px solid #cbd5e1;
+    padding: 0.75rem 1rem;
+    text-align: left;
+}
+
+.article-prose table th {
+    background: #f8fafc;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.article-prose table tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+/* Code snippet formatting */
+.article-prose pre {
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 1.25rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.article-prose code {
+    background: #f1f5f9;
+    color: #0f172a;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.88em;
+}
+
+.article-prose pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+}
+
+@media (max-width: 768px) {
+    .article-prose img[style*="float: left"],
+    .article-prose img[style*="float:left"],
+    .article-prose img[style*="float: right"],
+    .article-prose img[style*="float:right"],
+    .article-prose .note-float-left,
+    .article-prose .note-float-right {
+        float: none !important;
+        margin: 1rem auto !important;
+        display: block !important;
+        max-width: 100% !important;
+        height: auto !important;
+    }
+}
+
 /* Share & Banner */
 .article-share-section {
     margin-top: 3rem;
@@ -1824,8 +1934,33 @@ textarea.form-control {
     gap: 3rem;
     margin-bottom: 3.5rem;
 }
-.brand-col .footer-logo .brand-name {
+.brand-col .footer-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    text-decoration: none;
+}
+.brand-col .footer-logo .brand-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     color: #ffffff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+}
+.brand-col .footer-logo .brand-name {
+    font-family: var(--font-heading);
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.03em;
+}
+.brand-col .footer-logo .brand-name .brand-green {
+    color: #34d399;
 }
 .footer-text {
     font-size: 0.9rem;

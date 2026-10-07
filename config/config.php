@@ -63,9 +63,9 @@ if (!ob_get_level()) {
 }
 
 // Site Branding
-define('SITE_NAME', 'CareerPulse');
+define('SITE_NAME', 'CareerNexaa');
 define('SITE_TAGLINE', 'Your Ultimate Jobs, Careers & Professional Employment Guide');
-define('SITE_EMAIL', 'contact@careerpulse.com');
+define('SITE_EMAIL', 'contact@careernexaa.com');
 
 // Determine Base URL dynamically or via environment variable
 $envBaseUrl = getenv('APP_URL') ?: (getenv('BASE_URL') ?: null);

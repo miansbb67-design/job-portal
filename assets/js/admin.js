@@ -69,9 +69,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateComposerMetrics() {
         if (!contentTextarea || !wordCounter) return;
-        const raw = contentTextarea.value.replace(/<[^>]*>/g, ' ').trim();
+        let contentVal = '';
+        if (window.jQuery && typeof $.fn.summernote === 'function' && $('#articleContent').next('.note-editor').length) {
+            contentVal = $('#articleContent').summernote('code') || '';
+        } else {
+            contentVal = contentTextarea.value || '';
+        }
+        const raw = contentVal.replace(/<[^>]*>/g, ' ').trim();
         const words = raw.length > 0 ? raw.split(/\s+/).filter(Boolean).length : 0;
-        const chars = contentTextarea.value.length;
+        const chars = raw.length;
         const readTime = Math.max(1, Math.ceil(words / 200));
 
         wordCounter.textContent = words.toLocaleString();
@@ -84,23 +90,125 @@ document.addEventListener('DOMContentLoaded', () => {
         updateComposerMetrics();
     }
 
-    // 4. Rich Text Toolbar Operations
-    const editorToolbar = document.getElementById('editorToolbar');
-    if (editorToolbar && contentTextarea) {
-        editorToolbar.querySelectorAll('.tool-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const action = btn.getAttribute('data-action');
-                applyToolbarAction(action);
+    // 4. Summernote WYSIWYG Visual Editor Integration
+    if (window.jQuery && typeof $.fn.summernote === 'function' && $('#articleContent').length) {
+        // Custom Media Library Button for Summernote toolbar
+        const MediaLibraryButton = function(context) {
+            const ui = $.summernote.ui;
+            const button = ui.button({
+                contents: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:3px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Media',
+                tooltip: 'Select from Media Library',
+                click: function() {
+                    if (typeof openMediaLibraryModal === 'function') {
+                        openMediaLibraryModal({
+                            target: 'content',
+                            onSelect: function(imgUrl, imgName) {
+                                $('#articleContent').summernote('insertImage', imgUrl, function($img) {
+                                    $img.attr('alt', imgName || 'Article illustration');
+                                    $img.addClass('article-body-img');
+                                    $img.css({ 'max-width': '100%', 'height': 'auto', 'border-radius': '8px', 'margin': '1rem 0' });
+                                });
+                                showToast('✓ Image inserted from Media Library!');
+                                updateComposerMetrics();
+                            }
+                        });
+                    }
+                }
             });
+            return button.render();
+        };
+
+        $('#articleContent').summernote({
+            placeholder: 'Compose high quality, original content here...',
+            height: 480,
+            minHeight: 320,
+            dialogsInBody: true,
+            buttons: {
+                mediaLibrary: MediaLibraryButton
+            },
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+                ['fontname', ['fontname']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'video', 'hr', 'mediaLibrary']],
+                ['view', ['fullscreen', 'codeview', 'help']],
+                ['history', ['undo', 'redo']]
+            ],
+            popover: {
+                image: [
+                    ['image', ['resizeFull', 'resizeHalf', 'resizeQuarter', 'resizeNone']],
+                    ['float', ['floatLeft', 'floatRight', 'floatNone']],
+                    ['remove', ['removeMedia']]
+                ],
+                link: [
+                    ['link', ['linkDialogShow', 'unlink']]
+                ],
+                table: [
+                    ['add', ['addRowDown', 'addRowUp', 'addColLeft', 'addColRight']],
+                    ['delete', ['deleteRow', 'deleteCol', 'deleteTable']]
+                ],
+                air: []
+            },
+            callbacks: {
+                onInit: function() {
+                    updateComposerMetrics();
+                },
+                onChange: function(contents, $editable) {
+                    $('#articleContent').val(contents);
+                    updateComposerMetrics();
+                },
+                onImageUpload: function(files) {
+                    for (let i = 0; i < files.length; i++) {
+                        uploadSummernoteImage(files[i]);
+                    }
+                }
+            }
         });
 
-        // Pre-built templates insertion
+        function uploadSummernoteImage(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('action', 'upload');
+
+            showToast('⏳ Uploading image...');
+
+            fetch((window.ADMIN_URL || '') + '/ajax-media.php?action=upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success' && data.file && data.file.url) {
+                    $('#articleContent').summernote('insertImage', data.file.url, function($image) {
+                        $image.attr('alt', data.file.name || 'Article Image');
+                        $image.addClass('article-body-img');
+                        $image.css({ 'max-width': '100%', 'height': 'auto', 'border-radius': '8px', 'margin': '1rem 0' });
+                    });
+                    showToast('✓ Image uploaded & inserted successfully!');
+                    updateComposerMetrics();
+                } else {
+                    showToast('❌ Image upload failed: ' + (data.message || 'Unknown error'));
+                    alert('Image upload failed: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                console.error('Summernote upload error:', err);
+                showToast('❌ Server error while uploading image');
+                alert('Server error while uploading image. Please check file format and size.');
+            });
+        }
+
+        // Pre-built templates insertion with Summernote
         const btnJobTemplate = document.getElementById('btnJobTemplate');
         if (btnJobTemplate) {
             btnJobTemplate.addEventListener('click', (e) => {
                 e.preventDefault();
-                if (contentTextarea.value.trim() !== '' && !confirm('Insert Job Circular template? This will append the structured template.')) {
+                const currentCode = $('#articleContent').summernote('code');
+                const hasContent = currentCode && currentCode.replace(/<[^>]*>/g, '').trim().length > 0;
+                if (hasContent && !confirm('Insert Job Circular template? This will append the structured template.')) {
                     return;
                 }
                 const jobTemplateHtml = `<h2>Position Overview</h2>
@@ -133,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <h2>How to Apply</h2>
 <p>Interested and qualified candidates are encouraged to apply immediately. Please submit your up-to-date resume and a brief introductory cover letter through our designated application link below.</p>`;
 
-                contentTextarea.value = contentTextarea.value ? contentTextarea.value + "\n\n" + jobTemplateHtml : jobTemplateHtml;
+                $('#articleContent').summernote('pasteHTML', jobTemplateHtml);
                 const isJobToggle = document.getElementById('isJobPosting');
                 const jobPostingFields = document.getElementById('jobPostingFields');
                 if (isJobToggle && !isJobToggle.checked) {
@@ -141,7 +249,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (jobPostingFields) jobPostingFields.style.display = 'block';
                 }
                 updateComposerMetrics();
-                contentTextarea.focus();
             });
         }
 
@@ -149,7 +256,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnGuideTemplate) {
             btnGuideTemplate.addEventListener('click', (e) => {
                 e.preventDefault();
-                if (contentTextarea.value.trim() !== '' && !confirm('Insert Career Guide template? This will append the structured template.')) {
+                const currentCode = $('#articleContent').summernote('code');
+                const hasContent = currentCode && currentCode.replace(/<[^>]*>/g, '').trim().length > 0;
+                if (hasContent && !confirm('Insert Career Guide template? This will append the structured template.')) {
                     return;
                 }
                 const guideTemplateHtml = `<h2>Introduction: Navigating Today's Career Landscape</h2>
@@ -179,116 +288,20 @@ document.addEventListener('DOMContentLoaded', () => {
 <h2>Final Takeaways & Action Plan</h2>
 <p>Take decisive action today by auditing your current skillset against top listings in your industry. Commit to mastering one high-value capability each quarter to maintain a decisive competitive edge.</p>`;
 
-                contentTextarea.value = contentTextarea.value ? contentTextarea.value + "\n\n" + guideTemplateHtml : guideTemplateHtml;
+                $('#articleContent').summernote('pasteHTML', guideTemplateHtml);
                 updateComposerMetrics();
-                contentTextarea.focus();
+            });
+        }
+
+        // Ensure textarea has the latest HTML before form submit
+        const composerForm = $('#articleContent').closest('form');
+        if (composerForm.length) {
+            composerForm.on('submit', function() {
+                const code = $('#articleContent').summernote('code');
+                $('#articleContent').val(code);
             });
         }
     }
-
-    function applyToolbarAction(action) {
-        if (!contentTextarea) return;
-        const start = contentTextarea.selectionStart;
-        const end = contentTextarea.selectionEnd;
-        const selected = contentTextarea.value.substring(start, end);
-        let replacement = '';
-
-        switch (action) {
-            case 'bold':
-                replacement = `<strong>${selected || 'bold text'}</strong>`;
-                break;
-            case 'italic':
-                replacement = `<em>${selected || 'italic text'}</em>`;
-                break;
-            case 'underline':
-                replacement = `<u>${selected || 'underlined text'}</u>`;
-                break;
-            case 'strike':
-                replacement = `<s>${selected || 'strikethrough text'}</s>`;
-                break;
-            case 'quote':
-                replacement = `<blockquote>\n  <p>${selected || 'Insightful quote or key takeaway...'}</p>\n</blockquote>\n`;
-                break;
-            case 'code':
-                replacement = `<code>${selected || 'sample_code()'}</code>`;
-                break;
-            case 'ul':
-                replacement = `<ul>\n  <li>${selected || 'Key item 1'}</li>\n  <li>Key item 2</li>\n  <li>Key item 3</li>\n</ul>\n`;
-                break;
-            case 'ol':
-                replacement = `<ol>\n  <li>${selected || 'Step 1: First action'}</li>\n  <li>Step 2: Second action</li>\n  <li>Step 3: Final action</li>\n</ol>\n`;
-                break;
-            case 'link':
-                const url = prompt('Enter URL (e.g. https://example.com):', 'https://');
-                if (url) {
-                    replacement = `<a href="${url}" target="_blank" rel="noopener noreferrer">${selected || 'Link text'}</a>`;
-                } else {
-                    return;
-                }
-                break;
-            case 'image':
-                openMediaLibraryModal({
-                    target: 'content',
-                    onSelect: function(imgUrl, imgName) {
-                        const imgTag = `\n<p><img src="${imgUrl}" alt="${imgName || 'Article illustration'}" style="max-width:100%; height:auto; border-radius:8px; margin:1rem 0;" class="article-body-img"></p>\n`;
-                        const curStart = contentTextarea.selectionStart;
-                        const curEnd = contentTextarea.selectionEnd;
-                        contentTextarea.setRangeText(imgTag, curStart, curEnd, 'end');
-                        contentTextarea.focus();
-                        updateComposerMetrics();
-                        showToast('✓ Image inserted into article!');
-                    }
-                });
-                return;
-            case 'video':
-                const vidUrl = prompt('Enter YouTube or Vimeo video URL:\n(e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ)', 'https://');
-                if (vidUrl && vidUrl.trim() !== '') {
-                    const ytMatch = vidUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
-                    const vimeoMatch = vidUrl.match(/(?:vimeo\.com\/)(\d+)/i);
-                    if (ytMatch && ytMatch[1]) {
-                        replacement = `\n<div class="article-video-wrapper" style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:10px; margin:1.5rem 0;"><iframe src="https://www.youtube-nocookie.com/embed/${ytMatch[1]}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe></div>\n`;
-                    } else if (vimeoMatch && vimeoMatch[1]) {
-                        replacement = `\n<div class="article-video-wrapper" style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:10px; margin:1.5rem 0;"><iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe></div>\n`;
-                    } else {
-                        replacement = `\n<div class="article-embed-wrapper" style="margin:1.5rem 0;"><iframe src="${vidUrl}" style="width:100%; height:450px; border:0; border-radius:10px;" allowfullscreen></iframe></div>\n`;
-                    }
-                } else {
-                    return;
-                }
-                break;
-            case 'align':
-                replacement = `<div style="text-align:center;">\n  ${selected || 'Centered text or element'}\n</div>\n`;
-                break;
-            case 'table':
-                replacement = `<table style="width:100%; border-collapse:collapse; margin:1rem 0;">\n  <thead>\n    <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">\n      <th style="padding:0.75rem; text-align:left;">Item</th>\n      <th style="padding:0.75rem; text-align:left;">Details</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr style="border-bottom:1px solid #f1f5f9;">\n      <td style="padding:0.75rem;">Sample Feature</td>\n      <td style="padding:0.75rem;">Description detail</td>\n    </tr>\n  </tbody>\n</table>\n`;
-                break;
-            case 'clean':
-                replacement = selected.replace(/<[^>]*>/g, '');
-                break;
-            default:
-                replacement = selected;
-        }
-
-        contentTextarea.setRangeText(replacement, start, end, 'end');
-        contentTextarea.focus();
-        updateComposerMetrics();
-    }
-
-    window.applyBlockFormat = function(format) {
-        if (!contentTextarea) return;
-        const start = contentTextarea.selectionStart;
-        const end = contentTextarea.selectionEnd;
-        const selected = contentTextarea.value.substring(start, end);
-        let replacement = '';
-        if (format === 'h2') replacement = `<h2>${selected || 'Section Heading (H2)'}</h2>\n`;
-        else if (format === 'h3') replacement = `<h3>${selected || 'Subsection Heading (H3)'}</h3>\n`;
-        else if (format === 'h4') replacement = `<h4>${selected || 'Topic Heading (H4)'}</h4>\n`;
-        else replacement = `<p>${selected || 'Paragraph text here...'}</p>\n`;
-
-        contentTextarea.setRangeText(replacement, start, end, 'end');
-        contentTextarea.focus();
-        updateComposerMetrics();
-    };
 
     // 5. Job Circular Toggle Switch
     const isJobPostingCheckbox = document.getElementById('isJobPosting');
@@ -949,6 +962,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 const hiddenInput = document.getElementById('existingThumbnailImage');
                 if (hiddenInput) hiddenInput.value = '';
                 showToast('✓ Thumbnail cleared');
+            });
+        }
+
+        // Initialize Branding Logo Dropify
+        const $logoInput = $('#siteLogoFile');
+        if ($logoInput.length) {
+            const drLogo = $logoInput.dropify({
+                messages: {
+                    'default': 'Drag & drop website logo here or click to browse',
+                    'replace': 'Drag & drop or click to replace logo',
+                    'remove':  'Remove Logo',
+                    'error':   'Oops, something went wrong with the file.'
+                },
+                error: {
+                    'fileSize': 'The file size is too big ({{ value }} max).',
+                    'fileExtension': 'The image format is not allowed ({{ value }} only).'
+                }
+            });
+
+            drLogo.on('dropify.afterClear', function() {
+                const removeInput = document.getElementById('removeLogoInput');
+                if (removeInput) removeInput.value = '1';
+                const textInput = document.getElementById('siteLogoText');
+                if (textInput) textInput.value = '';
+                if (typeof showToast === 'function') showToast('✓ Website logo marked for removal');
+            });
+        }
+
+        // Initialize Branding Favicon Dropify
+        const $favInput = $('#siteFaviconFile');
+        if ($favInput.length) {
+            const drFav = $favInput.dropify({
+                messages: {
+                    'default': 'Drag & drop browser favicon or click to browse',
+                    'replace': 'Drag & drop or click to replace favicon',
+                    'remove':  'Remove Favicon',
+                    'error':   'Oops, something went wrong with the file.'
+                },
+                error: {
+                    'fileSize': 'The file size is too big ({{ value }} max).',
+                    'fileExtension': 'The image format is not allowed ({{ value }} only).'
+                }
+            });
+
+            drFav.on('dropify.afterClear', function() {
+                const removeInput = document.getElementById('removeFaviconInput');
+                if (removeInput) removeInput.value = '1';
+                const textInput = document.getElementById('siteFaviconText');
+                if (textInput) textInput.value = '';
+                if (typeof showToast === 'function') showToast('✓ Favicon marked for removal');
             });
         }
     }

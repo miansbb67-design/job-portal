@@ -1,7 +1,7 @@
 <?php
 /**
  * Public Website - Home Page
- * CareerPulse - Modern Jobs & Career Guidance Hub
+ * CareerNexaa - Modern Jobs & Career Guidance Hub
  * Features:
  * - Interactive Hero with Smart Search & Sector Filter Chips
  * - Editorial Spotlight & Career Pulse Radar Split
@@ -19,8 +19,8 @@ require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/ads-placeholder.php';
 
 $pageTitle = "Jobs & Career Guidance Hub | Verified Openings, Resume Tips & Exam Guides";
-$metaDescription = "Discover verified government jobs, tech careers, remote positions, ATS resume guides, and interview frameworks on CareerPulse.";
-$metaKeywords = "jobs 2026, career guidance, government jobs, remote tech jobs, ATS resume format, interview questions, job portal, CareerPulse";
+$metaDescription = "Discover verified government jobs, tech careers, remote positions, ATS resume guides, and interview frameworks on CareerNexaa.";
+$metaKeywords = "jobs 2026, career guidance, government jobs, remote tech jobs, ATS resume format, interview questions, job portal, CareerNexaa";
 
 $db = getDBConnection();
 

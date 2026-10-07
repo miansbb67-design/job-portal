@@ -1,5 +1,5 @@
 /**
- * CareerPulse - Main Frontend JavaScript (Vanilla JS)
+ * CareerNexaa - Main Frontend JavaScript (Vanilla JS)
  */
 
 document.addEventListener('DOMContentLoaded', () => {

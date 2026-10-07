@@ -65,8 +65,8 @@ $metaDescription = $activeCategory
     ? "Browse articles, job updates, and career roadmaps in {$activeCategory['name']}." 
     : "Comprehensive catalog of employment advice, ATS resume tips, exam preparation, and hiring updates.";
 $metaKeywords = $activeCategory 
-    ? "{$activeCategory['name']}, {$activeCategory['name']} jobs, career guides, interview preparation, CareerPulse"
-    : "career articles, job vacancies, ATS resume guides, behavioral interviews, tech hiring, government exams, CareerPulse";
+    ? "{$activeCategory['name']}, {$activeCategory['name']} jobs, career guides, interview preparation, CareerNexaa"
+    : "career articles, job vacancies, ATS resume guides, behavioral interviews, tech hiring, government exams, CareerNexaa";
 
 include __DIR__ . '/includes/header.php';
 ?>

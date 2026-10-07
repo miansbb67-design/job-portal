@@ -221,11 +221,11 @@ function get_all_categories($withCount = false) {
  * @return string
  */
 function sanitize_article_html($content) {
-    // Allowed HTML tags for rich content
-    $allowed_tags = '<h1><h2><h3><h4><h5><h6><p><br><hr><strong><b><em><i><u><ul><ol><li><a><blockquote><code><pre><table><thead><tbody><tr><th><td><div><span><img>';
+    // Allowed HTML tags for rich content (Full Summernote WYSIWYG support)
+    $allowed_tags = '<h1><h2><h3><h4><h5><h6><p><br><hr><strong><b><em><i><u><s><strike><del><sub><sup><font><ul><ol><li><a><blockquote><code><pre><table><thead><tbody><tfoot><tr><th><td><div><span><img><figure><figcaption><section><article>';
     
-    // Strip unauthorized tags
-    $clean = strip_tags($content, $allowed_tags);
+    // Strip unauthorized tags (like script, iframe, object, embed)
+    $clean = strip_tags((string)$content, $allowed_tags);
     
     // Remove inline javascript event attributes (onclick, onload, onerror, etc.)
     $clean = preg_replace('/\s*on\w+\s*=\s*(".*?"|\'.*?\'|[^\'">\s]+)/i', '', $clean);
@@ -546,4 +546,110 @@ function clean_seo_title($title, $maxLength = 60) {
     }
     return rtrim($truncated, ',.;:- |');
 }
+
+/**
+ * Retrieve a setting value from the database with in-memory cache and fallback
+ *
+ * @param string $key
+ * @param mixed $default
+ * @param bool $forceRefresh
+ * @return mixed
+ */
+function get_setting($key, $default = '', $forceRefresh = false) {
+    static $settingsCache = null;
+    if ($settingsCache === null || $forceRefresh) {
+        $settingsCache = [];
+        try {
+            $db = getDBConnection();
+            $stmt = $db->query("SELECT setting_key, setting_value FROM settings");
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $settingsCache[$row['setting_key']] = $row['setting_value'];
+            }
+        } catch (Throwable $e) {}
+    }
+    return (isset($settingsCache[$key]) && $settingsCache[$key] !== '') ? $settingsCache[$key] : $default;
+}
+
+/**
+ * Get dynamic website brand name
+ *
+ * @return string
+ */
+function get_site_name() {
+    return get_setting('site_name', defined('SITE_NAME') ? SITE_NAME : 'CareerNexaa');
+}
+
+/**
+ * Get dynamic website logo image path or URL
+ *
+ * @return string
+ */
+function get_site_logo() {
+    return get_setting('site_logo', '');
+}
+
+/**
+ * Get dynamic website logo full URL
+ *
+ * @return string
+ */
+function get_site_logo_url() {
+    $logo = get_site_logo();
+    if (empty($logo)) return '';
+    if (str_starts_with($logo, 'http://') || str_starts_with($logo, 'https://') || str_starts_with($logo, '//')) {
+        return $logo;
+    }
+    return (defined('BASE_URL') ? BASE_URL : '') . '/' . ltrim($logo, '/');
+}
+
+/**
+ * Get dynamic website favicon path or URL
+ *
+ * @return string
+ */
+function get_site_favicon() {
+    return get_setting('site_favicon', '');
+}
+
+/**
+ * Get dynamic website favicon full URL
+ *
+ * @return string
+ */
+function get_site_favicon_url() {
+    $fav = get_site_favicon();
+    if (empty($fav)) {
+        return (defined('BASE_URL') ? BASE_URL : '') . '/favicon.ico';
+    }
+    if (str_starts_with($fav, 'http://') || str_starts_with($fav, 'https://') || str_starts_with($fav, '//')) {
+        return $fav;
+    }
+    return (defined('BASE_URL') ? BASE_URL : '') . '/' . ltrim($fav, '/');
+}
+
+/**
+ * Format brand title with accent styling (e.g. CareerNexaa -> Career<span class="brand-green">Nexaa</span>)
+ *
+ * @param string|null $name
+ * @return string
+ */
+function format_brand_name($name = null) {
+    $name = $name ?: get_site_name();
+    $name = trim($name);
+    if (empty($name)) return 'Career<span class="brand-green">Nexaa</span>';
+
+    // If compound name like CareerNexaa
+    if (preg_match('/^([A-Z][a-z0-9]+)([A-Z].*)$/', $name, $matches)) {
+        return htmlspecialchars($matches[1]) . '<span class="brand-green">' . htmlspecialchars($matches[2]) . '</span>';
+    }
+    // If two words like "Job Portal"
+    if (strpos($name, ' ') !== false) {
+        $parts = explode(' ', $name, 2);
+        return htmlspecialchars($parts[0]) . ' <span class="brand-green">' . htmlspecialchars($parts[1]) . '</span>';
+    }
+    // Single word fallback
+    $half = max(1, (int)floor(strlen($name) / 2));
+    return htmlspecialchars(substr($name, 0, $half)) . '<span class="brand-green">' . htmlspecialchars(substr($name, $half)) . '</span>';
+}
+
 

@@ -13,12 +13,18 @@ if (!headers_sent()) {
     header('X-Robots-Tag: index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
 }
 
+// Dynamic branding and site configuration
+$siteName = get_site_name();
+$siteTagline = get_setting('site_tagline', defined('SITE_TAGLINE') ? SITE_TAGLINE : 'Jobs & Career Guidance Hub');
+$siteLogoUrl = get_site_logo_url();
+$siteFaviconUrl = get_site_favicon_url();
+
 // Fallback SEO variables if not set by individual page
-$pageTitle = isset($pageTitle) ? h($pageTitle) . ' | ' . SITE_NAME : SITE_NAME . ' - ' . SITE_TAGLINE;
+$pageTitle = isset($pageTitle) ? h($pageTitle) . ' | ' . $siteName : $siteName . ' - ' . $siteTagline;
 $metaDescription = isset($metaDescription) ? h(clean_seo_description($metaDescription)) : 'Find the latest government jobs, private tech openings, remote career opportunities, resume templates, and expert interview strategies.';
-$metaKeywords = isset($metaKeywords) && !empty($metaKeywords) ? h($metaKeywords) : 'career advice, verified job listings, ATS resume tips, interview preparation, government exams, private tech hiring, employment guides, ' . SITE_NAME;
-$metaAuthor = isset($metaAuthor) && !empty($metaAuthor) ? h($metaAuthor) : SITE_NAME . ' Editorial Team';
-$metaPublisher = SITE_NAME;
+$metaKeywords = isset($metaKeywords) && !empty($metaKeywords) ? h($metaKeywords) : 'career advice, verified job listings, ATS resume tips, interview preparation, government exams, private tech hiring, employment guides, ' . $siteName;
+$metaAuthor = isset($metaAuthor) && !empty($metaAuthor) ? h($metaAuthor) : $siteName . ' Editorial Team';
+$metaPublisher = $siteName;
 $canonicalUrl = isset($canonicalUrl) ? h($canonicalUrl) : BASE_URL . ($_SERVER['REQUEST_URI'] ?? '/');
 $ogImage = isset($ogImage) ? h($ogImage) : BASE_URL . '/assets/images/og-default.jpg';
 $ogType = isset($ogType) ? h($ogType) : 'website';
@@ -44,13 +50,18 @@ $headerCategories = get_all_categories();
     <link rel="publisher" href="<?= BASE_URL ?>/">
     <link rel="author" href="<?= BASE_URL ?>/about.php">
 
+    <!-- Website Favicon -->
+    <link rel="icon" type="image/svg+xml" href="<?= BASE_URL ?>/favicon.svg">
+    <link rel="alternate icon" type="image/x-icon" href="<?= BASE_URL ?>/favicon.ico">
+    <link rel="apple-touch-icon" href="<?= BASE_URL ?>/favicon.svg">
+
     <!-- Open Graph / Social Sharing -->
     <meta property="og:title" content="<?= $pageTitle ?>">
     <meta property="og:description" content="<?= $metaDescription ?>">
     <meta property="og:type" content="<?= $ogType ?>">
     <meta property="og:url" content="<?= $canonicalUrl ?>">
     <meta property="og:image" content="<?= $ogImage ?>">
-    <meta property="og:site_name" content="<?= SITE_NAME ?>">
+    <meta property="og:site_name" content="<?= h($siteName) ?>">
     <meta property="article:publisher" content="<?= BASE_URL ?>/">
     <?php if (!empty($metaAuthor)): ?>
     <meta property="article:author" content="<?= $metaAuthor ?>">
@@ -70,7 +81,7 @@ $headerCategories = get_all_categories();
     <meta name="twitter:title" content="<?= $pageTitle ?>">
     <meta name="twitter:description" content="<?= $metaDescription ?>">
     <meta name="twitter:image" content="<?= $ogImage ?>">
-    <meta name="twitter:creator" content="@<?= SITE_NAME ?>">
+    <meta name="twitter:creator" content="@<?= h($siteName) ?>">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -89,9 +100,13 @@ $headerCategories = get_all_categories();
     <!-- Main Header & Navigation -->
     <header class="site-header" id="site-header">
         <div class="header-inner">
-            <!-- Brand Logo (CareerPulse) -->
-            <a href="<?= BASE_URL ?>/" class="pine-brand-title" aria-label="<?= SITE_NAME ?> Homepage">
-                Career<span class="brand-green">Pulse</span>
+            <!-- Brand Logo -->
+            <a href="<?= BASE_URL ?>/" class="pine-brand-title" aria-label="<?= h($siteName) ?> Homepage" style="display:inline-flex; align-items:center; text-decoration:none;">
+                <?php if (!empty($siteLogoUrl)): ?>
+                    <img src="<?= h($siteLogoUrl) ?>" alt="<?= h($siteName) ?>" class="site-header-logo" style="max-height:40px; width:auto; object-fit:contain; display:block;">
+                <?php else: ?>
+                    <?= format_brand_name($siteName) ?>
+                <?php endif; ?>
             </a>
 
             <!-- Primary Navigation Links (Center) -->
@@ -123,7 +138,7 @@ $headerCategories = get_all_categories();
             <div class="pine-header-right">
                 <form action="<?= BASE_URL ?>/search.php" method="GET" class="pine-search-form" role="search">
                     <label for="q-header" class="sr-only">Search</label>
-                    <input id="q-header" type="search" name="q" value="<?= isset($_GET['q']) ? h($_GET['q']) : '' ?>" placeholder="Search jobs, guides, exams…" autocomplete="off" class="pine-search-input">
+                    <input id="q-header" type="search" name="q" maxlength="100" value="<?= isset($_GET['q']) ? h($_GET['q']) : '' ?>" placeholder="Search jobs, guides, exams…" autocomplete="off" class="pine-search-input" oninput="this.value = this.value.replace(/[<>]/g, '')">
                 </form>
 
                 <!-- Mobile Search Toggle -->
@@ -142,7 +157,7 @@ $headerCategories = get_all_categories();
         <div class="mobile-search-bar" id="mobileSearchBar" hidden>
             <div class="site-container">
                 <form action="<?= BASE_URL ?>/search.php" method="GET" role="search">
-                    <input type="search" name="q" placeholder="Search jobs, guides, articles…" autocomplete="off" class="mobile-search-input" value="<?= isset($_GET['q']) ? h($_GET['q']) : '' ?>">
+                    <input type="search" name="q" maxlength="100" placeholder="Search jobs, guides, articles…" autocomplete="off" class="mobile-search-input" value="<?= isset($_GET['q']) ? h($_GET['q']) : '' ?>" oninput="this.value = this.value.replace(/[<>]/g, '')">
                 </form>
             </div>
         </div>

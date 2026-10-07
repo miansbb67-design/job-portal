@@ -26,7 +26,7 @@ if (!empty($slug)) {
 
     $pageTitle = "{$category['name']} - Career Articles & Job Guides";
     $metaDescription = !empty($category['description']) ? $category['description'] : "Explore all guides and employment opportunities in {$category['name']}.";
-    $metaKeywords = "{$category['name']}, {$category['name']} jobs, {$category['name']} career advice, exam schedules, CareerPulse";
+    $metaKeywords = "{$category['name']}, {$category['name']} jobs, {$category['name']} career advice, exam schedules, CareerNexaa";
 
     // Pagination for Category
     $currentPage = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -153,7 +153,7 @@ if (!empty($slug)) {
 } else {
     // 2. All Categories Overview Page
     $pageTitle = "Explore Career & Job Sectors";
-    $metaDescription = "Browse all career categories on CareerPulse: Government Jobs, Private Tech, Remote Positions, Resume Prep, and Interview Frameworks.";
+    $metaDescription = "Browse all career categories on CareerNexaa: Government Jobs, Private Tech, Remote Positions, Resume Prep, and Interview Frameworks.";
 
     $categories = get_all_categories(true);
 

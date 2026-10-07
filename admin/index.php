@@ -247,7 +247,7 @@ $recentArticles = $recentStmt->fetchAll();
 </div>
 <?php endif; ?>
 
-<!-- ================= 12 Metric Stat Matrix (CareerPulse Performance) ================= -->
+<!-- ================= 12 Metric Stat Matrix (CareerNexaa Performance) ================= -->
 <div class="admin-stats-matrix">
     <!-- Box 1: Total Visitors -->
     <div class="pine-stat-box">

@@ -46,7 +46,7 @@
         var banner = document.getElementById('cookieConsentBanner');
         if (!banner) return;
         
-        var consent = localStorage.getItem('careerpulse_cookie_consent');
+        var consent = localStorage.getItem('careernexaa_cookie_consent');
         if (!consent) {
             setTimeout(function() {
                 banner.classList.add('is-visible');
@@ -55,7 +55,7 @@
     }
 
     window.handleCookieConsent = function(type) {
-        localStorage.setItem('careerpulse_cookie_consent', type);
+        localStorage.setItem('careernexaa_cookie_consent', type);
         var banner = document.getElementById('cookieConsentBanner');
         if (banner) {
             banner.classList.remove('is-visible');

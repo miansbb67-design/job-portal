@@ -16,4 +16,4 @@ Disallow: /job-portal/search.php
 Disallow: /search.php
 
 # Sitemap location
-Sitemap: http://localhost/job-portal/sitemap.xml
+Sitemap: /sitemap.xml
