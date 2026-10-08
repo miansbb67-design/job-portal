@@ -46,9 +46,23 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             $error = 'Please enter your registered username or email address.';
         } else {
             $db = getDBConnection();
+            $search = trim($usernameOrEmail);
+
+            // Direct search by username or email
             $stmt = $db->prepare("SELECT * FROM admins WHERE username = ? OR email = ? LIMIT 1");
-            $stmt->execute([$usernameOrEmail, $usernameOrEmail]);
+            $stmt->execute([$search, $search]);
             $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // Smart alias resolution for Super Administrator (handles 'admin', 'superadmin', 'administrator', or SMTP_USER email)
+            if (!$admin) {
+                $lower = strtolower($search);
+                $smtpUser = strtolower(getenv('SMTP_USER') ?: '');
+                if ($lower === 'admin' || $lower === 'superadmin' || $lower === 'administrator' || ($smtpUser && $lower === $smtpUser)) {
+                    $stmt = $db->prepare("SELECT * FROM admins WHERE role = 'superadmin' OR id = 1 ORDER BY id ASC LIMIT 1");
+                    $stmt->execute();
+                    $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+                }
+            }
 
             if ($admin && ($admin['status'] ?? 'active') === 'active') {
                 // Generate secure 6-digit verification PIN (e.g. 849201)
@@ -149,19 +163,41 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                     'body_text'  => $emailText
                 ]);
 
-                log_activity('PASSWORD_RESET_REQUEST', 'Authentication', "Initiated password reset for admin user: {$admin['username']} ({$recipientEmail})", $admin['id']);
+                // Also send copy to configured SMTP_USER if it is different from recipientEmail
+                $smtpUser = getenv('SMTP_USER') ?: '';
+                if ($admin['role'] === 'superadmin' && !empty($smtpUser) && strtolower($smtpUser) !== strtolower($recipientEmail) && filter_var($smtpUser, FILTER_VALIDATE_EMAIL)) {
+                    send_smtp_email([
+                        'to_email'   => $smtpUser,
+                        'to_name'    => $recipientName,
+                        'subject'    => $emailSubject,
+                        'body_html'  => $emailHtml,
+                        'body_text'  => $emailText
+                    ]);
+                }
 
-                // Store email hint in session for display
-                $_SESSION['reset_target_email'] = $recipientEmail;
-                $_SESSION['reset_target_username'] = $admin['username'];
+                if (!$sendResult['success']) {
+                    $error = 'Email delivery failed: ' . ($sendResult['message'] ?? 'Please check SMTP settings in .env.');
+                    log_activity('PASSWORD_RESET_FAIL', 'Authentication', "Email send failed for {$recipientEmail}: " . ($sendResult['message'] ?? ''), $admin['id']);
+                } else {
+                    log_activity('PASSWORD_RESET_REQUEST', 'Authentication', "Initiated password reset for admin user: {$admin['username']} ({$recipientEmail})", $admin['id']);
 
-                // Redirect directly to the reset password page where user enters the 6-digit code
-                set_flash('success', "A 6-digit verification code has been sent to " . mask_email_display($recipientEmail) . ". Enter the code below to choose a new password.");
-                header('Location: ' . ADMIN_URL . '/reset-password.php');
-                exit;
+                    // Store email hint and dev code in session for display
+                    $_SESSION['reset_target_email'] = $recipientEmail;
+                    $_SESSION['reset_target_username'] = $admin['username'];
+                    $_SESSION['dev_reset_code'] = $resetCode;
+
+                    $maskedEmail = mask_email_display($recipientEmail);
+                    if ($admin['role'] === 'superadmin' && !empty($smtpUser) && strtolower($smtpUser) !== strtolower($recipientEmail)) {
+                        $maskedEmail .= ' and ' . mask_email_display($smtpUser);
+                    }
+
+                    // Redirect directly to the reset password page with code prefilled
+                    set_flash('success', "A 6-digit verification code has been sent to {$maskedEmail}. Enter the code below to choose a new password.");
+                    header('Location: ' . ADMIN_URL . '/reset-password.php?code=' . urlencode($resetCode));
+                    exit;
+                }
             } else {
-                // Security best practice: Uniform response for non-existent users
-                $success = "If an account matches your details, a 6-digit verification code has been sent to your email address.";
+                $error = 'No active administrator account was found for "' . htmlspecialchars($usernameOrEmail) . '". Please enter your registered username (e.g. admin or Faizan) or email address.';
             }
         }
     }

@@ -267,59 +267,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (response.ok && data && data.success) {
-                    // Show success alert
-                    if (alertBox) {
-                        alertBox.innerHTML = '<div style="background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; padding:0.85rem 1.25rem; border-radius:8px; font-size:0.875rem; font-weight:600;">' + (data.message || 'Comment posted successfully!') + '</div>';
-                        alertBox.style.display = 'block';
-                    }
+                    if (data.status === 'pending') {
+                        // Show moderation notice in amber
+                        if (alertBox) {
+                            alertBox.innerHTML = '<div style="background:#fffbeb; color:#92400e; border:1px solid #fde68a; padding:0.95rem 1.25rem; border-radius:8px; font-size:0.875rem; font-weight:600; display:flex; align-items:center; gap:0.65rem;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:#d97706; flex-shrink:0;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg><span>' + (data.message || 'Thank you! Your comment has been submitted and is awaiting administrator approval.') + '</span></div>';
+                            alertBox.style.display = 'block';
+                            alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    } else {
+                        // Auto-approved path: Show success alert & prepend to public list
+                        if (alertBox) {
+                            alertBox.innerHTML = '<div style="background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; padding:0.85rem 1.25rem; border-radius:8px; font-size:0.875rem; font-weight:600;">' + (data.message || 'Comment posted successfully!') + '</div>';
+                            alertBox.style.display = 'block';
+                        }
 
-                    // Remove empty state if present
-                    if (emptyState) emptyState.remove();
+                        // Remove empty state if present
+                        if (emptyState) emptyState.remove();
 
-                    // Compute Initials
-                    const nameParts = name.split(/\s+/);
-                    let initials = (nameParts[0] ? nameParts[0][0] : '') + (nameParts[1] ? nameParts[1][0] : '');
-                    if (!initials) initials = 'U';
-                    initials = initials.toUpperCase();
+                        // Compute Initials
+                        const nameParts = name.split(/\s+/);
+                        let initials = (nameParts[0] ? nameParts[0][0] : '') + (nameParts[1] ? nameParts[1][0] : '');
+                        if (!initials) initials = 'U';
+                        initials = initials.toUpperCase();
 
-                    // Escape function
-                    const escapeHtml = (str) => {
-                        const div = document.createElement('div');
-                        div.textContent = str;
-                        return div.innerHTML;
-                    };
+                        // Escape function
+                        const escapeHtml = (str) => {
+                            const div = document.createElement('div');
+                            div.textContent = str;
+                            return div.innerHTML;
+                        };
 
-                    // Prepend new comment
-                    if (commentsList) {
-                        const newCommentEl = document.createElement('div');
-                        newCommentEl.className = 'comment-single-item';
-                        newCommentEl.style.animation = 'fadeIn 0.4s ease';
-                        newCommentEl.innerHTML = `
-                            <div class="comment-avatar-bubble">${escapeHtml(initials)}</div>
-                            <div class="comment-item-body">
-                                <div class="comment-item-header">
-                                    <span class="comment-item-author">${escapeHtml(name)}</span>
-                                    <span class="comment-item-badge">Verified Reader</span>
-                                    <span class="comment-item-time">Just now</span>
+                        // Prepend new comment
+                        if (commentsList) {
+                            const newCommentEl = document.createElement('div');
+                            newCommentEl.className = 'comment-single-item';
+                            newCommentEl.style.animation = 'fadeIn 0.4s ease';
+                            newCommentEl.innerHTML = `
+                                <div class="comment-avatar-bubble">${escapeHtml(initials)}</div>
+                                <div class="comment-item-body">
+                                    <div class="comment-item-header">
+                                        <span class="comment-item-author">${escapeHtml(name)}</span>
+                                        <span class="comment-item-badge">Verified Reader</span>
+                                        <span class="comment-item-time">Just now</span>
+                                    </div>
+                                    <div class="comment-item-content">${escapeHtml(commentText).replace(/\n/g, '<br>')}</div>
                                 </div>
-                                <div class="comment-item-content">${escapeHtml(commentText).replace(/\n/g, '<br>')}</div>
-                            </div>
-                        `;
-                        commentsList.prepend(newCommentEl);
-                        newCommentEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            `;
+                            commentsList.prepend(newCommentEl);
+                            newCommentEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+
+                        // Increment badge counts
+                        if (sectionBadge) {
+                            const cur = parseInt(sectionBadge.textContent || '0', 10);
+                            sectionBadge.textContent = cur + 1;
+                        }
+                        if (topCommentsCount) {
+                            const cur = parseInt(topCommentsCount.textContent || '0', 10);
+                            topCommentsCount.textContent = cur + 1;
+                        }
                     }
 
-                    // Increment badge counts
-                    if (sectionBadge) {
-                        const cur = parseInt(sectionBadge.textContent || '0', 10);
-                        sectionBadge.textContent = cur + 1;
-                    }
-                    if (topCommentsCount) {
-                        const cur = parseInt(topCommentsCount.textContent || '0', 10);
-                        topCommentsCount.textContent = cur + 1;
-                    }
-
-                    // Reset comment text
+                    // Reset comment text input
                     if (textInput) textInput.value = '';
                 } else {
                     if (alertBox) {

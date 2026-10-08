@@ -884,8 +884,8 @@ function submit_article_comment($articleId, $name, $email, $commentText) {
         }
     }
     
-    // Status: Auto-approved by default for responsive user experience
-    $status = 'approved';
+    // Status: Moderated - requires administrator review before appearing publicly
+    $status = 'pending';
     
     $stmt = $db->prepare("
         INSERT INTO comments (article_id, user_name, user_email, comment_text, status, user_ip, user_agent, created_at)
@@ -896,11 +896,13 @@ function submit_article_comment($articleId, $name, $email, $commentText) {
     
     return [
         'success' => true,
-        'message' => 'Thank you! Your comment has been posted successfully.',
+        'status' => 'pending',
+        'message' => 'Thank you! Your comment has been submitted and is awaiting administrator approval.',
         'comment' => [
             'id' => $newId,
             'user_name' => $name,
             'comment_text' => $commentText,
+            'status' => 'pending',
             'created_at' => date('Y-m-d H:i:s'),
             'formatted_date' => 'Just now'
         ]

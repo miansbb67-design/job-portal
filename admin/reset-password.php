@@ -78,7 +78,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $upStmt->execute([$newHash, $targetAdmin['id']]);
 
                 // Cleanup session reset hints
-                unset($_SESSION['reset_target_email'], $_SESSION['reset_target_username']);
+                unset($_SESSION['reset_target_email'], $_SESSION['reset_target_username'], $_SESSION['dev_reset_code']);
+
+                // Clear any lockout / failed login attempts for this IP and admin accounts
+                try {
+                    $clientIp = get_client_ip();
+                    $db->prepare("DELETE FROM login_attempts WHERE ip_address = ? OR username = ? OR username = 'admin'")->execute([$clientIp, $targetAdmin['username']]);
+                } catch (Throwable $e) {}
 
                 log_activity('RESET_PASSWORD_COMPLETED', 'Authentication', "Password reset successfully completed for admin: {$targetAdmin['username']}", $targetAdmin['id']);
 

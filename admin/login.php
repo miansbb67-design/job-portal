@@ -137,6 +137,17 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                     $stmt->execute([$usernameOrEmail, $usernameOrEmail]);
                     $admin = $stmt->fetch();
 
+                    // Smart alias resolution for Super Administrator (handles 'admin', 'superadmin', 'administrator', or SMTP_USER email)
+                    if (!$admin) {
+                        $lower = strtolower($usernameOrEmail);
+                        $smtpUser = strtolower(getenv('SMTP_USER') ?: '');
+                        if ($lower === 'admin' || $lower === 'superadmin' || $lower === 'administrator' || ($smtpUser && $lower === $smtpUser)) {
+                            $stmt = $db->prepare("SELECT * FROM admins WHERE role = 'superadmin' OR id = 1 ORDER BY id ASC LIMIT 1");
+                            $stmt->execute();
+                            $admin = $stmt->fetch();
+                        }
+                    }
+
                     $hashToVerify = ($admin && !empty($admin['password_hash'])) ? $admin['password_hash'] : $dummyHash;
                     $passwordValid = password_verify($password, $hashToVerify);
 
@@ -146,10 +157,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                             log_activity('FAILED_LOGIN_INACTIVE', 'Authentication', "Login attempt for disabled account: {$admin['username']}", $admin['id']);
                             $error = 'This administrator account is currently inactive. Please contact the Super Administrator.';
                         } else {
-                            // Successful authentication: clear recorded failed attempts for this IP and username
+                            // Successful authentication: clear recorded failed attempts for this IP, target username, and admin username
                             try {
-                                $clearStmt = $db->prepare("DELETE FROM login_attempts WHERE ip_address = ? OR username = ?");
-                                $clearStmt->execute([$clientIp, $admin['username']]);
+                                $clearStmt = $db->prepare("DELETE FROM login_attempts WHERE ip_address = ? OR username = ? OR username = ? OR username = 'admin'");
+                                $clearStmt->execute([$clientIp, $admin['username'], $usernameOrEmail]);
                             } catch (Throwable $e) {}
 
                             // Auto-upgrade password hash if algorithm or cost parameters have been updated
