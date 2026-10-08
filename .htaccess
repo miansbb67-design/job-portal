@@ -26,6 +26,7 @@
 
     # Standard clean paths
     RewriteRule ^articles/?$ articles.php [L]
+    RewriteRule ^categories/?$ categories.php [L]
     RewriteRule ^about/?$ about.php [L]
     RewriteRule ^contact/?$ contact.php [L]
     RewriteRule ^privacy-policy/?$ privacy-policy.php [L]
