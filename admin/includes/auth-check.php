@@ -9,7 +9,6 @@ require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../includes/functions.php';
 
 if (!is_admin_logged_in()) {
-    set_flash('error', 'Please log in to access the administration portal.');
     header('Location: ' . ADMIN_URL . '/login.php');
     exit;
 }

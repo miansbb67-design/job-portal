@@ -51,30 +51,30 @@ try {
     ");
 } catch (Throwable $e) {}
 
-// Rate limiting parameters: 5 failed attempts locks for 15 minutes
+// Rate limiting parameters: 5 failed attempts locks for 30 seconds
 define('MAX_LOGIN_ATTEMPTS', 5);
-define('LOCKOUT_WINDOW_SECONDS', 900); // 15 minutes
+define('LOCKOUT_WINDOW_SECONDS', 30); // 30 seconds
 
 $clientIp = get_client_ip();
 $error = '';
 $usernameOrEmail = '';
 $isLockedOut = false;
-$lockoutRemainingMinutes = 0;
+$lockoutRemainingSeconds = 0;
 
-// Periodic cleanup of expired attempts (> 24 hours)
+// Periodic cleanup of expired attempts (> 1 hour)
 try {
     if (mt_rand(1, 20) === 1) {
-        $db->query("DELETE FROM login_attempts WHERE attempt_time < (NOW() - INTERVAL 24 HOUR)");
+        $db->query("DELETE FROM login_attempts WHERE attempt_time < (NOW() - INTERVAL 1 HOUR)");
     }
 } catch (Throwable $e) {}
 
-// Check initial lockout state for current IP
+// Check initial lockout state for current IP within the last 30 seconds
 try {
     $stmtCheck = $db->prepare("
-        SELECT COUNT(*) AS attempts, MIN(attempt_time) AS oldest_attempt 
+        SELECT COUNT(*) AS attempts, MAX(attempt_time) AS latest_attempt 
         FROM login_attempts 
         WHERE ip_address = ? 
-          AND attempt_time > (NOW() - INTERVAL 15 MINUTE)
+          AND attempt_time > (NOW() - INTERVAL 30 SECOND)
     ");
     $stmtCheck->execute([$clientIp]);
     $ipStats = $stmtCheck->fetch(PDO::FETCH_ASSOC);
@@ -82,10 +82,10 @@ try {
 
     if ($ipAttempts >= MAX_LOGIN_ATTEMPTS) {
         $isLockedOut = true;
-        $oldest = strtotime($ipStats['oldest_attempt'] ?? 'now');
-        $elapsed = time() - $oldest;
-        $lockoutRemainingMinutes = max(1, ceil((LOCKOUT_WINDOW_SECONDS - $elapsed) / 60));
-        $error = "Too many failed login attempts from your IP address. Login is temporarily locked for {$lockoutRemainingMinutes} minute(s). Please try again later.";
+        $latest = strtotime($ipStats['latest_attempt'] ?? 'now');
+        $elapsed = time() - $latest;
+        $lockoutRemainingSeconds = max(1, LOCKOUT_WINDOW_SECONDS - $elapsed);
+        $error = "Too many failed login attempts from your IP address. Login is temporarily locked for <span id=\"countdownTimer\">{$lockoutRemainingSeconds}</span> second(s). Please wait.";
     }
 } catch (Throwable $e) {}
 
@@ -108,14 +108,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                 // Input bounds check: prevents DoS/memory exhaustion via long bcrypt payloads
                 $error = 'Invalid credentials. Please verify your username and password.';
             } else {
-                // Check user/account-specific failed attempts
+                // Check user/account-specific failed attempts within last 30 seconds
                 $userAttempts = 0;
                 try {
                     $stmtUserCheck = $db->prepare("
-                        SELECT COUNT(*) AS attempts, MIN(attempt_time) AS oldest_attempt 
+                        SELECT COUNT(*) AS attempts, MAX(attempt_time) AS latest_attempt 
                         FROM login_attempts 
                         WHERE (username = ? OR ip_address = ?) 
-                          AND attempt_time > (NOW() - INTERVAL 15 MINUTE)
+                          AND attempt_time > (NOW() - INTERVAL 30 SECOND)
                     ");
                     $stmtUserCheck->execute([$usernameOrEmail, $clientIp]);
                     $userStats = $stmtUserCheck->fetch(PDO::FETCH_ASSOC);
@@ -124,10 +124,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 
                 if ($userAttempts >= MAX_LOGIN_ATTEMPTS) {
                     $isLockedOut = true;
-                    $oldest = strtotime($userStats['oldest_attempt'] ?? 'now');
-                    $elapsed = time() - $oldest;
-                    $lockoutRemainingMinutes = max(1, ceil((LOCKOUT_WINDOW_SECONDS - $elapsed) / 60));
-                    $error = "Too many failed login attempts for this account. Login is temporarily locked for {$lockoutRemainingMinutes} minute(s). Please try again later.";
+                    $latest = strtotime($userStats['latest_attempt'] ?? 'now');
+                    $elapsed = time() - $latest;
+                    $lockoutRemainingSeconds = max(1, LOCKOUT_WINDOW_SECONDS - $elapsed);
+                    $error = "Too many failed login attempts for this account. Login is temporarily locked for <span id=\"countdownTimer\">{$lockoutRemainingSeconds}</span> second(s). Please wait.";
                     log_activity('LOGIN_LOCKED', 'Authentication', "Rate limit lock triggered for IP {$clientIp} on target '{$usernameOrEmail}'");
                 } else {
                     // Timing-attack resistant verification (prevents account enumeration):
@@ -213,7 +213,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 
                         if ($remaining <= 0) {
                             $isLockedOut = true;
-                            $error = "Invalid credentials. Too many failed attempts: your account/IP has been temporarily locked for 15 minutes.";
+                            $lockoutRemainingSeconds = LOCKOUT_WINDOW_SECONDS;
+                            $error = "Too many failed login attempts. Login is temporarily locked for <span id=\"countdownTimer\">" . LOCKOUT_WINDOW_SECONDS . "</span> second(s). Please wait.";
                         } else {
                             $error = "Invalid credentials. Please verify your username and password. ({$remaining} attempt(s) remaining)";
                         }
@@ -514,13 +515,13 @@ $loginFaviconUrl = get_site_favicon_url();
 
         <!-- Form Error Banner -->
         <?php if (!empty($error)): ?>
-            <div class="alert-error" role="alert">
+            <div class="alert-error" role="alert" id="loginAlertBox">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="12" y1="8" x2="12" y2="12"></line>
                     <line x1="12" y1="16" x2="12.01" y2="16"></line>
                 </svg>
-                <span><?= h($error) ?></span>
+                <span id="loginAlertText"><?= $error ?></span>
             </div>
         <?php endif; ?>
 
@@ -576,7 +577,7 @@ $loginFaviconUrl = get_site_favicon_url();
             </div>
 
             <button type="submit" class="btn-submit" id="submitBtn" <?= $isLockedOut ? 'disabled' : '' ?>>
-                <span id="submitBtnText"><?= $isLockedOut ? 'Login Temporarily Locked' : 'Sign In to Dashboard' ?></span>
+                <span id="submitBtnText"><?= $isLockedOut ? 'Please wait ' . $lockoutRemainingSeconds . 's...' : 'Sign In to Dashboard' ?></span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="submitArrow">
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                     <polyline points="12 5 19 12 12 19"></polyline>
@@ -632,6 +633,54 @@ $loginFaviconUrl = get_site_favicon_url();
                     }
                 });
             }
+
+            <?php if ($isLockedOut && $lockoutRemainingSeconds > 0): ?>
+            // Real-time 30-Second Lockout Countdown Timer
+            (function() {
+                let timeLeft = <?= (int)$lockoutRemainingSeconds ?>;
+                const timerSpan = document.getElementById('countdownTimer');
+                const usernameInput = document.getElementById('username');
+                const passwordInput = document.getElementById('password');
+                const btn = document.getElementById('submitBtn');
+                const btnText = document.getElementById('submitBtnText');
+                const alertBox = document.getElementById('loginAlertBox');
+                const alertText = document.getElementById('loginAlertText');
+
+                if (usernameInput) usernameInput.disabled = true;
+                if (passwordInput) passwordInput.disabled = true;
+                if (btn) {
+                    btn.disabled = true;
+                    if (btnText) btnText.textContent = 'Please wait ' + timeLeft + 's...';
+                }
+
+                const timerInterval = setInterval(function() {
+                    timeLeft--;
+                    if (timerSpan) timerSpan.textContent = Math.max(0, timeLeft);
+                    if (btnText) btnText.textContent = 'Please wait ' + Math.max(0, timeLeft) + 's...';
+
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        if (usernameInput) usernameInput.disabled = false;
+                        if (passwordInput) passwordInput.disabled = false;
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.style.opacity = '1';
+                            btn.style.cursor = 'pointer';
+                            if (btnText) btnText.textContent = 'Sign In to Dashboard';
+                        }
+                        if (alertBox) {
+                            alertBox.className = 'alert-success';
+                            alertBox.style.background = '#ecfdf5';
+                            alertBox.style.color = '#065f46';
+                            alertBox.style.borderColor = '#a7f3d0';
+                        }
+                        if (alertText) {
+                            alertText.innerHTML = '30 seconds lockout expired. You can now try logging in again.';
+                        }
+                    }
+                }, 1000);
+            })();
+            <?php endif; ?>
         });
     </script>
 </body>
