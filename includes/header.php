@@ -34,6 +34,10 @@ $currentScript = basename($_SERVER['PHP_SELF']);
 
 // Load categories for menu dropdown
 $headerCategories = get_all_categories();
+
+// Track real live active visitor
+track_active_visitor($pageTitle);
+$dynamicHeaderMenu = get_header_menu();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -113,9 +117,28 @@ $headerCategories = get_all_categories();
 
             <!-- Primary Navigation Links (Center) -->
             <nav class="pine-nav" id="main-navigation" aria-label="Main Navigation">
-                <a href="<?= BASE_URL ?>/" class="pine-nav-link <?= ($currentScript == 'index.php') ? 'active' : '' ?>">Home</a>
-                <a href="<?= BASE_URL ?>/articles.php" class="pine-nav-link <?= ($currentScript == 'articles.php' && empty($_GET['trending'])) ? 'active' : '' ?>">Jobs & Articles</a>
-                <a href="<?= BASE_URL ?>/articles.php?trending=1" class="pine-nav-link <?= (!empty($_GET['trending'])) ? 'active' : '' ?>">Trending</a>
+                <?php if (!empty($dynamicHeaderMenu)): ?>
+                    <?php foreach ($dynamicHeaderMenu as $hItem): ?>
+                        <?php 
+                        if (empty($hItem['enabled'])) continue;
+                        $hUrl = $hItem['url'] ?? '/';
+                        if (strpos($hUrl, 'http') !== 0 && strpos($hUrl, '/') !== 0) {
+                            $hUrl = '/' . $hUrl;
+                        }
+                        $fullHUrl = (strpos($hUrl, 'http') === 0) ? $hUrl : rtrim(BASE_URL, '/') . $hUrl;
+                        $isActive = false;
+                        if ($hUrl === '/' && $currentScript === 'index.php') $isActive = true;
+                        elseif ($hUrl !== '/' && strpos($_SERVER['REQUEST_URI'] ?? '', $hUrl) !== false) $isActive = true;
+                        ?>
+                        <a href="<?= h($fullHUrl) ?>" class="pine-nav-link <?= $isActive ? 'active' : '' ?>">
+                            <?= h($hItem['label']) ?>
+                        </a>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <a href="<?= BASE_URL ?>/" class="pine-nav-link <?= ($currentScript == 'index.php') ? 'active' : '' ?>">Home</a>
+                    <a href="<?= BASE_URL ?>/articles.php" class="pine-nav-link <?= ($currentScript == 'articles.php' && empty($_GET['trending'])) ? 'active' : '' ?>">Jobs & Articles</a>
+                    <a href="<?= BASE_URL ?>/articles.php?trending=1" class="pine-nav-link <?= (!empty($_GET['trending'])) ? 'active' : '' ?>">Trending</a>
+                <?php endif; ?>
                 
                 <!-- Topics Dropdown Menu -->
                 <div class="pine-dropdown-group">

@@ -1014,6 +1014,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (typeof showToast === 'function') showToast('✓ Favicon marked for removal');
             });
         }
+
+        // Initialize Media Library Dropify
+        const $mediaInput = $('#mediaFileInput');
+        if ($mediaInput.length && !$mediaInput.data('dropify')) {
+            $mediaInput.dropify({
+                messages: {
+                    'default': 'Drag & drop media asset here or click to browse',
+                    'replace': 'Drag & drop or click to replace media',
+                    'remove':  'Remove',
+                    'error':   'Oops, something went wrong with the file.'
+                },
+                error: {
+                    'fileSize': 'The file size is too big ({{ value }} max).',
+                    'fileExtension': 'The image format is not allowed ({{ value }} only).'
+                }
+            });
+        }
+
+        // Generic auto-initializer for any other element with .dropify class
+        $('.dropify').each(function() {
+            if (!$(this).data('dropify')) {
+                $(this).dropify({
+                    messages: {
+                        'default': 'Drag and drop a file here or click to browse',
+                        'replace': 'Drag and drop or click to replace',
+                        'remove':  'Remove',
+                        'error':   'Oops, something went wrong with the file.'
+                    },
+                    error: {
+                        'fileSize': 'The file size is too big ({{ value }} max).',
+                        'fileExtension': 'The file format is not allowed ({{ value }} only).'
+                    }
+                });
+            }
+        });
     }
 });
 

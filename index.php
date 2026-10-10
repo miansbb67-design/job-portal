@@ -30,7 +30,7 @@ $spotlightStmt = $db->query("
     FROM articles a
     JOIN categories c ON a.category_id = c.id
     JOIN admins adm ON a.author_id = adm.id
-    WHERE a.status = 'published' AND a.is_job_posting = 0
+    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) AND a.is_job_posting = 0
     ORDER BY a.views DESC, a.published_at DESC
     LIMIT 1
 ");
@@ -43,7 +43,7 @@ $jobsStmt = $db->query("
     FROM articles a
     JOIN categories c ON a.category_id = c.id
     JOIN admins adm ON a.author_id = adm.id
-    WHERE a.status = 'published' AND a.is_job_posting = 1
+    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) AND a.is_job_posting = 1
     ORDER BY a.published_at DESC
     LIMIT 3
 ");
@@ -55,7 +55,7 @@ $radarStmt = $db->prepare("
     FROM articles a
     JOIN categories c ON a.category_id = c.id
     JOIN admins adm ON a.author_id = adm.id
-    WHERE a.status = 'published' AND a.id != :spotlight_id AND a.is_job_posting = 0
+    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) AND a.id != :spotlight_id AND a.is_job_posting = 0
     ORDER BY a.published_at DESC
     LIMIT 3
 ");
@@ -68,7 +68,7 @@ $trendingStmt = $db->prepare("
     FROM articles a
     JOIN categories c ON a.category_id = c.id
     JOIN admins adm ON a.author_id = adm.id
-    WHERE a.status = 'published' AND a.id != :spotlight_id
+    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) AND a.id != :spotlight_id
     ORDER BY a.views DESC
     LIMIT 3
 ");
@@ -81,7 +81,7 @@ $latestStmt = $db->query("
     FROM articles a
     JOIN categories c ON a.category_id = c.id
     JOIN admins adm ON a.author_id = adm.id
-    WHERE a.status = 'published'
+    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL)
     ORDER BY a.published_at DESC
     LIMIT 6
 ");

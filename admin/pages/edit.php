@@ -79,7 +79,7 @@ require_once __DIR__ . '/../includes/admin-header.php';
     </div>
 
     <div style="display:flex; gap:0.5rem; align-items:center;">
-        <a href="<?= BASE_URL ?>/<?= h($page['slug']) ?>.php" target="_blank" class="admin-btn" style="background:#ffffff; border:1px solid #cbd5e1; color:#334155; padding:0.55rem 1rem; border-radius:8px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem;">
+        <a href="<?= get_page_view_url($page['slug']) ?>" target="_blank" class="admin-btn" style="background:#ffffff; border:1px solid #cbd5e1; color:#334155; padding:0.55rem 1rem; border-radius:8px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             Preview Public Page
         </a>
@@ -136,9 +136,12 @@ require_once __DIR__ . '/../includes/admin-header.php';
 
         <div style="margin-bottom:1.75rem;">
             <label style="display:block; font-weight:700; font-size:0.85rem; color:#334155; margin-bottom:0.35rem;">
-                Page HTML Content
+                Page Content (Visual Editor)
             </label>
-            <textarea name="content" rows="14" class="admin-form-control" style="width:100%; padding:0.85rem; border:1px solid #cbd5e1; border-radius:8px; font-size:0.9rem; font-family:var(--font-mono, monospace); line-height:1.6; resize:vertical;"><?= h($page['content'] ?? '') ?></textarea>
+            <span style="display:block; font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">
+                Write and edit content in simple readable text. Use the formatting toolbar for headings, lists, bold, and links without typing HTML codes.
+            </span>
+            <textarea name="content" id="pageContentEditor" rows="16" class="admin-form-control" style="width:100%; padding:0.85rem; border:1px solid #cbd5e1; border-radius:8px; font-size:0.95rem; line-height:1.6; resize:vertical;"><?= h($page['content'] ?? '') ?></textarea>
         </div>
 
         <div style="display:flex; justify-content:flex-end; gap:0.75rem; align-items:center;">
@@ -154,3 +157,24 @@ require_once __DIR__ . '/../includes/admin-header.php';
 </div>
 
 <?php require_once __DIR__ . '/../includes/admin-footer.php'; ?>
+
+<script>
+$(document).ready(function() {
+    if (typeof $.fn.summernote !== 'undefined') {
+        $('#pageContentEditor').summernote({
+            placeholder: 'Write your page content here in simple readable text...',
+            tabsize: 2,
+            height: 400,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'hr']],
+                ['view', ['fullscreen', 'codeview']]
+            ]
+        });
+    }
+});
+</script>

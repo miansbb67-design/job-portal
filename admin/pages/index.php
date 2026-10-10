@@ -58,7 +58,7 @@ $pages = $db->query("SELECT * FROM pages ORDER BY title ASC")->fetchAll(PDO::FET
                             </div>
                         </td>
                         <td style="padding:1rem 1.25rem; font-family:monospace; color:#0284c7; font-size:0.8rem;">
-                            /<?= h($pg['slug']) ?>.php
+                            <?= h(str_replace(BASE_URL, '', get_page_view_url($pg['slug']))) ?>
                         </td>
                         <td style="padding:1rem 1.25rem; white-space:nowrap;">
                             <span class="admin-status-pill is-<?= $pg['status'] ?> is-static">
@@ -76,7 +76,7 @@ $pages = $db->query("SELECT * FROM pages ORDER BY title ASC")->fetchAll(PDO::FET
                         </td>
                         <td style="padding:1rem 1.25rem; text-align:right;">
                             <div class="admin-action-btn-group">
-                                <a href="<?= BASE_URL ?>/<?= h($pg['slug']) ?>.php" target="_blank" class="admin-btn-xs" style="background:#f8fafc; border:1px solid #cbd5e1; color:#475569; text-decoration:none;" title="View Live Page">
+                                <a href="<?= get_page_view_url($pg['slug']) ?>" target="_blank" class="admin-btn-xs" style="background:#f8fafc; border:1px solid #cbd5e1; color:#475569; text-decoration:none;" title="View Live Page">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                                 </a>
 

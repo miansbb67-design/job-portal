@@ -1,7 +1,10 @@
 <?php
 /**
- * Admin Panel - Section Visibility Control
- * Simple Enable/Disable toggles to show or hide major frontend website sections.
+ * Admin Panel - Home Sections & Menus Control
+ * Exact match to Screenshots 1, 2, and 3:
+ * - Home page sections (HERO, LATEST, CATEGORIES, POPULAR, ARTICLES, RECOMMENDED, NEWSLETTER)
+ * - Header menu manager (Reorder, toggle, label edit, remove, add new)
+ * - Footer menu manager (Reorder, toggle, label edit, remove, add new)
  */
 
 require_once __DIR__ . '/../config/config.php';
@@ -10,88 +13,143 @@ require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth_functions.php';
 require_once __DIR__ . '/includes/auth-check.php';
 
-// Authorization: Requires settings permission or Super Admin
+// Authorization check: Requires settings or Super Admin
 if (!is_super_admin() && !has_permission('settings.view')) {
     require_permission('settings.view');
 }
 
 $db = getDBConnection();
 
-// Handle Toggle Action (via AJAX JSON or Traditional Form POST)
+// Load categories for dropdowns
+$categories = $db->query("SELECT id, name, slug FROM categories ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+// Handle POST submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $token = $_POST['csrf_token'] ?? '';
-    
-    // Check if JSON request
-    $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') || 
-              (strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false);
-    
-    if ($isAjax && empty($_POST)) {
-        $raw = file_get_contents('php://input');
-        $jsonData = json_decode($raw, true) ?: [];
-        $_POST = $jsonData;
-        $token = $_POST['csrf_token'] ?? '';
-    }
-
     if (!verify_csrf_token($token)) {
-        if ($isAjax) {
-            header('Content-Type: application/json; charset=utf-8');
-            http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'Security token expired. Please refresh the page.']);
-            exit;
-        }
         set_flash('error', 'Security token expired. Please refresh the page and try again.');
         header('Location: ' . ADMIN_URL . '/section-visibility.php');
         exit;
     }
 
-    $sectionKey = trim((string)($_POST['section_key'] ?? ''));
-    $action = $_POST['action'] ?? 'toggle';
+    $formType = $_POST['form_type'] ?? '';
 
-    if (!empty($sectionKey)) {
-        $stmt = $db->prepare("SELECT id, section_key, section_name, is_enabled FROM section_visibility WHERE section_key = ? LIMIT 1");
-        $stmt->execute([$sectionKey]);
-        $sec = $stmt->fetch(PDO::FETCH_ASSOC);
+    // 1. Save Home Page Sections
+    if ($formType === 'save_sections') {
+        $sectionsInput = $_POST['sections'] ?? [];
+        if (is_array($sectionsInput)) {
+            foreach ($sectionsInput as $key => $secData) {
+                $isEnabled = isset($secData['enabled']) ? 1 : 0;
+                $title = trim($secData['title'] ?? '');
+                $subtitle = trim($secData['subtitle'] ?? '');
+                $limit = isset($secData['limit']) && is_numeric($secData['limit']) ? (int)$secData['limit'] : 6;
+                $catId = !empty($secData['category_id']) && is_numeric($secData['category_id']) ? (int)$secData['category_id'] : null;
 
-        if ($sec) {
-            $newStatus = 0;
-            if ($action === 'enable') {
-                $newStatus = 1;
-            } elseif ($action === 'disable') {
-                $newStatus = 0;
-            } else {
-                // Toggle
-                $newStatus = ((int)$sec['is_enabled'] === 1) ? 0 : 1;
+                $upStmt = $db->prepare("
+                    UPDATE section_visibility 
+                    SET is_enabled = ?, title = ?, subtitle = ?, item_limit = ?, category_id = ?, updated_at = NOW()
+                    WHERE section_key = ?
+                ");
+                $upStmt->execute([$isEnabled, $title, $subtitle, $limit, $catId, $key]);
             }
+            log_activity('update', 'settings', "Updated Home Sections configuration");
+            set_flash('success', 'Home page sections saved successfully!');
+        }
+    }
 
-            $updateStmt = $db->prepare("UPDATE section_visibility SET is_enabled = ? WHERE section_key = ?");
-            $updateStmt->execute([$newStatus, $sectionKey]);
-
-            $statusLabel = ($newStatus === 1) ? 'ENABLED' : 'DISABLED';
-            $msg = "Section '{$sec['section_name']}' is now {$statusLabel}.";
-
-            log_activity('update', 'settings', "Updated visibility of '{$sec['section_name']}' to {$statusLabel}");
-
-            if ($isAjax) {
-                header('Content-Type: application/json; charset=utf-8');
-                echo json_encode([
-                    'success' => true,
-                    'section_key' => $sectionKey,
-                    'is_enabled' => $newStatus,
-                    'status_label' => $statusLabel,
-                    'message' => $msg
-                ]);
-                exit;
+    // 2. Save Header Menu
+    elseif ($formType === 'save_header_menu') {
+        $itemsInput = $_POST['header_menu'] ?? [];
+        $menuToSave = [];
+        if (is_array($itemsInput)) {
+            foreach ($itemsInput as $idx => $mItem) {
+                $label = trim($mItem['label'] ?? '');
+                if ($label === '') continue;
+                $menuToSave[] = [
+                    'id' => (string)($idx + 1),
+                    'label' => $label,
+                    'url' => trim($mItem['url'] ?? '/'),
+                    'enabled' => isset($mItem['enabled']) ? true : false
+                ];
             }
+        }
+        $setStmt = $db->prepare("
+            INSERT INTO settings (setting_key, setting_value, setting_group)
+            VALUES ('header_menu_items', ?, 'navigation')
+            ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+        ");
+        $setStmt->execute([json_encode($menuToSave, JSON_PRETTY_PRINT)]);
+        log_activity('update', 'settings', "Updated Header Navigation Menu");
+        set_flash('success', 'Header menu saved successfully!');
+    }
 
-            set_flash('success', $msg);
-        } else {
-            if ($isAjax) {
-                header('Content-Type: application/json; charset=utf-8');
-                http_response_code(404);
-                echo json_encode(['success' => false, 'message' => 'Section not found.']);
-                exit;
+    // 3. Save Footer Menu
+    elseif ($formType === 'save_footer_menu') {
+        $itemsInput = $_POST['footer_menu'] ?? [];
+        $menuToSave = [];
+        if (is_array($itemsInput)) {
+            foreach ($itemsInput as $idx => $mItem) {
+                $label = trim($mItem['label'] ?? '');
+                if ($label === '') continue;
+                $menuToSave[] = [
+                    'id' => (string)($idx + 1),
+                    'label' => $label,
+                    'url' => trim($mItem['url'] ?? '/'),
+                    'enabled' => isset($mItem['enabled']) ? true : false
+                ];
             }
-            set_flash('error', 'Section not found.');
+        }
+        $setStmt = $db->prepare("
+            INSERT INTO settings (setting_key, setting_value, setting_group)
+            VALUES ('footer_menu_items', ?, 'navigation')
+            ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+        ");
+        $setStmt->execute([json_encode($menuToSave, JSON_PRETTY_PRINT)]);
+        log_activity('update', 'settings', "Updated Footer Navigation Menu");
+        set_flash('success', 'Footer menu saved successfully!');
+    }
+
+    // 4. Add New Header Menu Item
+    elseif ($formType === 'add_header_item') {
+        $newLabel = trim($_POST['new_label'] ?? '');
+        $newUrl = trim($_POST['new_url'] ?? '');
+        if ($newLabel !== '') {
+            $currentMenu = get_header_menu();
+            $currentMenu[] = [
+                'id' => (string)(count($currentMenu) + 1),
+                'label' => $newLabel,
+                'url' => $newUrl ?: '/',
+                'enabled' => true
+            ];
+            $setStmt = $db->prepare("
+                INSERT INTO settings (setting_key, setting_value, setting_group)
+                VALUES ('header_menu_items', ?, 'navigation')
+                ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+            ");
+            $setStmt->execute([json_encode($currentMenu, JSON_PRETTY_PRINT)]);
+            set_flash('success', "Item '{$newLabel}' added to Header menu!");
+        }
+    }
+
+    // 5. Add New Footer Menu Item
+    elseif ($formType === 'add_footer_item') {
+        $newLabel = trim($_POST['new_label'] ?? '');
+        $newUrl = trim($_POST['new_url'] ?? '');
+        if ($newLabel !== '') {
+            $currentMenu = get_footer_menu();
+            $currentMenu[] = [
+                'id' => (string)(count($currentMenu) + 1),
+                'label' => $newLabel,
+                'url' => $newUrl ?: '/',
+                'enabled' => true
+            ];
+            $setStmt = $db->prepare("
+                INSERT INTO settings (setting_key, setting_value, setting_group)
+                VALUES ('footer_menu_items', ?, 'navigation')
+                ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+            ");
+            $setStmt->execute([json_encode($currentMenu, JSON_PRETTY_PRINT)]);
+            set_flash('success', "Item '{$newLabel}' added to Footer menu!");
         }
     }
 
@@ -99,242 +157,319 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Fetch all sections ordered by sort_order
-$sections = $db->query("SELECT * FROM section_visibility ORDER BY sort_order ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
+// Fetch home sections
+$homeSections = $db->query("
+    SELECT * FROM section_visibility 
+    WHERE section_key IN ('hero', 'latest', 'categories', 'popular', 'articles', 'recommended', 'newsletter')
+    ORDER BY sort_order ASC, id ASC
+")->fetchAll(PDO::FETCH_ASSOC);
 
-$adminPageTitle = "Section Visibility";
-include __DIR__ . '/includes/admin-header.php';
+// Fallback index by key for easy lookup
+$sectionsByKey = [];
+foreach ($homeSections as $sec) {
+    $sectionsByKey[$sec['section_key']] = $sec;
+}
+
+// Fetch current menus
+$headerMenu = get_header_menu();
+$footerMenu = get_footer_menu();
+
+$adminPageTitle = "Home Sections & Menus";
+require_once __DIR__ . '/includes/admin-header.php';
 ?>
 
-<div class="admin-content-inner">
-    <!-- Breadcrumb -->
-    <div style="font-size:0.85rem; color:#64748b; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
-        <a href="<?= ADMIN_URL ?>/index.php" style="color:#64748b; text-decoration:none;">Dashboard</a>
-        <span>&rsaquo;</span>
-        <span style="color:#0f172a; font-weight:600;">Section Visibility</span>
-    </div>
-
-    <!-- Header Section -->
-    <div class="admin-page-header" style="margin-bottom:1.75rem; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+<div class="admin-content-inner" style="max-width:1400px; margin:0 auto; padding-bottom:3rem;">
+    <!-- Top Header Breadcrumb & Actions -->
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
         <div>
-            <h1 style="font-size:1.65rem; font-weight:800; color:#0f172a; margin:0 0 0.35rem;">Section Visibility</h1>
-            <p style="font-size:0.9rem; color:#64748b; margin:0;">
-                Control which major sections appear on the website. Use the toggles below to turn sections ON or OFF.
-            </p>
+            <div style="font-size:0.85rem; color:#64748b; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.4rem;">
+                <a href="<?= ADMIN_URL ?>/index.php" style="color:#64748b; text-decoration:none;">Dashboard</a>
+                <span>&rsaquo;</span>
+                <a href="<?= ADMIN_URL ?>/pages/index.php" style="color:#64748b; text-decoration:none;">Pages</a>
+                <span>&rsaquo;</span>
+                <span style="color:#0f172a; font-weight:700;">Home Sections &amp; Menus</span>
+            </div>
+            <h1 style="font-size:1.75rem; font-weight:800; color:#0f172a; margin:0; letter-spacing:-0.02em;">
+                Home Sections &amp; Menus
+            </h1>
         </div>
 
         <div>
-            <a href="<?= BASE_URL ?>/" target="_blank" class="admin-btn-xs" style="background:#0f172a; color:#ffffff; padding:0.6rem 1.15rem; border-radius:8px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:0.45rem;">
+            <a href="<?= BASE_URL ?>/" target="_blank" class="admin-btn" style="background:#ffffff; border:1px solid #cbd5e1; color:#334155; padding:0.6rem 1.15rem; border-radius:8px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem; box-shadow:0 1px 2px rgba(0,0,0,0.04);">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                <span>View Live Site &rarr;</span>
+                <span>View Live Site</span>
             </a>
         </div>
     </div>
 
-    <!-- AJAX Toast Feedback -->
-    <div id="visibilityToast" style="display:none; margin-bottom:1.25rem; background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; padding:0.85rem 1.25rem; border-radius:8px; font-size:0.9rem; font-weight:600; animation:fadeIn 0.3s ease;">
-    </div>
+    <!-- Main Two-Column Layout (Matching Screenshots 1, 2, 3) -->
+    <div style="display:grid; grid-template-columns:minmax(0, 1.45fr) minmax(340px, 1fr); gap:1.75rem; align-items:start;">
 
-    <!-- Section Control Table / Card -->
-    <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.04); overflow:hidden;">
-        <div style="padding:1.25rem 1.5rem; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <strong style="color:#0f172a; font-size:1rem;">Frontend Sections Control</strong>
-                <span style="display:block; font-size:0.8rem; color:#64748b; margin-top:0.15rem;">
-                    Enabled sections are visible to all visitors. Disabled sections are completely hidden without leaving empty space.
-                </span>
-            </div>
-            <span style="font-size:0.8rem; font-weight:700; color:#059669; background:#ecfdf5; border:1px solid #a7f3d0; padding:0.25rem 0.65rem; border-radius:9999px;">
-                Total: <?= count($sections) ?> Sections
-            </span>
-        </div>
+        <!-- ================= LEFT COLUMN: Home page sections ================= -->
+        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:1.75rem; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+            <form action="" method="POST">
+                <?= csrf_field(); ?>
+                <input type="hidden" name="form_type" value="save_sections">
 
-        <div style="overflow-x:auto;">
-            <table style="width:100%; border-collapse:collapse; font-size:0.9rem; text-align:left;">
-                <thead>
-                    <tr style="border-bottom:1px solid #e2e8f0; color:#475569; font-weight:700; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.04em;">
-                        <th style="padding:1rem 1.5rem; width:45%;">Section</th>
-                        <th style="padding:1rem 1.5rem; width:25%;">Location</th>
-                        <th style="padding:1rem 1.5rem; width:15%;">Status</th>
-                        <th style="padding:1rem 1.5rem; width:15%; text-align:right;">Control</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($sections as $sec): ?>
-                        <?php 
-                        $isEnabled = ((int)$sec['is_enabled'] === 1);
-                        ?>
-                        <tr style="border-bottom:1px solid #f1f5f9; transition:background 0.15s ease;" id="row-<?= h($sec['section_key']) ?>">
-                            <!-- Section Name & Description -->
-                            <td style="padding:1.15rem 1.5rem;">
-                                <div style="display:flex; align-items:center; gap:0.75rem;">
-                                    <div style="width:36px; height:36px; border-radius:8px; background:<?= $isEnabled ? '#ecfdf5' : '#f1f5f9' ?>; color:<?= $isEnabled ? '#059669' : '#94a3b8' ?>; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.1rem;" id="icon-<?= h($sec['section_key']) ?>">
-                                        <?php if ($sec['section_key'] === 'header'): ?>
-                                            🌐
-                                        <?php elseif ($sec['section_key'] === 'hero_featured'): ?>
-                                            ⭐
-                                        <?php elseif ($sec['section_key'] === 'live_job_radar'): ?>
-                                            📡
-                                        <?php elseif ($sec['section_key'] === 'top_categories'): ?>
-                                            📂
-                                        <?php elseif ($sec['section_key'] === 'trending_guides'): ?>
-                                            🔥
-                                        <?php elseif ($sec['section_key'] === 'jobs_section'): ?>
-                                            💼
-                                        <?php elseif ($sec['section_key'] === 'career_toolkit'): ?>
-                                            🧰
-                                        <?php elseif ($sec['section_key'] === 'latest_articles'): ?>
-                                            📰
-                                        <?php elseif ($sec['section_key'] === 'footer'): ?>
-                                            🔻
-                                        <?php else: ?>
-                                            📄
-                                        <?php endif; ?>
-                                    </div>
-                                    <div>
-                                        <strong style="color:#0f172a; font-size:0.95rem; display:block;">
-                                            <?= h($sec['section_name']) ?>
-                                        </strong>
-                                        <span style="font-size:0.775rem; color:#64748b; font-family:monospace;">
-                                            Key: <?= h($sec['section_key']) ?>
-                                        </span>
-                                    </div>
-                                </div>
-                            </td>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.25rem;">
+                    <div>
+                        <h2 style="font-size:1.25rem; font-weight:800; color:#0f172a; margin:0 0 0.35rem 0;">
+                            Home page sections
+                        </h2>
+                        <p style="font-size:0.875rem; color:#64748b; margin:0;">
+                            Drag to reorder. Each section can be enabled/disabled and limited; "Latest" and "Popular" can be pinned to a category.
+                        </p>
+                    </div>
 
-                            <!-- Location -->
-                            <td style="padding:1.15rem 1.5rem; color:#475569; font-size:0.85rem;">
-                                <?= h($sec['section_location']) ?>
-                            </td>
+                    <button type="submit" class="admin-btn" style="background:#4f46e5; color:#ffffff; font-weight:700; padding:0.6rem 1.35rem; border-radius:8px; border:none; cursor:pointer; font-size:0.9rem; flex-shrink:0;">
+                        Save sections
+                    </button>
+                </div>
 
-                            <!-- Status Badge -->
-                            <td style="padding:1.15rem 1.5rem;">
-                                <span id="badge-<?= h($sec['section_key']) ?>" style="display:inline-flex; align-items:center; gap:0.35rem; padding:0.25rem 0.65rem; border-radius:9999px; font-size:0.75rem; font-weight:700; <?= $isEnabled ? 'background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;' : 'background:#f1f5f9; color:#64748b; border:1px solid #cbd5e1;' ?>">
-                                    <span style="width:7px; height:7px; border-radius:50%; background:<?= $isEnabled ? '#10b981' : '#94a3b8' ?>; display:inline-block;" id="dot-<?= h($sec['section_key']) ?>"></span>
-                                    <span id="text-<?= h($sec['section_key']) ?>"><?= $isEnabled ? 'ENABLED' : 'DISABLED' ?></span>
-                                </span>
-                            </td>
+                <!-- Section Cards Stack -->
+                <div style="display:flex; flex-direction:column; gap:1.25rem;">
 
-                            <!-- Toggle Button Form -->
-                            <td style="padding:1.15rem 1.5rem; text-align:right;">
-                                <form method="POST" action="<?= ADMIN_URL ?>/section-visibility.php" class="section-toggle-form" data-key="<?= h($sec['section_key']) ?>" style="display:inline-block;">
-                                    <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
-                                    <input type="hidden" name="section_key" value="<?= h($sec['section_key']) ?>">
-                                    <input type="hidden" name="action" value="toggle">
+                    <?php 
+                    $sectionOrderKeys = ['hero', 'latest', 'categories', 'popular', 'articles', 'recommended', 'newsletter'];
+                    foreach ($sectionOrderKeys as $secKey):
+                        $sec = $sectionsByKey[$secKey] ?? [
+                            'section_key' => $secKey,
+                            'section_name' => strtoupper($secKey),
+                            'title' => ucfirst($secKey),
+                            'subtitle' => '',
+                            'item_limit' => 6,
+                            'category_id' => null,
+                            'is_enabled' => 1
+                        ];
+                        $isEnabled = ((int)($sec['is_enabled'] ?? 1) === 1);
+                    ?>
+                    <!-- Single Section Card -->
+                    <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:1.25rem; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
+                        <!-- Header with Checkbox and Section Tag -->
+                        <div style="display:flex; align-items:center; gap:0.65rem; margin-bottom:1rem;">
+                            <!-- Drag Handle -->
+                            <span style="color:#cbd5e1; cursor:grab; font-size:1.1rem; line-height:1; user-select:none;">:::</span>
 
-                                    <button type="submit" 
-                                            class="toggle-switch-btn" 
-                                            id="btn-<?= h($sec['section_key']) ?>"
-                                            data-key="<?= h($sec['section_key']) ?>"
-                                            title="Click to <?= $isEnabled ? 'Disable' : 'Enable' ?>"
-                                            style="cursor:pointer; display:inline-flex; align-items:center; gap:0.5rem; padding:0.45rem 0.95rem; border-radius:8px; font-weight:700; font-size:0.825rem; border:1px solid; transition:all 0.2s ease; <?= $isEnabled ? 'background:#ecfdf5; color:#059669; border-color:#a7f3d0;' : 'background:#f8fafc; color:#64748b; border-color:#cbd5e1;' ?>">
-                                        <span class="toggle-state-label" id="btnlabel-<?= h($sec['section_key']) ?>">
-                                            <?= $isEnabled ? '[ ON ]' : '[ OFF ]' ?>
-                                        </span>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
+                            <label style="display:inline-flex; align-items:center; gap:0.45rem; cursor:pointer; font-size:0.9rem; font-weight:700; color:#0f172a;">
+                                <input type="checkbox" name="sections[<?= $secKey ?>][enabled]" value="1" <?= $isEnabled ? 'checked' : '' ?> style="width:17px; height:17px; accent-color:#2563eb; cursor:pointer;">
+                                <span>On</span>
+                            </label>
+
+                            <span style="font-size:0.8rem; font-weight:800; color:#64748b; letter-spacing:0.04em;">
+                                <?= strtoupper($sec['section_name']) ?>
+                            </span>
+                        </div>
+
+                        <!-- Card Inputs -->
+                        <div style="display:flex; flex-direction:column; gap:0.65rem;">
+                            <!-- Title Input -->
+                            <input type="text" 
+                                   name="sections[<?= $secKey ?>][title]" 
+                                   value="<?= h($sec['title'] ?? '') ?>" 
+                                   placeholder="Section Title"
+                                   style="width:100%; padding:0.6rem 0.85rem; border:1px solid #cbd5e1; border-radius:8px; font-size:0.95rem; font-weight:600; color:#0f172a; box-sizing:border-box;">
+
+                            <!-- Subtitle Input -->
+                            <input type="text" 
+                                   name="sections[<?= $secKey ?>][subtitle]" 
+                                   value="<?= h($sec['subtitle'] ?? '') ?>" 
+                                   placeholder="Section Subtitle / Description"
+                                   style="width:100%; padding:0.6rem 0.85rem; border:1px solid #cbd5e1; border-radius:8px; font-size:0.9rem; color:#475569; box-sizing:border-box;">
+
+                            <?php if ($secKey !== 'newsletter'): ?>
+                            <!-- Limit Input -->
+                            <input type="number" 
+                                   name="sections[<?= $secKey ?>][limit]" 
+                                   value="<?= (int)($sec['item_limit'] ?? 6) ?>" 
+                                   min="1" max="50"
+                                   placeholder="Item Limit"
+                                   style="width:100%; padding:0.6rem 0.85rem; border:1px solid #cbd5e1; border-radius:8px; font-size:0.9rem; color:#0f172a; box-sizing:border-box;">
+                            <?php endif; ?>
+
+                            <?php if (in_array($secKey, ['latest', 'popular'])): ?>
+                            <!-- Category Dropdown for Latest & Popular -->
+                            <select name="sections[<?= $secKey ?>][category_id]" 
+                                    style="width:100%; padding:0.6rem 0.85rem; border:1px solid #cbd5e1; border-radius:8px; font-size:0.9rem; color:#334155; background:#fff; box-sizing:border-box;">
+                                <option value="">Any category</option>
+                                <?php foreach ($categories as $cat): ?>
+                                    <option value="<?= $cat['id'] ?>" <?= ((int)($sec['category_id'] ?? 0) === (int)$cat['id']) ? 'selected' : '' ?>>
+                                        <?= h($cat['name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                     <?php endforeach; ?>
-                </tbody>
-            </table>
+
+                </div>
+
+                <div style="margin-top:1.5rem; text-align:right;">
+                    <button type="submit" class="admin-btn" style="background:#4f46e5; color:#ffffff; font-weight:700; padding:0.65rem 1.5rem; border-radius:8px; border:none; cursor:pointer; font-size:0.95rem;">
+                        Save sections
+                    </button>
+                </div>
+            </form>
         </div>
+
+        <!-- ================= RIGHT COLUMN: Header & Footer Menus ================= -->
+        <div style="display:flex; flex-direction:column; gap:1.75rem;">
+
+            <!-- 1. Header Menu Box (Screenshot 1) -->
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:1.75rem; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+                <form action="" method="POST" id="formHeaderMenu">
+                    <?= csrf_field(); ?>
+                    <input type="hidden" name="form_type" value="save_header_menu">
+
+                    <h2 style="font-size:1.15rem; font-weight:800; color:#0f172a; margin:0 0 1rem 0;">
+                        Header menu
+                    </h2>
+
+                    <!-- Items List -->
+                    <div id="headerMenuItemsList" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1rem;">
+                        <?php foreach ($headerMenu as $idx => $item): ?>
+                        <div class="menu-item-row" style="display:flex; align-items:center; gap:0.5rem;">
+                            <!-- Checkbox -->
+                            <input type="checkbox" 
+                                   name="header_menu[<?= $idx ?>][enabled]" 
+                                   value="1" 
+                                   <?= !empty($item['enabled']) ? 'checked' : '' ?>
+                                   style="width:17px; height:17px; accent-color:#2563eb; cursor:pointer; flex-shrink:0;">
+
+                            <!-- Label Input -->
+                            <input type="text" 
+                                   name="header_menu[<?= $idx ?>][label]" 
+                                   value="<?= h($item['label']) ?>" 
+                                   style="flex:1; padding:0.55rem 0.85rem; border:1px solid #cbd5e1; border-radius:8px; font-size:0.9rem; font-weight:600; color:#0f172a;">
+
+                            <input type="hidden" name="header_menu[<?= $idx ?>][url]" value="<?= h($item['url'] ?? '/') ?>">
+
+                            <!-- Drag Handle Placeholder -->
+                            <div style="width:26px; height:34px; border:1px solid #e2e8f0; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#cbd5e1; cursor:grab; flex-shrink:0;">
+                                ::
+                            </div>
+
+                            <!-- Remove Red Cross Button -->
+                            <button type="button" 
+                                    onclick="this.closest('.menu-item-row').remove()" 
+                                    style="background:none; border:none; color:#ef4444; font-size:1.25rem; line-height:1; cursor:pointer; padding:0 0.25rem; font-weight:700;"
+                                    title="Remove item">
+                                &times;
+                            </button>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <!-- Save Header Menu Button -->
+                    <button type="submit" class="admin-btn" style="background:#ffffff; border:1px solid #cbd5e1; color:#0f172a; font-weight:700; padding:0.5rem 1.15rem; border-radius:8px; cursor:pointer; font-size:0.875rem; margin-bottom:1.25rem;">
+                        Save header menu
+                    </button>
+                </form>
+
+                <!-- Add New Item Row -->
+                <form action="" method="POST" style="display:flex; align-items:center; gap:0.5rem; border-top:1px solid #f1f5f9; padding-top:1rem;">
+                    <?= csrf_field(); ?>
+                    <input type="hidden" name="form_type" value="add_header_item">
+
+                    <input type="text" 
+                           name="new_label" 
+                           placeholder="Label" 
+                           required
+                           style="flex:1; padding:0.55rem 0.85rem; border:1px solid #cbd5e1; border-radius:8px; font-size:0.9rem; color:#0f172a;">
+
+                    <input type="text" 
+                           name="new_url" 
+                           placeholder="/url" 
+                           value="/"
+                           style="width:90px; padding:0.55rem 0.65rem; border:1px solid #cbd5e1; border-radius:8px; font-size:0.85rem; color:#64748b;">
+
+                    <div style="width:26px; height:34px; border:1px solid #e2e8f0; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#cbd5e1; flex-shrink:0;">
+                        ::
+                    </div>
+
+                    <button type="submit" class="admin-btn" style="background:#4f46e5; color:#ffffff; font-weight:700; padding:0.55rem 1rem; border-radius:8px; border:none; cursor:pointer; font-size:0.875rem;">
+                        Add
+                    </button>
+                </form>
+            </div>
+
+            <!-- 2. Footer Menu Box (Screenshot 1) -->
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:1.75rem; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+                <form action="" method="POST" id="formFooterMenu">
+                    <?= csrf_field(); ?>
+                    <input type="hidden" name="form_type" value="save_footer_menu">
+
+                    <h2 style="font-size:1.15rem; font-weight:800; color:#0f172a; margin:0 0 1rem 0;">
+                        Footer menu
+                    </h2>
+
+                    <!-- Items List -->
+                    <div id="footerMenuItemsList" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1rem;">
+                        <?php foreach ($footerMenu as $fidx => $fitem): ?>
+                        <div class="menu-item-row" style="display:flex; align-items:center; gap:0.5rem;">
+                            <!-- Checkbox -->
+                            <input type="checkbox" 
+                                   name="footer_menu[<?= $fidx ?>][enabled]" 
+                                   value="1" 
+                                   <?= !empty($fitem['enabled']) ? 'checked' : '' ?>
+                                   style="width:17px; height:17px; accent-color:#2563eb; cursor:pointer; flex-shrink:0;">
+
+                            <!-- Label Input -->
+                            <input type="text" 
+                                   name="footer_menu[<?= $fidx ?>][label]" 
+                                   value="<?= h($fitem['label']) ?>" 
+                                   style="flex:1; padding:0.55rem 0.85rem; border:1px solid #cbd5e1; border-radius:8px; font-size:0.9rem; font-weight:600; color:#0f172a;">
+
+                            <input type="hidden" name="footer_menu[<?= $fidx ?>][url]" value="<?= h($fitem['url'] ?? '/') ?>">
+
+                            <!-- Drag Handle Placeholder -->
+                            <div style="width:26px; height:34px; border:1px solid #e2e8f0; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#cbd5e1; cursor:grab; flex-shrink:0;">
+                                ::
+                            </div>
+
+                            <!-- Remove Red Cross Button -->
+                            <button type="button" 
+                                    onclick="this.closest('.menu-item-row').remove()" 
+                                    style="background:none; border:none; color:#ef4444; font-size:1.25rem; line-height:1; cursor:pointer; padding:0 0.25rem; font-weight:700;"
+                                    title="Remove item">
+                                &times;
+                            </button>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <!-- Save Footer Menu Button -->
+                    <button type="submit" class="admin-btn" style="background:#ffffff; border:1px solid #cbd5e1; color:#0f172a; font-weight:700; padding:0.5rem 1.15rem; border-radius:8px; cursor:pointer; font-size:0.875rem; margin-bottom:1.25rem;">
+                        Save footer menu
+                    </button>
+                </form>
+
+                <!-- Add New Item Row -->
+                <form action="" method="POST" style="display:flex; align-items:center; gap:0.5rem; border-top:1px solid #f1f5f9; padding-top:1rem;">
+                    <?= csrf_field(); ?>
+                    <input type="hidden" name="form_type" value="add_footer_item">
+
+                    <input type="text" 
+                           name="new_label" 
+                           placeholder="Label" 
+                           required
+                           style="flex:1; padding:0.55rem 0.85rem; border:1px solid #cbd5e1; border-radius:8px; font-size:0.9rem; color:#0f172a;">
+
+                    <input type="text" 
+                           name="new_url" 
+                           placeholder="/url" 
+                           value="/"
+                           style="width:90px; padding:0.55rem 0.65rem; border:1px solid #cbd5e1; border-radius:8px; font-size:0.85rem; color:#64748b;">
+
+                    <button type="submit" class="admin-btn" style="background:#4f46e5; color:#ffffff; font-weight:700; padding:0.55rem 1rem; border-radius:8px; border:none; cursor:pointer; font-size:0.875rem;">
+                        Add
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
     </div>
 </div>
 
-<script>
-// AJAX Fast Toggle with Fallback to Standard Form POST
-document.addEventListener('DOMContentLoaded', () => {
-    const forms = document.querySelectorAll('.section-toggle-form');
-    const toast = document.getElementById('visibilityToast');
-
-    forms.forEach(form => {
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const secKey = form.getAttribute('data-key');
-            const csrf = form.querySelector('input[name="csrf_token"]').value;
-            const btn = document.getElementById('btn-' + secKey);
-            const btnLabel = document.getElementById('btnlabel-' + secKey);
-            const badge = document.getElementById('badge-' + secKey);
-            const dot = document.getElementById('dot-' + secKey);
-            const text = document.getElementById('text-' + secKey);
-            const icon = document.getElementById('icon-' + secKey);
-
-            if (btn) btn.disabled = true;
-
-            try {
-                const response = await fetch('<?= ADMIN_URL ?>/section-visibility.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        section_key: secKey,
-                        action: 'toggle',
-                        csrf_token: csrf
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data && data.success) {
-                    const isNowEnabled = (data.is_enabled === 1);
-
-                    // Update button styling
-                    if (btn) {
-                        btn.style.background = isNowEnabled ? '#ecfdf5' : '#f8fafc';
-                        btn.style.color = isNowEnabled ? '#059669' : '#64748b';
-                        btn.style.borderColor = isNowEnabled ? '#a7f3d0' : '#cbd5e1';
-                        btn.title = 'Click to ' + (isNowEnabled ? 'Disable' : 'Enable');
-                    }
-                    if (btnLabel) {
-                        btnLabel.textContent = isNowEnabled ? '[ ON ]' : '[ OFF ]';
-                    }
-
-                    // Update badge styling
-                    if (badge) {
-                        badge.style.background = isNowEnabled ? '#ecfdf5' : '#f1f5f9';
-                        badge.style.color = isNowEnabled ? '#059669' : '#64748b';
-                        badge.style.borderColor = isNowEnabled ? '#a7f3d0' : '#cbd5e1';
-                    }
-                    if (dot) {
-                        dot.style.background = isNowEnabled ? '#10b981' : '#94a3b8';
-                    }
-                    if (text) {
-                        text.textContent = isNowEnabled ? 'ENABLED' : 'DISABLED';
-                    }
-                    if (icon) {
-                        icon.style.background = isNowEnabled ? '#ecfdf5' : '#f1f5f9';
-                        icon.style.color = isNowEnabled ? '#059669' : '#94a3b8';
-                    }
-
-                    // Show success toast
-                    if (toast) {
-                        toast.textContent = data.message;
-                        toast.style.display = 'block';
-                        toast.style.background = isNowEnabled ? '#ecfdf5' : '#fef2f2';
-                        toast.style.color = isNowEnabled ? '#065f46' : '#991b1b';
-                        toast.style.borderColor = isNowEnabled ? '#a7f3d0' : '#fecaca';
-
-                        setTimeout(() => {
-                            toast.style.display = 'none';
-                        }, 3500);
-                    }
-                } else {
-                    alert(data.message || 'Failed to update section visibility.');
-                }
-            } catch (err) {
-                console.error(err);
-                // Fallback to normal form submit on network issue
-                form.submit();
-            } finally {
-                if (btn) btn.disabled = false;
-            }
-        });
-    });
-});
-</script>
-
-<?php include __DIR__ . '/includes/admin-footer.php'; ?>
+<?php require_once __DIR__ . '/includes/admin-footer.php'; ?>

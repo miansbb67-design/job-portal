@@ -202,7 +202,7 @@ function get_logged_in_admin() {
 function get_all_categories($withCount = false) {
     $db = getDBConnection();
     if ($withCount) {
-        $sql = "SELECT c.*, COUNT(CASE WHEN a.status = 'published' THEN 1 END) as total_articles
+        $sql = "SELECT c.*, COUNT(CASE WHEN a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) THEN 1 END) as total_articles
                 FROM categories c
                 LEFT JOIN articles a ON c.id = a.category_id
                 GROUP BY c.id
@@ -963,6 +963,177 @@ function set_section_visibility($sectionKey, $isEnabled) {
     return $stmt->execute([$enabledVal, $sectionKey]);
 }
 
+/**
+ * Track real live active visitor session on public requests
+ *
+ * @param string|null $pageTitle
+ */
+function track_active_visitor($pageTitle = null) {
+    // Never track administrative panel routes
+    $reqUri = $_SERVER['REQUEST_URI'] ?? '';
+    if (strpos($reqUri, '/admin') !== false) {
+        return;
+    }
 
+    $ip = get_client_ip();
+    if (empty($ip)) {
+        return;
+    }
 
+    $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    // Skip common automated bots
+    if (preg_match('/(bot|crawl|spider|slurp|facebookexternalhit)/i', $ua)) {
+        return;
+    }
 
+    $device = 'Desktop';
+    if (preg_match('/(mobile|android|iphone|ipad|touch)/i', $ua)) {
+        $device = 'Mobile';
+    }
+
+    $ref = !empty($_SERVER['HTTP_REFERER']) ? parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST) : 'Direct';
+    if (empty($ref)) {
+        $ref = 'Direct';
+    }
+
+    try {
+        $db = getDBConnection();
+        $stmt = $db->prepare("
+            INSERT INTO active_visitors (ip_address, current_url, page_title, device_type, country, referrer, last_activity)
+            VALUES (?, ?, ?, ?, 'Local', ?, NOW())
+            ON DUPLICATE KEY UPDATE 
+                current_url = VALUES(current_url),
+                page_title = VALUES(page_title),
+                device_type = VALUES(device_type),
+                referrer = VALUES(referrer),
+                last_activity = NOW()
+        ");
+        $cleanUrl = mb_substr($reqUri, 0, 255);
+        $cleanTitle = mb_substr((string)($pageTitle ?? ''), 0, 150);
+        $stmt->execute([$ip, $cleanUrl, $cleanTitle, $device, mb_substr($ref, 0, 255)]);
+    } catch (Throwable $e) {
+        // Silent failure if table temporarily unavailable
+    }
+}
+
+/**
+ * Get real active online visitors count within the last 5 minutes
+ *
+ * @return int
+ */
+function get_real_active_visitors_count() {
+    try {
+        $db = getDBConnection();
+        $count = (int)$db->query("
+            SELECT COUNT(*) 
+            FROM active_visitors 
+            WHERE last_activity >= (NOW() - INTERVAL 5 MINUTE)
+        ")->fetchColumn();
+        return max(0, $count);
+    } catch (Throwable $e) {
+        return 0;
+    }
+}
+
+/**
+ * Get real active pages currently being viewed
+ *
+ * @param int $limit
+ * @return array
+ */
+function get_real_active_pages($limit = 6) {
+    try {
+        $db = getDBConnection();
+        $stmt = $db->prepare("
+            SELECT current_url, page_title, COUNT(*) as visitor_count, MAX(device_type) as device, MAX(referrer) as source
+            FROM active_visitors
+            WHERE last_activity >= (NOW() - INTERVAL 5 MINUTE)
+            GROUP BY current_url, page_title
+            ORDER BY visitor_count DESC
+            LIMIT ?
+        ");
+        $stmt->bindValue(1, (int)$limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
+/**
+ * Resolve working live public URL for a static page
+ *
+ * @param string $slug
+ * @return string
+ */
+function get_page_view_url($slug) {
+    $cleanSlug = trim(strtolower((string)$slug));
+    
+    // Direct canonical script mapping
+    $mapping = [
+        'about' => 'about.php',
+        'about-us' => 'about.php',
+        'privacy' => 'privacy-policy.php',
+        'privacy-policy' => 'privacy-policy.php',
+        'terms' => 'terms.php',
+        'terms-and-conditions' => 'terms.php',
+        'cookie-policy' => 'cookie-policy.php',
+        'cookies' => 'cookie-policy.php',
+        'disclaimer' => 'disclaimer.php',
+        'contact' => 'contact.php',
+        'contact-us' => 'contact.php'
+    ];
+
+    if (isset($mapping[$cleanSlug])) {
+        return BASE_URL . '/' . $mapping[$cleanSlug];
+    }
+
+    $directFile = dirname(__DIR__) . DIRECTORY_SEPARATOR . $cleanSlug . '.php';
+    if (file_exists($directFile)) {
+        return BASE_URL . '/' . $cleanSlug . '.php';
+    }
+
+    return BASE_URL . '/page.php?slug=' . urlencode($cleanSlug);
+}
+
+/**
+ * Fetch dynamic header navigation items
+ *
+ * @return array
+ */
+function get_header_menu() {
+    $default = [
+        ['id' => '1', 'label' => 'Home', 'url' => '/', 'enabled' => true],
+        ['id' => '2', 'label' => 'Vlogs', 'url' => '/articles.php?video=1', 'enabled' => true],
+        ['id' => '3', 'label' => 'Articles', 'url' => '/articles.php', 'enabled' => true],
+        ['id' => '4', 'label' => 'Trending', 'url' => '/articles.php?trending=1', 'enabled' => true]
+    ];
+    $raw = get_setting('header_menu_items');
+    if (!empty($raw)) {
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded) && !empty($decoded)) {
+            return $decoded;
+        }
+    }
+    return $default;
+}
+
+/**
+ * Fetch dynamic footer navigation items
+ *
+ * @return array
+ */
+function get_footer_menu() {
+    $default = [
+        ['id' => '1', 'label' => 'Popular', 'url' => '/articles.php?trending=1', 'enabled' => true],
+        ['id' => '2', 'label' => 'Search', 'url' => '/search.php', 'enabled' => true]
+    ];
+    $raw = get_setting('footer_menu_items');
+    if (!empty($raw)) {
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded) && !empty($decoded)) {
+            return $decoded;
+        }
+    }
+    return $default;
+}

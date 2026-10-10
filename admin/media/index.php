@@ -117,22 +117,41 @@ if (is_dir($uploadDir)) {
 </div>
 <?php endif; ?>
 
-<!-- Upload Box (if permitted) -->
+<!-- Upload Box with Dropify (if permitted) -->
 <?php if (is_super_admin() || has_permission('media.upload')): ?>
-<div class="admin-card" style="background:#fff; border:2px dashed #cbd5e1; border-radius:12px; padding:1.5rem; margin-bottom:2rem; text-align:center;">
-    <form action="" method="POST" enctype="multipart/form-data" style="display:flex; flex-direction:column; align-items:center; gap:0.75rem;">
+<div class="admin-card" style="background:#fff; border:1px solid var(--admin-border); border-radius:12px; padding:1.75rem; margin-bottom:2rem; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+    <form action="" method="POST" enctype="multipart/form-data" id="mediaUploadForm">
         <?= csrf_field() ?>
-        <div style="width:48px; height:48px; border-radius:50%; background:#eff6ff; color:#0284c7; display:flex; align-items:center; justify-content:center;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-        </div>
-        <div style="font-weight:700; color:#0f172a; font-size:1rem;">Upload New Media Asset</div>
-        <p style="font-size:0.8rem; color:#64748b; margin:0;">Supported formats: JPG, PNG, WEBP, GIF, SVG (Max 5MB)</p>
-        <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap; justify-content:center; margin-top:0.5rem;">
-            <input type="file" name="media_file" required style="font-size:0.85rem; color:#475569;">
-            <button type="submit" class="admin-btn admin-btn-primary" style="padding:0.5rem 1.25rem; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:0.5rem;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:1rem;">
+            <div>
+                <div style="font-weight:800; color:#0f172a; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem;">
+                    <div style="width:34px; height:34px; border-radius:8px; background:#eff6ff; color:#0284c7; display:flex; align-items:center; justify-content:center;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    </div>
+                    <span>Upload New Media Asset</span>
+                </div>
+                <p style="font-size:0.825rem; color:#64748b; margin:0.35rem 0 0 0;">
+                    Drag &amp; drop banner images, logos, or article artwork. Supported formats: JPG, PNG, WEBP, GIF, SVG (Max 5MB)
+                </p>
+            </div>
+            <button type="submit" id="btnUploadMedia" class="admin-btn admin-btn-primary" style="padding:0.65rem 1.5rem; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:0.5rem; font-size:0.9rem;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 Upload File
             </button>
+        </div>
+
+        <div class="dropify-wrapper-box" style="margin-bottom:0.25rem;">
+            <input 
+                type="file" 
+                name="media_file" 
+                id="mediaFileInput" 
+                class="dropify" 
+                data-height="180" 
+                data-max-file-size="5M" 
+                data-allowed-file-extensions="jpg jpeg png webp gif svg"
+                data-default-file=""
+                required
+            >
         </div>
     </form>
 </div>
@@ -187,3 +206,22 @@ if (is_dir($uploadDir)) {
 <?php endif; ?>
 
 <?php require_once __DIR__ . '/../includes/admin-footer.php'; ?>
+
+<script>
+$(document).ready(function() {
+    if (typeof jQuery !== 'undefined' && typeof jQuery.fn.dropify !== 'undefined') {
+        $('#mediaFileInput').dropify({
+            messages: {
+                'default': 'Drag and drop an image here or click to browse',
+                'replace': 'Drag and drop or click to replace image',
+                'remove':  'Remove File',
+                'error':   'Oops, something went wrong with the file.'
+            },
+            error: {
+                'fileSize': 'The file size is too big ({{ value }} max).',
+                'fileExtension': 'The image format is not allowed ({{ value }} only).'
+            }
+        });
+    }
+});
+</script>

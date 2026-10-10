@@ -24,7 +24,7 @@ $stmt = $db->prepare("
     FROM articles a
     JOIN categories c ON a.category_id = c.id
     JOIN admins adm ON a.author_id = adm.id
-    WHERE a.slug = ? AND a.status = 'published'
+    WHERE a.slug = ? AND a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL)
     LIMIT 1
 ");
 $stmt->execute([$slug]);
@@ -41,7 +41,7 @@ $updateViews = $db->prepare("UPDATE articles SET views = views + 1 WHERE id = ?"
 $updateViews->execute([$article['id']]);
 
 // Handle Traditional Comment Form POST (progressive enhancement fallback)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_comment'])) {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['submit_comment'])) {
     $token = $_POST['csrf_token'] ?? '';
     $honeypot = trim($_POST['comments_bot_trap'] ?? ($_POST['website_url'] ?? ''));
     if (empty($honeypot) && verify_csrf_token($token)) {
@@ -156,7 +156,7 @@ $relatedStmt = $db->prepare("
     SELECT a.*, c.name as category_name, c.slug as category_slug
     FROM articles a
     JOIN categories c ON a.category_id = c.id
-    WHERE a.category_id = ? AND a.id != ? AND a.status = 'published'
+    WHERE a.category_id = ? AND a.id != ? AND a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL)
     ORDER BY a.published_at DESC
     LIMIT 3
 ");

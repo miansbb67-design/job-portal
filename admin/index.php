@@ -30,13 +30,18 @@ $canLogs = $isSuper || has_permission('logs.view');
 // User display name for welcome banner
 $userDisplay = $displayNameClean ?? ($isSuper ? 'Super Admin' : ($currentUser['name'] ?? ($currentUser['username'] ?? 'Admin')));
 
-// Gather Dynamic Metrics from DB
-$totalArticles = (int)$db->query("SELECT COUNT(*) FROM articles")->fetchColumn();
-$publishedArticles = (int)$db->query("SELECT COUNT(*) FROM articles WHERE status = 'published'")->fetchColumn();
-$totalJobs = (int)$db->query("SELECT COUNT(*) FROM articles WHERE is_job_posting = 1")->fetchColumn();
-$totalBlogPosts = (int)$db->query("SELECT COUNT(*) FROM articles WHERE is_job_posting = 0 OR is_job_posting IS NULL")->fetchColumn();
+// Gather Real Live Metrics from DB
+$activeNow = get_real_active_visitors_count();
+$activePages = get_real_active_pages(5);
+$totalUniqueVisitors = (int)$db->query("SELECT COUNT(DISTINCT ip_address) FROM active_visitors")->fetchColumn();
+$todayVisitors = (int)$db->query("SELECT COUNT(*) FROM active_visitors WHERE DATE(last_activity) = CURDATE()")->fetchColumn();
+
+$totalArticles = (int)$db->query("SELECT COUNT(*) FROM articles WHERE is_trash = 0")->fetchColumn();
+$publishedArticles = (int)$db->query("SELECT COUNT(*) FROM articles WHERE status = 'published' AND is_trash = 0")->fetchColumn();
+$totalJobs = (int)$db->query("SELECT COUNT(*) FROM articles WHERE is_job_posting = 1 AND is_trash = 0")->fetchColumn();
+$totalBlogPosts = (int)$db->query("SELECT COUNT(*) FROM articles WHERE (is_job_posting = 0 OR is_job_posting IS NULL) AND is_trash = 0")->fetchColumn();
 $totalCategories = (int)$db->query("SELECT COUNT(*) FROM categories")->fetchColumn();
-$totalViews = (int)$db->query("SELECT COALESCE(SUM(views), 0) FROM articles")->fetchColumn();
+$totalViews = (int)$db->query("SELECT COALESCE(SUM(views), 0) FROM articles WHERE is_trash = 0")->fetchColumn();
 $totalComments = (int)$db->query("SELECT COUNT(*) FROM comments")->fetchColumn();
 $pendingComments = (int)$db->query("SELECT COUNT(*) FROM comments WHERE status = 'pending'")->fetchColumn();
 
@@ -69,13 +74,13 @@ if ($isSuper) {
     ")->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// Fetch Recent Articles with Scope Filtering
-$recentWhere = "1=1";
+// Fetch Recent Articles with Scope Filtering (excluding trash)
+$recentWhere = "a.is_trash = 0";
 if (!$isSuper) {
     if ($canJobs && !$canPosts) {
-        $recentWhere = "a.is_job_posting = 1";
+        $recentWhere .= " AND a.is_job_posting = 1";
     } elseif ($canPosts && !$canJobs) {
-        $recentWhere = "(a.is_job_posting = 0 OR a.is_job_posting IS NULL)";
+        $recentWhere .= " AND (a.is_job_posting = 0 OR a.is_job_posting IS NULL)";
     }
 }
 
@@ -259,43 +264,43 @@ $recentArticles = $recentStmt->fetchAll();
     <!-- Box 1: Total Visitors -->
     <div class="pine-stat-box">
         <div class="pine-stat-label">TOTAL VISITORS</div>
-        <div class="pine-stat-val">3.6K</div>
-        <div class="pine-stat-sub">All time (unique readers)</div>
+        <div class="pine-stat-val"><?= number_format($totalUniqueVisitors) ?></div>
+        <div class="pine-stat-sub">Verified unique readers</div>
     </div>
 
     <!-- Box 2: Today Visitors -->
     <div class="pine-stat-box">
         <div class="pine-stat-label">TODAY VISITORS</div>
-        <div class="pine-stat-val">60</div>
-        <div class="pine-stat-sub">63 guide views today</div>
+        <div class="pine-stat-val"><?= number_format($todayVisitors) ?></div>
+        <div class="pine-stat-sub">Recorded views today</div>
     </div>
 
     <!-- Box 3: Website Page Views -->
     <div class="pine-stat-box">
         <div class="pine-stat-label">TOTAL GUIDE VIEWS</div>
-        <div class="pine-stat-val"><?= ($totalViews > 0) ? number_format($totalViews) : '3.8K' ?></div>
+        <div class="pine-stat-val"><?= number_format($totalViews) ?></div>
         <div class="pine-stat-sub">Career guides viewed</div>
     </div>
 
     <!-- Box 4: Active Job Alerts -->
     <div class="pine-stat-box">
         <div class="pine-stat-label">ACTIVE JOB ALERTS</div>
-        <div class="pine-stat-val"><?= ($totalJobs > 0) ? $totalJobs : '12' ?></div>
+        <div class="pine-stat-val"><?= $totalJobs ?></div>
         <div class="pine-stat-sub">Verified hiring circulars</div>
     </div>
 
     <!-- Box 5: Published Guides -->
     <div class="pine-stat-box">
         <div class="pine-stat-label">PUBLISHED GUIDES</div>
-        <div class="pine-stat-val"><?= ($publishedArticles > 0) ? $publishedArticles : '18' ?></div>
+        <div class="pine-stat-val"><?= $publishedArticles ?></div>
         <div class="pine-stat-sub"><?= $totalCategories ?> career categories</div>
     </div>
 
-    <!-- Box 6: Average Read Time -->
+    <!-- Box 6: Active Online Now -->
     <div class="pine-stat-box">
-        <div class="pine-stat-label">AVG. READ TIME</div>
-        <div class="pine-stat-val">3m 45s</div>
-        <div class="pine-stat-sub">High reader retention</div>
+        <div class="pine-stat-label">ACTIVE ONLINE NOW</div>
+        <div class="pine-stat-val" style="color:<?= $activeNow > 0 ? '#10b981' : 'inherit' ?>;"><?= $activeNow ?></div>
+        <div class="pine-stat-sub">Visitors online currently</div>
     </div>
 
     <!-- Box 7: Google Search Impressions -->
@@ -470,17 +475,23 @@ $recentArticles = $recentStmt->fetchAll();
                 </span>
             </div>
 
-            <div class="realtime-big-num">0</div>
-            <div class="realtime-subtext">visitors online (last 5 min) &bull; 0 views last minute</div>
+            <div class="realtime-big-num" style="color:<?= $activeNow > 0 ? '#10b981' : '#64748b' ?>;"><?= $activeNow ?></div>
+            <div class="realtime-subtext"><?= $activeNow == 1 ? '1 visitor online (last 5 min)' : "{$activeNow} visitors online (last 5 min)" ?> &bull; <?= $todayVisitors ?> views today</div>
 
             <div class="realtime-active-block">
-                <div class="active-pages-label">ACTIVE PAGES</div>
-                <div class="active-pages-empty">No one online right now.</div>
-                <div class="realtime-table-headers">
-                    <span>DEVICE</span>
-                    <span>COUNTRY</span>
-                    <span>SOURCE</span>
-                </div>
+                <div class="active-pages-label">ACTIVE PAGES RIGHT NOW</div>
+                <?php if (empty($activePages)): ?>
+                    <div class="active-pages-empty">No one online right now.</div>
+                <?php else: ?>
+                    <div style="display:flex; flex-direction:column; gap:0.4rem; padding:0.4rem 0;">
+                        <?php foreach ($activePages as $ap): ?>
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:0.35rem;">
+                                <span style="font-weight:600; color:#0f172a; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="<?= h($ap['current_url']) ?>"><?= h($ap['current_url']) ?></span>
+                                <span style="font-weight:700; color:#0284c7;"><?= $ap['visitor_count'] ?> online</span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 

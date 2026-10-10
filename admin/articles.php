@@ -240,6 +240,7 @@ require_once __DIR__ . '/includes/admin-header.php';
                 <tr>
                     <th class="col-title">TITLE</th>
                     <th class="col-cat">CATEGORY</th>
+                    <th class="col-tags">TAGS</th>
                     <th class="col-author">AUTHOR</th>
                     <th class="col-status">STATUS</th>
                     <th class="col-views">VIEWS</th>
@@ -251,7 +252,7 @@ require_once __DIR__ . '/includes/admin-header.php';
             <tbody>
                 <?php if (empty($articles)): ?>
                     <tr>
-                        <td colspan="8" class="empty-table-cell">
+                        <td colspan="9" class="empty-table-cell">
                             <div class="empty-state-wrap">
                                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                                 <h3><?= $filterVideo ? 'No Vlogs / Video Articles Found' : 'No articles found' ?></h3>
@@ -314,6 +315,34 @@ require_once __DIR__ . '/includes/admin-header.php';
                                 <?php endif; ?>
                             </td>
 
+                            <!-- Tags (Count & Badges) -->
+                            <?php
+                            $rawTags = !empty($art['tags']) ? $art['tags'] : ($art['keywords'] ?? '');
+                            $tagItems = array_filter(array_map('trim', explode(',', (string)$rawTags)));
+                            $tagCount = count($tagItems);
+                            ?>
+                            <td class="cell-tags" style="font-size:0.8rem; min-width:140px;">
+                                <?php if ($tagCount > 0): ?>
+                                    <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                                        <span style="display:inline-flex; align-items:center; gap:0.25rem; font-weight:700; color:#0284c7; background:#f0f9ff; border:1px solid #bae6fd; padding:0.15rem 0.45rem; border-radius:9999px; width:fit-content; font-size:0.75rem;">
+                                            <?= $tagCount ?> tag<?= $tagCount > 1 ? 's' : '' ?>
+                                        </span>
+                                        <div style="display:flex; flex-wrap:wrap; gap:0.25rem; max-width:180px;">
+                                            <?php foreach (array_slice($tagItems, 0, 3) as $tName): ?>
+                                                <span style="background:#f1f5f9; color:#475569; font-size:0.7rem; padding:0.1rem 0.35rem; border-radius:4px; font-weight:600;">
+                                                    #<?= h($tName) ?>
+                                                </span>
+                                            <?php endforeach; ?>
+                                            <?php if ($tagCount > 3): ?>
+                                                <span style="color:#94a3b8; font-size:0.7rem; font-weight:700;">+<?= $tagCount - 3 ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php else: ?>
+                                    <span style="color:#94a3b8; font-size:0.75rem; font-weight:600;">0 tags</span>
+                                <?php endif; ?>
+                            </td>
+
                             <!-- Author -->
                             <td class="cell-author">
                                 <span class="author-plain-text"><?= h($authorDisplay) ?></span>
@@ -354,7 +383,7 @@ require_once __DIR__ . '/includes/admin-header.php';
                                     </button>
 
                                     <!-- Preview Button (Opens public site in new tab) -->
-                                    <a href="<?= BASE_URL ?>/article/<?= h($art['slug']) ?>" target="_blank" class="btn-action-outline" title="View live article">
+                                    <a href="<?= BASE_URL ?>/article.php?slug=<?= urlencode($art['slug']) ?>" target="_blank" class="btn-action-outline" title="View live article">
                                         Preview
                                     </a>
 
@@ -380,7 +409,7 @@ require_once __DIR__ . '/includes/admin-header.php';
                                             </form>
 
                                             <!-- Copy URL -->
-                                            <button type="button" class="dropdown-menu-item" onclick="copyArticleUrl('<?= BASE_URL ?>/article/<?= h($art['slug']) ?>')">
+                                            <button type="button" class="dropdown-menu-item" onclick="copyArticleUrl('<?= BASE_URL ?>/article.php?slug=<?= urlencode($art['slug']) ?>')">
                                                 Copy Article Link
                                             </button>
 
@@ -409,6 +438,14 @@ require_once __DIR__ . '/includes/admin-header.php';
                                                     <input type="hidden" name="id" value="<?= $art['id'] ?>">
                                                     <button type="submit" class="dropdown-menu-item text-danger">
                                                         Move to Trash
+                                                    </button>
+                                                </form>
+                                                <form action="<?= ADMIN_URL ?>/articles.php" method="POST" style="margin:0;" onsubmit="return confirm('Permanently delete this article? This cannot be recovered.');">
+                                                    <?= csrf_field(); ?>
+                                                    <input type="hidden" name="action" value="delete_permanently">
+                                                    <input type="hidden" name="id" value="<?= $art['id'] ?>">
+                                                    <button type="submit" class="dropdown-menu-item text-danger" style="color:#ef4444;">
+                                                        Delete Permanently
                                                     </button>
                                                 </form>
                                             <?php endif; ?>

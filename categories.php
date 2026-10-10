@@ -34,7 +34,7 @@ if (!empty($slug)) {
     $perPage = ARTICLES_PER_PAGE;
     $offset = ($currentPage - 1) * $perPage;
 
-    $countStmt = $db->prepare("SELECT COUNT(*) FROM articles WHERE category_id = ? AND status = 'published'");
+    $countStmt = $db->prepare("SELECT COUNT(*) FROM articles WHERE category_id = ? AND status = 'published' AND (is_trash = 0 OR is_trash IS NULL)");
     $countStmt->execute([$category['id']]);
     $totalArticles = (int)$countStmt->fetchColumn();
     $totalPages = ceil($totalArticles / $perPage);
@@ -44,7 +44,7 @@ if (!empty($slug)) {
         FROM articles a
         JOIN categories c ON a.category_id = c.id
         JOIN admins adm ON a.author_id = adm.id
-        WHERE a.category_id = ? AND a.status = 'published'
+        WHERE a.category_id = ? AND a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL)
         ORDER BY a.published_at DESC
         LIMIT {$perPage} OFFSET {$offset}
     ");

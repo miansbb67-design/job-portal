@@ -55,7 +55,7 @@ if (!empty($query)) {
             FROM articles a
             JOIN categories c ON a.category_id = c.id
             JOIN admins adm ON a.author_id = adm.id
-            WHERE a.status = 'published' AND (
+            WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) AND (
                 a.title LIKE ? OR 
                 a.excerpt LIKE ? OR 
                 a.content LIKE ? OR 

@@ -18,7 +18,7 @@ if ($currentPage < 1) $currentPage = 1;
 $perPage = ARTICLES_PER_PAGE;
 $offset = ($currentPage - 1) * $perPage;
 
-$whereClauses = ["a.status = 'published'"];
+$whereClauses = ["a.status = 'published'", "(a.is_trash = 0 OR a.is_trash IS NULL)"];
 $params = [];
 
 $activeCategory = null;
