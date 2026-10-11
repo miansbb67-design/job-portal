@@ -2371,6 +2371,192 @@ select.form-control {
     border-color: #cbd5e1;
     color: #0f172a;
 }
+.btn-topbar-indigo {
+    background: #059669;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+.btn-topbar-indigo:hover {
+    background: #047857;
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+    color: #ffffff;
+}
+
+/* PineCast Exact Match Categories Layout */
+.pinecast-categories-container {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+.pinecast-categories-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+.pinecast-categories-table th {
+    padding: 0.85rem 1.5rem;
+    font-size: 0.725rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    background: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+}
+.pinecast-categories-table td {
+    padding: 1.15rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+.pinecast-categories-table tr:last-child td {
+    border-bottom: none;
+}
+.pinecast-categories-table tbody tr:hover {
+    background-color: #fafbfd;
+}
+.pcat-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: 460px;
+}
+.pcat-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+.pcat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+.pcat-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.25;
+}
+.pcat-desc {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.35;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.pcat-slug {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+.pcat-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.pcat-status-active {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+.pcat-status-inactive {
+    background-color: #f1f5f9;
+    color: #64748b;
+}
+.pcat-posts-count {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #334155;
+    text-align: center;
+}
+.pcat-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+.btn-pcat-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.815rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    transition: all 0.15s ease;
+    line-height: 1.3;
+}
+.btn-pcat-action:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+.btn-pcat-delete {
+    background: #e11d48;
+    color: #ffffff;
+    border: 1px solid #e11d48;
+}
+.btn-pcat-delete:hover {
+    background: #be123c;
+    border-color: #be123c;
+    color: #ffffff;
+}
+
+/* Category Modal Styles */
+.pcat-modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+.pcat-modal-backdrop.active {
+    display: flex;
+}
+.pcat-modal-card {
+    background: #ffffff;
+    border-radius: 14px;
+    max-width: 540px;
+    width: 100%;
+    padding: 1.75rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+}
 /* ==========================================================================
    Modern SaaS Notification Center & Dropdown
    ========================================================================== */

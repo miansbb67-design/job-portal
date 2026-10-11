@@ -399,6 +399,108 @@ function get_article_thumbnail_url($article) {
     return $defaultImage;
 }
 
+/**
+ * Validate and safely upload a category image file
+ *
+ * @param array $file $_FILES['image']
+ * @return array ['success' => bool, 'path' => string|null, 'error' => string|null]
+ */
+function upload_category_image($file) {
+    if (!isset($file) || $file['error'] === UPLOAD_ERR_NO_FILE) {
+        return ['success' => true, 'path' => null, 'error' => null];
+    }
+
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        $uploadErrors = [
+            UPLOAD_ERR_INI_SIZE   => 'The uploaded file exceeds the upload_max_filesize directive in php.ini.',
+            UPLOAD_ERR_FORM_SIZE  => 'The uploaded file exceeds the MAX_FILE_SIZE specified in the form.',
+            UPLOAD_ERR_PARTIAL    => 'The uploaded file was only partially uploaded.',
+            UPLOAD_ERR_NO_TMP_DIR => 'Missing a temporary folder on the server.',
+            UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
+            UPLOAD_ERR_EXTENSION  => 'A PHP extension stopped the file upload.',
+        ];
+        return ['success' => false, 'path' => null, 'error' => $uploadErrors[$file['error']] ?? 'Unknown upload error.'];
+    }
+
+    if ($file['size'] > MAX_FILE_SIZE) {
+        return ['success' => false, 'path' => null, 'error' => 'File size exceeds maximum limit of 4MB.'];
+    }
+
+    $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($extension, ALLOWED_EXTENSIONS)) {
+        return ['success' => false, 'path' => null, 'error' => 'Invalid file extension. Allowed extensions: ' . implode(', ', ALLOWED_EXTENSIONS)];
+    }
+
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+
+    if (!in_array($mimeType, ALLOWED_MIME_TYPES)) {
+        return ['success' => false, 'path' => null, 'error' => 'Invalid file format. Please upload a genuine JPG, PNG, or WebP image.'];
+    }
+
+    $imageInfo = @getimagesize($file['tmp_name']);
+    if ($imageInfo === false) {
+        return ['success' => false, 'path' => null, 'error' => 'Uploaded file is not a valid image.'];
+    }
+
+    $catDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'categories' . DIRECTORY_SEPARATOR;
+    if (!is_dir($catDir)) {
+        mkdir($catDir, 0755, true);
+    }
+
+    $uniqueName = 'cat_' . time() . '_' . bin2hex(random_bytes(5)) . '.' . $extension;
+    $destination = $catDir . $uniqueName;
+
+    if (!move_uploaded_file($file['tmp_name'], $destination)) {
+        return ['success' => false, 'path' => null, 'error' => 'Failed to save category image. Check folder permissions.'];
+    }
+
+    $relativePath = 'uploads/categories/' . $uniqueName;
+    return ['success' => true, 'path' => $relativePath, 'error' => null];
+}
+
+/**
+ * Resolve category thumbnail/image URL with fallback
+ *
+ * @param array|string|null $category Category row or image path
+ * @return string Full URL to category image
+ */
+function get_category_image_url($category) {
+    $rawImage = is_array($category) ? ($category['image'] ?? '') : (string)$category;
+    $rawImage = trim((string)$rawImage);
+
+    if (empty($rawImage)) {
+        return BASE_URL . '/assets/images/category-placeholder.svg';
+    }
+
+    if (strpos($rawImage, 'http://') === 0 || strpos($rawImage, 'https://') === 0) {
+        return $rawImage;
+    }
+
+    if (strpos($rawImage, '/') === 0) {
+        return BASE_URL . $rawImage;
+    }
+
+    $cleanPath = ltrim($rawImage, '/\\');
+    $baseDir = dirname(__DIR__);
+
+    if (file_exists($baseDir . '/' . $cleanPath)) {
+        return BASE_URL . '/' . $cleanPath;
+    }
+    if (file_exists($baseDir . '/uploads/categories/' . $cleanPath)) {
+        return BASE_URL . '/uploads/categories/' . $cleanPath;
+    }
+    if (file_exists($baseDir . '/uploads/articles/' . $cleanPath)) {
+        return BASE_URL . '/uploads/articles/' . $cleanPath;
+    }
+    if (file_exists($baseDir . '/uploads/' . $cleanPath)) {
+        return BASE_URL . '/uploads/' . $cleanPath;
+    }
+
+    return BASE_URL . '/assets/images/category-placeholder.svg';
+}
+
 
 /**
  * Truncate text cleanly to given limit

@@ -138,14 +138,7 @@ $adminPageTitle = "Tags";
 require_once __DIR__ . '/includes/admin-header.php';
 ?>
 
-<div class="admin-tags-container" style="max-width:1400px; margin:0 auto; padding-bottom:3rem;">
-    <!-- Page Title -->
-    <div style="margin-bottom:1.5rem;">
-        <h1 style="font-family:var(--admin-heading); font-size:1.6rem; font-weight:800; color:#0f172a; margin:0;">
-            Tags
-        </h1>
-    </div>
-
+<div class="admin-tags-container" style="max-width:1400px; margin:0 auto; padding:1.5rem 2rem 3rem;">
     <!-- Main Two-Column Layout (Matching Screenshot) -->
     <div style="display:grid; grid-template-columns:1fr 380px; gap:2rem; align-items:start;">
         
@@ -158,7 +151,7 @@ require_once __DIR__ . '/includes/admin-header.php';
                     id="searchTagsInput" 
                     placeholder="Search tags..." 
                     style="width:100%; max-width:340px; padding:0.65rem 1rem; border:1px solid #e2e8f0; border-radius:8px; font-size:0.9rem; outline:none; background:#ffffff; transition:border-color 0.2s;"
-                    onfocus="this.style.borderColor='#4f46e5'"
+                    onfocus="this.style.borderColor='#059669'"
                     onblur="this.style.borderColor='#e2e8f0'"
                     oninput="filterTagsTable(this.value)"
                 >
@@ -294,11 +287,12 @@ require_once __DIR__ . '/includes/admin-header.php';
                     </div>
 
                     <!-- Add Button (Indigo/Purple matching screenshot) -->
+                    <!-- Add Button (CareerNexaa Brand Green) -->
                     <button 
                         type="submit" 
-                        style="width:100%; background:#4f46e5; color:#ffffff; padding:0.75rem 1.25rem; font-weight:700; font-size:0.95rem; border-radius:8px; border:none; cursor:pointer; transition:background 0.2s;"
-                        onmouseover="this.style.background='#4338ca'"
-                        onmouseout="this.style.background='#4f46e5'"
+                        style="width:100%; background:#059669; color:#ffffff; padding:0.75rem 1.25rem; font-weight:700; font-size:0.95rem; border-radius:8px; border:none; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 4px rgba(5,150,105,0.2);"
+                        onmouseover="this.style.background='#047857'"
+                        onmouseout="this.style.background='#059669'"
                     >
                         Add
                     </button>
@@ -351,7 +345,7 @@ require_once __DIR__ . '/includes/admin-header.php';
                 <button type="button" onclick="closeEditTagModal()" class="admin-btn" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:0.6rem 1.25rem; font-weight:700; border-radius:8px;">
                     Cancel
                 </button>
-                <button type="submit" style="background:#4f46e5; color:#ffffff; padding:0.6rem 1.4rem; font-weight:700; border-radius:8px; border:none; cursor:pointer;">
+                <button type="submit" style="background:#059669; color:#ffffff; padding:0.6rem 1.4rem; font-weight:700; border-radius:8px; border:none; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#047857'" onmouseout="this.style.background='#059669'">
                     Save Changes
                 </button>
             </div>

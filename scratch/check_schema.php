@@ -6,8 +6,8 @@ echo "=== TABLES ===\n";
 $tables = $db->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
 print_r($tables);
 
-echo "\n=== ARTICLES COLUMNS ===\n";
-$cols = $db->query("DESCRIBE articles")->fetchAll(PDO::FETCH_ASSOC);
+echo "\n=== CATEGORIES COLUMNS ===\n";
+$cols = $db->query("DESCRIBE categories")->fetchAll(PDO::FETCH_ASSOC);
 foreach ($cols as $col) {
     echo "{$col['Field']} - {$col['Type']}\n";
 }

@@ -381,6 +381,10 @@ $currentAdminTab = $_GET['tab'] ?? 'overview';
                     <button type="button" class="btn-topbar-primary" id="btnTopbarSave" onclick="submitArticleForm()">
                         Save
                     </button>
+                <?php elseif ($currentAdminScript === 'categories.php'): ?>
+                    <button type="button" class="btn-topbar-indigo" id="btnTopbarNewCategory" onclick="openNewCategoryModal()">
+                        + New Category
+                    </button>
                 <?php endif; ?>
 
                 <!-- Notification Bell & Dropdown Center -->
