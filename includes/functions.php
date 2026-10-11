@@ -964,6 +964,55 @@ function set_section_visibility($sectionKey, $isEnabled) {
 }
 
 /**
+ * Load full configuration for all homepage sections (title, subtitle, limit, category_id, enabled)
+ *
+ * @return array
+ */
+function get_home_sections_config() {
+    static $configCache = null;
+    if ($configCache !== null) {
+        return $configCache;
+    }
+
+    $configCache = [];
+    try {
+        $db = getDBConnection();
+        $stmt = $db->query("SELECT * FROM section_visibility WHERE section_key IN ('hero', 'latest', 'categories', 'popular', 'articles', 'recommended', 'newsletter') ORDER BY sort_order ASC, id ASC");
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $configCache[$row['section_key']] = $row;
+        }
+    } catch (Exception $e) {
+        // Fallback default
+    }
+
+    return $configCache;
+}
+
+/**
+ * Get individual homepage section configuration
+ *
+ * @param string $key
+ * @param string $defaultTitle
+ * @param string $defaultSubtitle
+ * @param int $defaultLimit
+ * @return array
+ */
+function get_home_section($key, $defaultTitle = '', $defaultSubtitle = '', $defaultLimit = 6) {
+    $configs = get_home_sections_config();
+    if (isset($configs[$key])) {
+        return $configs[$key];
+    }
+    return [
+        'section_key' => $key,
+        'is_enabled'  => 1,
+        'title'       => $defaultTitle,
+        'subtitle'    => $defaultSubtitle,
+        'item_limit'  => $defaultLimit,
+        'category_id' => null
+    ];
+}
+
+/**
  * Track real live active visitor session on public requests
  *
  * @param string|null $pageTitle

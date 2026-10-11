@@ -82,7 +82,7 @@ try {
 }
 
 // Is Content, Analytics, and SEO menus active?
-$isContentActive = in_array($currentAdminScript, ['articles.php', 'add-article.php', 'edit-article.php', 'categories.php', 'comments.php']) || in_array($currentAdminDir, ['posts', 'jobs', 'media', 'categories']);
+$isContentActive = in_array($currentAdminScript, ['articles.php', 'add-article.php', 'edit-article.php', 'categories.php', 'tags.php', 'comments.php']) || in_array($currentAdminDir, ['posts', 'jobs', 'media', 'categories']);
 $isAnalyticsActive = ($currentAdminScript === 'analytics.php' || $currentAdminDir === 'analytics');
 $isSeoActive = ($currentAdminScript === 'seo.php' || $currentAdminDir === 'seo');
 $currentAdminTab = $_GET['tab'] ?? 'overview';
@@ -180,7 +180,7 @@ $currentAdminTab = $_GET['tab'] ?? 'overview';
                             </a>
                         </li>
                         <li>
-                            <a href="<?= ADMIN_URL ?>/articles.php?tab=tags" class="admin-submenu-item <?= (isset($_GET['tab']) && $_GET['tab'] === 'tags') ? 'active' : '' ?>">
+                            <a href="<?= ADMIN_URL ?>/tags.php" class="admin-submenu-item <?= ($currentAdminScript === 'tags.php') ? 'active' : '' ?>">
                                 Tags
                             </a>
                         </li>

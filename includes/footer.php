@@ -37,14 +37,26 @@ $footerCopyrightText = get_setting('site_copyright', '© ' . date('Y') . ' ' . $
                 </div>
 
                 <!-- Col 2: Navigation -->
+                <?php $dynamicFooterMenu = get_footer_menu(); ?>
                 <div class="footer-col">
                     <h3 class="footer-heading">Quick Links</h3>
                     <ul class="footer-links">
-                        <li><a href="<?= BASE_URL ?>/">Home</a></li>
-                        <li><a href="<?= BASE_URL ?>/articles.php">All Jobs & Articles</a></li>
-                        <li><a href="<?= BASE_URL ?>/categories.php">Job Categories</a></li>
-                        <li><a href="<?= BASE_URL ?>/about.php">About Us</a></li>
-                        <li><a href="<?= BASE_URL ?>/contact.php">Contact Us</a></li>
+                        <?php if (!empty($dynamicFooterMenu)): ?>
+                            <?php foreach ($dynamicFooterMenu as $fItem): ?>
+                                <?php 
+                                if (empty($fItem['enabled'])) continue;
+                                $fUrl = $fItem['url'] ?? '/';
+                                $fullFUrl = (strpos($fUrl, 'http') === 0) ? $fUrl : rtrim(BASE_URL, '/') . '/' . ltrim($fUrl, '/');
+                                ?>
+                                <li><a href="<?= h($fullFUrl) ?>"><?= h($fItem['label']) ?></a></li>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <li><a href="<?= BASE_URL ?>/">Home</a></li>
+                            <li><a href="<?= BASE_URL ?>/articles.php">All Jobs & Articles</a></li>
+                            <li><a href="<?= BASE_URL ?>/categories.php">Job Categories</a></li>
+                            <li><a href="<?= BASE_URL ?>/about.php">About Us</a></li>
+                            <li><a href="<?= BASE_URL ?>/contact.php">Contact Us</a></li>
+                        <?php endif; ?>
                     </ul>
                 </div>
 

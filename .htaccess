@@ -24,6 +24,9 @@
     # Category Clean URL: /category/sample-slug
     RewriteRule ^category/([a-zA-Z0-9_-]+)/?$ categories.php?slug=$1 [QSA,L]
 
+    # Tag Clean URL: /tag/sample-slug
+    RewriteRule ^tag/([a-zA-Z0-9_-]+)/?$ tag.php?slug=$1 [QSA,L]
+
     # Standard clean paths
     RewriteRule ^articles/?$ articles.php [L]
     RewriteRule ^categories/?$ categories.php [L]

@@ -2,15 +2,14 @@
 /**
  * Public Website - Home Page
  * CareerNexaa - Modern Jobs & Career Guidance Hub
- * Features:
- * - Interactive Hero with Smart Search & Sector Filter Chips
- * - Editorial Spotlight & Career Pulse Radar Split
- * - Interactive Sector Tracks with custom icons
- * - Trending Career Strategies (3-column grid)
- * - Verified Hiring & Job Openings (Dedicated Job Cards)
- * - Career Success Toolkit Banner
- * - Latest Publications Grid
- * - AdSense Policy Compliant placements
+ * Dynamically driven by Admin "Home Sections & Menus" configuration:
+ * 1. HERO (Featured stories & live radar)
+ * 2. LATEST (Latest jobs & articles feed)
+ * 3. CATEGORIES (Explore topics & tracks)
+ * 4. POPULAR (Ranked most popular reads)
+ * 5. ARTICLES (Long-form career guides & editorials)
+ * 6. RECOMMENDED (Editor's hand-picked selections)
+ * 7. NEWSLETTER (Subscriber capture & updates)
  */
 
 require_once __DIR__ . '/config/config.php';
@@ -24,209 +23,413 @@ $metaKeywords = "jobs 2026, career guidance, government jobs, remote tech jobs, 
 
 $db = getDBConnection();
 
-// 1. Fetch Main Spotlight Guide (Editor's pick / trending guide)
-$spotlightStmt = $db->query("
-    SELECT a.*, c.name as category_name, c.slug as category_slug, adm.username as author_name
-    FROM articles a
-    JOIN categories c ON a.category_id = c.id
-    JOIN admins adm ON a.author_id = adm.id
-    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) AND a.is_job_posting = 0
-    ORDER BY a.views DESC, a.published_at DESC
-    LIMIT 1
-");
-$spotlight = $spotlightStmt->fetch();
-$spotlightId = $spotlight ? (int)$spotlight['id'] : 0;
+// Fetch Section Configurations from "Home Sections & Menus"
+$heroSec        = get_home_section('hero', 'Featured', 'Hand-picked stories worth your time', 5);
+$latestSec      = get_home_section('latest', 'Latest Jobs & Posts', 'Fresh opportunities & publications', 8);
+$categoriesSec  = get_home_section('categories', 'Explore Categories', 'Browse by topic', 8);
+$popularSec     = get_home_section('popular', 'Most Popular', 'All-time favourites', 6);
+$articlesSec    = get_home_section('articles', 'Latest Articles', 'Long-form reads', 6);
+$recommendedSec = get_home_section('recommended', 'Recommended For You', 'Editor picks', 6);
+$newsletterSec  = get_home_section('newsletter', 'Stay in the loop', 'Get new career updates in your inbox', 0);
 
-// 2. Fetch Active Job Vacancies (Hiring Alerts)
-$jobsStmt = $db->query("
-    SELECT a.*, c.name as category_name, c.slug as category_slug, adm.username as author_name
-    FROM articles a
-    JOIN categories c ON a.category_id = c.id
-    JOIN admins adm ON a.author_id = adm.id
-    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) AND a.is_job_posting = 1
-    ORDER BY a.published_at DESC
-    LIMIT 3
-");
-$activeJobs = $jobsStmt->fetchAll();
+// 1. DATA: HERO Section
+$heroArticles = [];
+if (!empty($heroSec['is_enabled'])) {
+    $heroLimit = max(1, (int)$heroSec['item_limit']);
+    $heroWhere = "a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL)";
+    $heroParams = [];
+    if (!empty($heroSec['category_id'])) {
+        $heroWhere .= " AND a.category_id = ?";
+        $heroParams[] = (int)$heroSec['category_id'];
+    }
+    $heroStmt = $db->prepare("
+        SELECT a.*, c.name as category_name, c.slug as category_slug, adm.username as author_name
+        FROM articles a
+        JOIN categories c ON a.category_id = c.id
+        JOIN admins adm ON a.author_id = adm.id
+        WHERE {$heroWhere}
+        ORDER BY a.is_featured DESC, a.views DESC, a.published_at DESC
+        LIMIT {$heroLimit}
+    ");
+    $heroStmt->execute($heroParams);
+    $heroArticles = $heroStmt->fetchAll();
+}
+$spotlightArticle = !empty($heroArticles) ? $heroArticles[0] : null;
+$spotlightId = $spotlightArticle ? (int)$spotlightArticle['id'] : 0;
+$heroCompanionArticles = !empty($heroArticles) ? array_slice($heroArticles, 1) : [];
 
-// 3. Fetch Radar Fast Reads (Articles for the Hero right sidebar)
-$radarStmt = $db->prepare("
-    SELECT a.*, c.name as category_name, c.slug as category_slug, adm.username as author_name
-    FROM articles a
-    JOIN categories c ON a.category_id = c.id
-    JOIN admins adm ON a.author_id = adm.id
-    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) AND a.id != :spotlight_id AND a.is_job_posting = 0
-    ORDER BY a.published_at DESC
-    LIMIT 3
-");
-$radarStmt->execute([':spotlight_id' => $spotlightId]);
-$radarArticles = $radarStmt->fetchAll();
+// 2. DATA: LATEST Section
+$latestArticles = [];
+if (!empty($latestSec['is_enabled'])) {
+    $latestLimit = max(1, (int)$latestSec['item_limit']);
+    $latestWhere = "a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL)";
+    $latestParams = [];
+    if (!empty($latestSec['category_id'])) {
+        $latestWhere .= " AND a.category_id = ?";
+        $latestParams[] = (int)$latestSec['category_id'];
+    }
+    $latestStmt = $db->prepare("
+        SELECT a.*, c.name as category_name, c.slug as category_slug, adm.username as author_name
+        FROM articles a
+        JOIN categories c ON a.category_id = c.id
+        JOIN admins adm ON a.author_id = adm.id
+        WHERE {$latestWhere}
+        ORDER BY a.published_at DESC
+        LIMIT {$latestLimit}
+    ");
+    $latestStmt->execute($latestParams);
+    $latestArticles = $latestStmt->fetchAll();
+}
 
-// 4. Fetch Trending Career Guides (3-column grid)
-$trendingStmt = $db->prepare("
-    SELECT a.*, c.name as category_name, c.slug as category_slug, adm.username as author_name
-    FROM articles a
-    JOIN categories c ON a.category_id = c.id
-    JOIN admins adm ON a.author_id = adm.id
-    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) AND a.id != :spotlight_id
-    ORDER BY a.views DESC
-    LIMIT 3
-");
-$trendingStmt->execute([':spotlight_id' => $spotlightId]);
-$trendingGuides = $trendingStmt->fetchAll();
+// 3. DATA: CATEGORIES Section
+$categoriesList = [];
+if (!empty($categoriesSec['is_enabled'])) {
+    $catLimit = max(1, (int)$categoriesSec['item_limit']);
+    $catStmt = $db->prepare("
+        SELECT c.*, COUNT(CASE WHEN a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) THEN 1 END) as total_articles
+        FROM categories c
+        LEFT JOIN articles a ON c.id = a.category_id
+        GROUP BY c.id
+        ORDER BY total_articles DESC, c.name ASC
+        LIMIT {$catLimit}
+    ");
+    $catStmt->execute();
+    $categoriesList = $catStmt->fetchAll();
+}
 
-// 5. Fetch Latest Articles (6 cards)
-$latestStmt = $db->query("
-    SELECT a.*, c.name as category_name, c.slug as category_slug, adm.username as author_name
-    FROM articles a
-    JOIN categories c ON a.category_id = c.id
-    JOIN admins adm ON a.author_id = adm.id
-    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL)
-    ORDER BY a.published_at DESC
-    LIMIT 6
-");
-$latestArticles = $latestStmt->fetchAll();
+// 4. DATA: POPULAR Section
+$popularArticles = [];
+if (!empty($popularSec['is_enabled'])) {
+    $popularLimit = max(1, (int)$popularSec['item_limit']);
+    $popWhere = "a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL)";
+    $popParams = [];
+    if (!empty($popularSec['category_id'])) {
+        $popWhere .= " AND a.category_id = ?";
+        $popParams[] = (int)$popularSec['category_id'];
+    }
+    $popStmt = $db->prepare("
+        SELECT a.*, c.name as category_name, c.slug as category_slug, adm.username as author_name
+        FROM articles a
+        JOIN categories c ON a.category_id = c.id
+        JOIN admins adm ON a.author_id = adm.id
+        WHERE {$popWhere}
+        ORDER BY a.views DESC, a.likes DESC, a.published_at DESC
+        LIMIT {$popularLimit}
+    ");
+    $popStmt->execute($popParams);
+    $popularArticles = $popStmt->fetchAll();
+}
 
-// 6. Fetch Categories with total article count
-$categories = get_all_categories(true);
+// 5. DATA: ARTICLES Section (Long-form Editorial Guides)
+$longFormArticles = [];
+if (!empty($articlesSec['is_enabled'])) {
+    $artLimit = max(1, (int)$articlesSec['item_limit']);
+    $artWhere = "a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) AND a.is_job_posting = 0";
+    $artParams = [];
+    if (!empty($articlesSec['category_id'])) {
+        $artWhere .= " AND a.category_id = ?";
+        $artParams[] = (int)$articlesSec['category_id'];
+    }
+    $artStmt = $db->prepare("
+        SELECT a.*, c.name as category_name, c.slug as category_slug, adm.username as author_name
+        FROM articles a
+        JOIN categories c ON a.category_id = c.id
+        JOIN admins adm ON a.author_id = adm.id
+        WHERE {$artWhere}
+        ORDER BY a.published_at DESC
+        LIMIT {$artLimit}
+    ");
+    $artStmt->execute($artParams);
+    $longFormArticles = $artStmt->fetchAll();
+}
+
+// 6. DATA: RECOMMENDED Section
+$recommendedArticles = [];
+if (!empty($recommendedSec['is_enabled'])) {
+    $recLimit = max(1, (int)$recommendedSec['item_limit']);
+    $recWhere = "a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL)";
+    $recParams = [];
+    if (!empty($recommendedSec['category_id'])) {
+        $recWhere .= " AND a.category_id = ?";
+        $recParams[] = (int)$recommendedSec['category_id'];
+    }
+    $recStmt = $db->prepare("
+        SELECT a.*, c.name as category_name, c.slug as category_slug, adm.username as author_name
+        FROM articles a
+        JOIN categories c ON a.category_id = c.id
+        JOIN admins adm ON a.author_id = adm.id
+        WHERE {$recWhere}
+        ORDER BY a.is_recommended DESC, a.views DESC, a.published_at DESC
+        LIMIT {$recLimit}
+    ");
+    $recStmt->execute($recParams);
+    $recommendedArticles = $recStmt->fetchAll();
+}
 
 include __DIR__ . '/includes/header.php';
 ?>
 
-<!-- ================= Main Content Showcase ================= -->
-<?php 
-$showHeroFeatured = is_section_visible('hero_featured') && !empty($spotlight);
-$showLiveRadar    = is_section_visible('live_job_radar');
-?>
-<?php if ($showHeroFeatured || $showLiveRadar): ?>
-<section class="cp-hero-section">
+<!-- ================= Interactive Top Search Banner ================= -->
+<div class="cp-search-strip" style="background:#ffffff; border-bottom:1px solid #f1f5f9; padding:1.25rem 0;">
     <div class="site-container">
-        <!-- Hero Feature Split Showcase -->
-        <div class="hero-showcase-grid" style="<?= (!$showHeroFeatured || !$showLiveRadar) ? 'grid-template-columns: 1fr;' : '' ?>">
-            <!-- Left: Editorial Spotlight Guide (58% width) -->
-            <?php if ($showHeroFeatured): ?>
+        <form action="<?= BASE_URL ?>/search.php" method="GET" style="display:flex; gap:0.75rem; align-items:center; max-width:760px; margin:0 auto; flex-wrap:wrap;">
+            <div style="position:relative; flex:1; min-width:240px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); pointer-events:none;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" name="q" placeholder="Search career guides, remote jobs, ATS resume tips..." style="width:100%; padding:0.7rem 1rem 0.7rem 2.8rem; border:1px solid #cbd5e1; border-radius:9999px; font-size:0.95rem; outline:none; transition:border 0.2s;" onfocus="this.style.borderColor='#059669'" onblur="this.style.borderColor='#cbd5e1'">
+            </div>
+            <button type="submit" class="admin-btn admin-btn-primary" style="padding:0.7rem 1.6rem; font-weight:700; border-radius:9999px; background:#059669; color:#fff; border:none; cursor:pointer;">
+                Search CareerNexaa
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ================= 1. SECTION: HERO (Featured Stories & Spotlight) ================= -->
+<?php if (!empty($heroSec['is_enabled']) && !empty($spotlightArticle)): ?>
+<section class="dynamic-home-section" id="section-hero">
+    <div class="site-container">
+        <div class="home-section-head">
+            <div class="home-section-head-left">
+                <span class="home-section-eyebrow">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    <?= h($heroSec['title'] ?: 'Featured') ?>
+                </span>
+                <h1 class="home-section-title"><?= h($heroSec['title'] ?: 'Featured') ?></h1>
+                <?php if (!empty($heroSec['subtitle'])): ?>
+                    <p class="home-section-sub"><?= h($heroSec['subtitle']) ?></p>
+                <?php endif; ?>
+            </div>
+            <div>
+                <a href="<?= BASE_URL ?>/articles.php?featured=1" class="home-section-action-link">
+                    Explore Spotlight &rarr;
+                </a>
+            </div>
+        </div>
+
+        <div class="home-hero-split">
+            <!-- Left: Main Big Spotlight Guide -->
             <?php 
-                $spotThumb = get_article_thumbnail_url($spotlight);
+                $spotThumb = get_article_thumbnail_url($spotlightArticle);
+                $spotRawTags = !empty($spotlightArticle['tags']) ? $spotlightArticle['tags'] : ($spotlightArticle['keywords'] ?? '');
+                $spotTags = array_filter(array_map('trim', explode(',', (string)$spotRawTags)));
             ?>
-            <article class="editorial-spotlight-card">
-                <div class="spotlight-media-wrap">
-                    <img src="<?= $spotThumb ?>" alt="<?= h($spotlight['title']) ?>" class="spotlight-img" loading="eager">
-                    <div class="spotlight-badge-row">
-                        <span class="badge-editorial">★ Featured Guide</span>
-                        <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($spotlight['category_slug']) ?>" class="badge-cat-tag">
-                            <?= h($spotlight['category_name']) ?>
+            <article class="hero-spotlight-box">
+                <div class="hero-spotlight-media">
+                    <img src="<?= $spotThumb ?>" alt="<?= h($spotlightArticle['title']) ?>" loading="eager">
+                    <div class="hero-badge-overlay">
+                        <span class="hero-featured-tag">★ Featured</span>
+                        <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($spotlightArticle['category_slug']) ?>" class="hero-cat-tag">
+                            <?= h($spotlightArticle['category_name']) ?>
                         </a>
                     </div>
                 </div>
 
-                <div class="spotlight-content">
-                    <h2 class="spotlight-title">
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($spotlight['slug']) ?>">
-                            <?= h($spotlight['title']) ?>
+                <div class="hero-spotlight-body">
+                    <h2 class="hero-spotlight-title">
+                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($spotlightArticle['slug']) ?>">
+                            <?= h($spotlightArticle['title']) ?>
                         </a>
                     </h2>
 
-                    <p class="spotlight-excerpt">
-                        <?= h($spotlight['excerpt']) ?>
-                    </p>
-
-                    <div class="spotlight-footer">
-                        <div class="spotlight-author-wrap">
-                            <span class="author-avatar-chip"><?= strtoupper(substr($spotlight['author_name'], 0, 1)) ?></span>
-                            <div class="author-meta-info">
-                                <span class="author-meta-name"><?= h($spotlight['author_name']) ?></span>
-                                <span class="author-meta-date"><?= format_date($spotlight['published_at']) ?> &bull; <?= (int)$spotlight['views'] ?> views</span>
-                            </div>
-                        </div>
-
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($spotlight['slug']) ?>" class="read-guide-btn">
-                            Read Guide &rarr;
-                        </a>
-                    </div>
-                </div>
-            </article>
-            <?php endif; ?>
-
-            <!-- Right: Career Pulse Radar & Live Alerts (42% width) -->
-            <?php if ($showLiveRadar): ?>
-            <div class="career-radar-widget">
-                <div class="radar-widget-header">
-                    <div class="radar-title-group">
-                        <span class="live-pulse-dot"></span>
-                        <h3 class="radar-heading">Live Job Radar</h3>
-                    </div>
-                    <a href="<?= BASE_URL ?>/articles.php" class="radar-view-all">All Guides &rarr;</a>
-                </div>
-
-                <div class="radar-items-list">
-                    <!-- Featured Active Job Role in Radar -->
-                    <?php if (!empty($activeJobs)): ?>
-                    <?php $radarJob = $activeJobs[0]; ?>
-                    <div class="radar-job-item">
-                        <div class="radar-job-top">
-                            <span class="job-hiring-pill">Hiring Now</span>
-                            <?php if (!empty($radarJob['job_salary'])): ?>
-                                <span class="job-salary-tag"><?= h($radarJob['job_salary']) ?></span>
-                            <?php endif; ?>
-                        </div>
-                        <h4 class="radar-job-title">
-                            <a href="<?= BASE_URL ?>/article.php?slug=<?= h($radarJob['slug']) ?>">
-                                <?= h($radarJob['title']) ?>
-                            </a>
-                        </h4>
-                        <div class="radar-job-company">
-                            <span><?= h($radarJob['job_company']) ?></span>
-                            <?php if (!empty($radarJob['job_location'])): ?>
-                                <span>&bull; <?= h($radarJob['job_location']) ?></span>
-                            <?php endif; ?>
-                        </div>
+                    <?php if (!empty($spotTags)): ?>
+                    <div class="card-tags-chip-row">
+                        <?php foreach (array_slice($spotTags, 0, 4) as $tg): ?>
+                            <span class="card-tag-chip">#<?= h($tg) ?></span>
+                        <?php endforeach; ?>
                     </div>
                     <?php endif; ?>
 
-                    <!-- Trending Quick Reads -->
-                    <?php foreach ($radarArticles as $rArt): ?>
-                    <?php 
-                        $rThumb = get_article_thumbnail_url($rArt);
-                    ?>
-                    <div class="radar-article-row">
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($rArt['slug']) ?>" class="radar-thumb-box">
-                            <img src="<?= $rThumb ?>" alt="<?= h($rArt['title']) ?>" loading="lazy">
-                        </a>
-                        <div class="radar-article-info">
-                            <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($rArt['category_slug']) ?>" class="radar-cat-tag">
-                                <?= h($rArt['category_name']) ?>
+                    <p class="hero-spotlight-excerpt">
+                        <?= h($spotlightArticle['excerpt']) ?>
+                    </p>
+
+                    <div class="hero-spotlight-meta">
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <span class="cp-author-avatar"><?= strtoupper(substr($spotlightArticle['author_name'], 0, 1)) ?></span>
+                            <div>
+                                <span style="font-weight:700; color:#0f172a; font-size:0.85rem;"><?= h($spotlightArticle['author_name']) ?></span>
+                                <span style="font-size:0.75rem; color:#64748b; display:block;"><?= format_date($spotlightArticle['published_at']) ?></span>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <span style="font-size:0.8rem; color:#64748b; display:inline-flex; align-items:center; gap:0.25rem;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                <?= (int)$spotlightArticle['views'] ?> views
+                            </span>
+                            <a href="<?= BASE_URL ?>/article.php?slug=<?= h($spotlightArticle['slug']) ?>" class="read-guide-btn">
+                                Read Article &rarr;
                             </a>
-                            <h4 class="radar-row-title">
-                                <a href="<?= BASE_URL ?>/article.php?slug=<?= h($rArt['slug']) ?>">
-                                    <?= h($rArt['title']) ?>
-                                </a>
-                            </h4>
-                            <span class="radar-meta-text"><?= format_date($rArt['published_at']) ?> &bull; <?= (int)$rArt['views'] ?> views</span>
                         </div>
                     </div>
-                    <?php endforeach; ?>
+                </div>
+            </article>
+
+            <!-- Right: Companion Hero Cards List -->
+            <div class="hero-side-card">
+                <div class="hero-side-header">
+                    <span class="hero-side-title">
+                        <span class="live-pulse-dot"></span>
+                        Top Stories
+                    </span>
+                    <a href="<?= BASE_URL ?>/articles.php" style="color:#059669; font-size:0.8rem; font-weight:700; text-decoration:none;">View All &rarr;</a>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:0.5rem; justify-content:space-around; flex:1;">
+                    <?php if (!empty($heroCompanionArticles)): ?>
+                        <?php foreach ($heroCompanionArticles as $cArt): ?>
+                        <?php 
+                            $cThumb = get_article_thumbnail_url($cArt);
+                            $cRawTags = !empty($cArt['tags']) ? $cArt['tags'] : ($cArt['keywords'] ?? '');
+                            $cTags = array_filter(array_map('trim', explode(',', (string)$cRawTags)));
+                        ?>
+                        <div class="hero-side-item">
+                            <a href="<?= BASE_URL ?>/article.php?slug=<?= h($cArt['slug']) ?>" class="hero-side-thumb">
+                                <img src="<?= $cThumb ?>" alt="<?= h($cArt['title']) ?>" loading="lazy">
+                            </a>
+                            <div class="hero-side-item-info">
+                                <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($cArt['category_slug']) ?>" style="color:#0284c7; font-size:0.75rem; font-weight:700; text-decoration:none;">
+                                    <?= h($cArt['category_name']) ?>
+                                </a>
+                                <h4 class="hero-side-item-title">
+                                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($cArt['slug']) ?>">
+                                        <?= h($cArt['title']) ?>
+                                    </a>
+                                </h4>
+                                <div style="font-size:0.72rem; color:#64748b; display:flex; align-items:center; gap:0.5rem;">
+                                    <span><?= format_date($cArt['published_at']) ?></span>
+                                    <span>&bull;</span>
+                                    <span><?= (int)$cArt['views'] ?> views</span>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div style="color:#94a3b8; font-size:0.85rem; text-align:center; padding:2rem 0;">
+                            More featured stories will appear here.
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
-            <?php endif; ?>
         </div>
     </div>
 </section>
 <?php endif; ?>
 
-<!-- ================= Section 1: Explore by Career Track (6 Cards) ================= -->
-<?php if (is_section_visible('top_categories') && !empty($categories)): ?>
-<section class="page-section">
+<!-- ================= 2. SECTION: LATEST (Latest Jobs & Vlogs) ================= -->
+<?php if (!empty($latestSec['is_enabled']) && !empty($latestArticles)): ?>
+<section class="dynamic-home-section dynamic-home-section-alt" id="section-latest">
     <div class="site-container">
-        <div class="section-header-row">
-            <div>
-                <h2>Browse Top Categories</h2>
-                <p class="section-header-sub">Find the right career path, exam preparation guides, and job opportunities.</p>
+        <div class="home-section-head">
+            <div class="home-section-head-left">
+                <span class="home-section-eyebrow">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <?= h($latestSec['title'] ?: 'Latest') ?>
+                </span>
+                <h2 class="home-section-title"><?= h($latestSec['title'] ?: 'Latest Jobs & Articles') ?></h2>
+                <?php if (!empty($latestSec['subtitle'])): ?>
+                    <p class="home-section-sub"><?= h($latestSec['subtitle']) ?></p>
+                <?php endif; ?>
             </div>
-            <a href="<?= BASE_URL ?>/categories.php" class="section-action-btn">All Categories &rarr;</a>
+            <div>
+                <a href="<?= BASE_URL ?>/articles.php" class="home-section-action-link">
+                    View All &rarr;
+                </a>
+            </div>
+        </div>
+
+        <div class="cp-card-grid-3">
+            <?php foreach ($latestArticles as $art): ?>
+            <?php 
+                $aThumb = get_article_thumbnail_url($art);
+                $aRawTags = !empty($art['tags']) ? $art['tags'] : ($art['keywords'] ?? '');
+                $aTags = array_filter(array_map('trim', explode(',', (string)$aRawTags)));
+            ?>
+            <article class="cp-article-card">
+                <div class="cp-card-thumb-wrap">
+                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($art['slug']) ?>">
+                        <img src="<?= $aThumb ?>" alt="<?= h($art['title']) ?>" class="cp-card-thumb" loading="lazy">
+                    </a>
+                    <span class="cp-badge-floating <?= $art['is_job_posting'] ? 'job-badge' : '' ?>">
+                        <?= $art['is_job_posting'] ? 'Job Vacancy' : h($art['category_name']) ?>
+                    </span>
+                </div>
+
+                <div class="cp-card-body">
+                    <div class="cp-card-meta-top">
+                        <span class="cp-card-cat-name"><?= h($art['category_name']) ?></span>
+                        <span>&bull;</span>
+                        <span><?= format_date($art['published_at']) ?></span>
+                    </div>
+
+                    <h3 class="cp-card-title">
+                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($art['slug']) ?>">
+                            <?= h($art['title']) ?>
+                        </a>
+                    </h3>
+
+                    <?php if (!empty($aTags)): ?>
+                    <div class="card-tags-chip-row">
+                        <?php foreach (array_slice($aTags, 0, 3) as $tg): ?>
+                            <span class="card-tag-chip">#<?= h($tg) ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+
+                    <p class="cp-card-excerpt">
+                        <?= h($art['excerpt']) ?>
+                    </p>
+
+                    <?php if ($art['is_job_posting'] && !empty($art['job_salary'])): ?>
+                    <div class="cp-job-chips-box">
+                        <span style="font-weight:700; color:#047857;"><?= h($art['job_salary']) ?></span>
+                        <?php if (!empty($art['job_location'])): ?>
+                            <span>&bull; <?= h($art['job_location']) ?></span>
+                        <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
+
+                    <div class="cp-card-footer">
+                        <div class="cp-author-chip">
+                            <span class="cp-author-avatar"><?= strtoupper(substr($art['author_name'], 0, 1)) ?></span>
+                            <span><?= h($art['author_name']) ?></span>
+                        </div>
+                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($art['slug']) ?>" class="cp-card-read-link">
+                            <?= $art['is_job_posting'] ? 'View Job &rarr;' : 'Read Guide &rarr;' ?>
+                        </a>
+                    </div>
+                </div>
+            </article>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+<!-- ================= 3. SECTION: CATEGORIES (Explore Categories) ================= -->
+<?php if (!empty($categoriesSec['is_enabled']) && !empty($categoriesList)): ?>
+<section class="dynamic-home-section" id="section-categories">
+    <div class="site-container">
+        <div class="home-section-head">
+            <div class="home-section-head-left">
+                <span class="home-section-eyebrow">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    <?= h($categoriesSec['title'] ?: 'Categories') ?>
+                </span>
+                <h2 class="home-section-title"><?= h($categoriesSec['title'] ?: 'Explore Categories') ?></h2>
+                <?php if (!empty($categoriesSec['subtitle'])): ?>
+                    <p class="home-section-sub"><?= h($categoriesSec['subtitle']) ?></p>
+                <?php endif; ?>
+            </div>
+            <div>
+                <a href="<?= BASE_URL ?>/categories.php" class="home-section-action-link">
+                    All Categories &rarr;
+                </a>
+            </div>
         </div>
 
         <div class="sector-tracks-grid">
-            <?php foreach ($categories as $cat): ?>
+            <?php foreach ($categoriesList as $cat): ?>
                 <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($cat['slug']) ?>" class="sector-card">
                     <div class="sector-icon-box">
                         <?php if (strpos($cat['slug'], 'govt') !== false || strpos($cat['slug'], 'government') !== false): ?>
@@ -237,8 +440,8 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                         <?php elseif (strpos($cat['slug'], 'resume') !== false || strpos($cat['slug'], 'interview') !== false): ?>
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                        <?php elseif (strpos($cat['slug'], 'intern') !== false): ?>
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        <?php elseif (strpos($cat['slug'], 'trad') !== false): ?>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                         <?php else: ?>
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
                         <?php endif; ?>
@@ -252,56 +455,148 @@ $showLiveRadar    = is_section_visible('live_job_radar');
 </section>
 <?php endif; ?>
 
-<!-- ================= Section 2: Trending Career Strategies (3-Column Grid) ================= -->
-<?php if (is_section_visible('trending_guides') && !empty($trendingGuides)): ?>
-<section class="page-section page-section-alt">
+<!-- ================= 4. SECTION: POPULAR (Ranked All-Time Favourites) ================= -->
+<?php if (!empty($popularSec['is_enabled']) && !empty($popularArticles)): ?>
+<section class="dynamic-home-section dynamic-home-section-alt" id="section-popular">
     <div class="site-container">
-        <div class="section-header-row">
-            <div>
-                <h2>Trending Career Guides</h2>
-                <p class="section-header-sub">Top interview tips, ATS resume frameworks, and career growth roadmaps.</p>
+        <div class="home-section-head">
+            <div class="home-section-head-left">
+                <span class="home-section-eyebrow">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>
+                    <?= h($popularSec['title'] ?: 'Popular') ?>
+                </span>
+                <h2 class="home-section-title"><?= h($popularSec['title'] ?: 'Most Popular Guides') ?></h2>
+                <?php if (!empty($popularSec['subtitle'])): ?>
+                    <p class="home-section-sub"><?= h($popularSec['subtitle']) ?></p>
+                <?php endif; ?>
             </div>
-            <a href="<?= BASE_URL ?>/articles.php?trending=1" class="section-action-btn">View All Guides &rarr;</a>
+            <div>
+                <a href="<?= BASE_URL ?>/articles.php?trending=1" class="home-section-action-link">
+                    Trending Radar &rarr;
+                </a>
+            </div>
+        </div>
+
+        <div class="home-ranked-grid">
+            <?php $rankIndex = 1; ?>
+            <?php foreach ($popularArticles as $pop): ?>
+            <?php 
+                $pThumb = get_article_thumbnail_url($pop);
+                $pRawTags = !empty($pop['tags']) ? $pop['tags'] : ($pop['keywords'] ?? '');
+                $pTags = array_filter(array_map('trim', explode(',', (string)$pRawTags)));
+            ?>
+            <article class="ranked-story-card">
+                <div class="ranked-number-badge">
+                    #<?= $rankIndex++ ?>
+                </div>
+
+                <div style="flex:1; min-width:0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+                        <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($pop['category_slug']) ?>" style="color:#059669; font-weight:700; font-size:0.75rem; text-decoration:none;">
+                            <?= h($pop['category_name']) ?>
+                        </a>
+                        <span style="font-size:0.72rem; color:#64748b; font-weight:600;">
+                            <?= (int)$pop['views'] ?> views
+                        </span>
+                    </div>
+
+                    <h3 style="font-family:var(--font-heading); font-size:1rem; font-weight:700; line-height:1.35; margin:0 0 0.35rem 0;">
+                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($pop['slug']) ?>" style="color:#0f172a; text-decoration:none;">
+                            <?= h($pop['title']) ?>
+                        </a>
+                    </h3>
+
+                    <?php if (!empty($pTags)): ?>
+                    <div class="card-tags-chip-row" style="margin-bottom:0.35rem;">
+                        <?php foreach (array_slice($pTags, 0, 2) as $tg): ?>
+                            <span class="card-tag-chip">#<?= h($tg) ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+
+                    <span style="font-size:0.72rem; color:#64748b;"><?= format_date($pop['published_at']) ?> &bull; <?= h($pop['author_name']) ?></span>
+                </div>
+
+                <a href="<?= BASE_URL ?>/article.php?slug=<?= h($pop['slug']) ?>" style="width:72px; height:54px; border-radius:8px; overflow:hidden; flex-shrink:0;">
+                    <img src="<?= $pThumb ?>" alt="<?= h($pop['title']) ?>" style="width:100%; height:100%; object-fit:cover;" loading="lazy">
+                </a>
+            </article>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+<!-- ================= 5. SECTION: ARTICLES (Long-form Reads) ================= -->
+<?php if (!empty($articlesSec['is_enabled']) && !empty($longFormArticles)): ?>
+<section class="dynamic-home-section" id="section-articles">
+    <div class="site-container">
+        <div class="home-section-head">
+            <div class="home-section-head-left">
+                <span class="home-section-eyebrow">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <?= h($articlesSec['title'] ?: 'Articles') ?>
+                </span>
+                <h2 class="home-section-title"><?= h($articlesSec['title'] ?: 'Long-form Reads & Editorials') ?></h2>
+                <?php if (!empty($articlesSec['subtitle'])): ?>
+                    <p class="home-section-sub"><?= h($articlesSec['subtitle']) ?></p>
+                <?php endif; ?>
+            </div>
+            <div>
+                <a href="<?= BASE_URL ?>/articles.php" class="home-section-action-link">
+                    All Long-reads &rarr;
+                </a>
+            </div>
         </div>
 
         <div class="cp-card-grid-3">
-            <?php foreach ($trendingGuides as $article): ?>
+            <?php foreach ($longFormArticles as $art): ?>
             <?php 
-                $thumbPath = get_article_thumbnail_url($article);
+                $artThumb = get_article_thumbnail_url($art);
+                $artRawTags = !empty($art['tags']) ? $art['tags'] : ($art['keywords'] ?? '');
+                $artTags = array_filter(array_map('trim', explode(',', (string)$artRawTags)));
             ?>
             <article class="cp-article-card">
                 <div class="cp-card-thumb-wrap">
-                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>">
-                        <img src="<?= $thumbPath ?>" alt="<?= h($article['title']) ?>" class="cp-card-thumb" loading="lazy">
+                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($art['slug']) ?>">
+                        <img src="<?= $artThumb ?>" alt="<?= h($art['title']) ?>" class="cp-card-thumb" loading="lazy">
                     </a>
                     <span class="cp-badge-floating">
-                        Trending
+                        <?= h($art['category_name']) ?>
                     </span>
                 </div>
 
                 <div class="cp-card-body">
                     <div class="cp-card-meta-top">
-                        <span class="cp-card-cat-name"><?= h($article['category_name']) ?></span>
+                        <span class="cp-card-cat-name"><?= h($art['category_name']) ?></span>
                         <span>&bull;</span>
-                        <span><?= format_date($article['published_at']) ?></span>
+                        <span><?= format_date($art['published_at']) ?></span>
                     </div>
 
                     <h3 class="cp-card-title">
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>">
-                            <?= h($article['title']) ?>
+                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($art['slug']) ?>">
+                            <?= h($art['title']) ?>
                         </a>
                     </h3>
 
+                    <?php if (!empty($artTags)): ?>
+                    <div class="card-tags-chip-row">
+                        <?php foreach (array_slice($artTags, 0, 3) as $tg): ?>
+                            <span class="card-tag-chip">#<?= h($tg) ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+
                     <p class="cp-card-excerpt">
-                        <?= h($article['excerpt']) ?>
+                        <?= h($art['excerpt']) ?>
                     </p>
 
                     <div class="cp-card-footer">
                         <div class="cp-author-chip">
-                            <span class="cp-author-avatar"><?= strtoupper(substr($article['author_name'], 0, 1)) ?></span>
-                            <span><?= h($article['author_name']) ?></span>
+                            <span class="cp-author-avatar"><?= strtoupper(substr($art['author_name'], 0, 1)) ?></span>
+                            <span><?= h($art['author_name']) ?></span>
                         </div>
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>" class="cp-card-read-link">
+                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($art['slug']) ?>" class="cp-card-read-link">
                             Read Guide &rarr;
                         </a>
                     </div>
@@ -313,167 +608,105 @@ $showLiveRadar    = is_section_visible('live_job_radar');
 </section>
 <?php endif; ?>
 
-<!-- ================= Section 3: Verified Job Openings & Hiring Alerts ================= -->
-<?php if (is_section_visible('jobs_section') && !empty($activeJobs)): ?>
-<section class="page-section">
+<!-- ================= 6. SECTION: RECOMMENDED (Editor Picks) ================= -->
+<?php if (!empty($recommendedSec['is_enabled']) && !empty($recommendedArticles)): ?>
+<section class="dynamic-home-section dynamic-home-section-alt" id="section-recommended">
     <div class="site-container">
-        <div class="section-header-row">
+        <div class="home-section-head">
+            <div class="home-section-head-left">
+                <span class="home-section-eyebrow">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    <?= h($recommendedSec['title'] ?: 'Recommended') ?>
+                </span>
+                <h2 class="home-section-title"><?= h($recommendedSec['title'] ?: 'Recommended For You') ?></h2>
+                <?php if (!empty($recommendedSec['subtitle'])): ?>
+                    <p class="home-section-sub"><?= h($recommendedSec['subtitle']) ?></p>
+                <?php endif; ?>
+            </div>
             <div>
-                <h2>Latest Job Openings</h2>
-                <p class="section-header-sub">Verified government, corporate, and tech jobs with direct application details.</p>
+                <a href="<?= BASE_URL ?>/articles.php" class="home-section-action-link">
+                    Browse All &rarr;
+                </a>
             </div>
-            <a href="<?= BASE_URL ?>/articles.php" class="section-action-btn">View All Jobs &rarr;</a>
-        </div>
-
-        <div class="job-postings-strip">
-            <?php foreach ($activeJobs as $job): ?>
-            <div class="job-vacancy-card">
-                <div class="job-vacancy-card-header">
-                    <span class="job-type-pill"><?= !empty($job['job_type']) ? h($job['job_type']) : 'Direct Opening' ?></span>
-                    <?php if (!empty($job['job_salary'])): ?>
-                        <span class="job-salary-badge"><?= h($job['job_salary']) ?></span>
-                    <?php endif; ?>
-                </div>
-
-                <h3 class="job-vacancy-title">
-                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($job['slug']) ?>">
-                        <?= h($job['title']) ?>
-                    </a>
-                </h3>
-
-                <div class="job-company-row">
-                    <span><?= h($job['job_company']) ?></span>
-                    <?php if (!empty($job['job_location'])): ?>
-                        <span>&bull;</span>
-                        <span class="job-location-text"><?= h($job['job_location']) ?></span>
-                    <?php endif; ?>
-                </div>
-
-                <p class="job-vacancy-excerpt">
-                    <?= h($job['excerpt']) ?>
-                </p>
-
-                <div class="job-vacancy-action-bar">
-                    <span style="font-size:0.775rem; color:var(--text-muted);">Posted <?= format_date($job['published_at']) ?></span>
-                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($job['slug']) ?>" class="job-apply-link">
-                        View Job & Details &rarr;
-                    </a>
-                </div>
-            </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
-<?php endif; ?>
-
-<!-- ================= Section 4: Career Success Toolkit Banner ================= -->
-<?php if (is_section_visible('career_toolkit')): ?>
-<div class="site-container">
-    <section class="career-toolkit-section">
-        <div class="site-container">
-            <div style="text-align:center; max-width:680px; margin:0 auto 3rem;">
-                <h2 style="font-size:2.2rem; color:#ffffff; margin-bottom:0.75rem;">Career Success Toolkit</h2>
-                <p style="color:#d1fae5; font-size:1.05rem;">Free roadmaps, templates, and frameworks to accelerate your job search.</p>
-            </div>
-
-            <div class="career-toolkit-grid">
-                <div class="toolkit-box">
-                    <div class="toolkit-box-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                    </div>
-                    <h3 class="toolkit-box-title">ATS Resume Blueprint</h3>
-                    <p class="toolkit-box-desc">Proven formatting tips and keywords to pass ATS automated filters easily.</p>
-                    <a href="<?= BASE_URL ?>/article.php?slug=how-to-write-an-ats-friendly-resume" class="toolkit-box-link">Read Blueprint &rarr;</a>
-                </div>
-
-                <div class="toolkit-box">
-                    <div class="toolkit-box-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                    </div>
-                    <h3 class="toolkit-box-title">STAR Interview Method</h3>
-                    <p class="toolkit-box-desc">Master behavioral interview questions with structured and confident answers.</p>
-                    <a href="<?= BASE_URL ?>/article.php?slug=mastering-behavioral-interview-star-method" class="toolkit-box-link">View Method &rarr;</a>
-                </div>
-
-                <div class="toolkit-box">
-                    <div class="toolkit-box-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                    </div>
-                    <h3 class="toolkit-box-title">Remote Job Guide 2026</h3>
-                    <p class="toolkit-box-desc">Find high-paying international remote positions and freelance opportunities.</p>
-                    <a href="<?= BASE_URL ?>/article.php?slug=top-10-high-paying-remote-jobs-2026" class="toolkit-box-link">Explore Jobs &rarr;</a>
-                </div>
-            </div>
-        </div>
-    </section>
-</div>
-<?php endif; ?>
-
-<!-- ================= Section 5: Latest Articles & Guides ================= -->
-<?php if (is_section_visible('latest_articles') && !empty($latestArticles)): ?>
-<section class="page-section">
-    <div class="site-container">
-        <div class="section-header-row">
-            <div>
-                <h2>Latest Articles & News</h2>
-                <p class="section-header-sub">Recent career advice, exam schedules, and recruitment updates.</p>
-            </div>
-            <a href="<?= BASE_URL ?>/articles.php" class="section-action-btn">View All Articles &rarr;</a>
         </div>
 
         <div class="cp-card-grid-3">
-            <?php foreach ($latestArticles as $article): ?>
+            <?php foreach ($recommendedArticles as $art): ?>
             <?php 
-                $thumbPath = get_article_thumbnail_url($article);
+                $rThumb = get_article_thumbnail_url($art);
+                $rRawTags = !empty($art['tags']) ? $art['tags'] : ($art['keywords'] ?? '');
+                $rTags = array_filter(array_map('trim', explode(',', (string)$rRawTags)));
             ?>
-            <article class="cp-article-card">
+            <article class="cp-article-card" style="border-top:3px solid #059669;">
                 <div class="cp-card-thumb-wrap">
-                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>">
-                        <img src="<?= $thumbPath ?>" alt="<?= h($article['title']) ?>" class="cp-card-thumb" loading="lazy">
+                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($art['slug']) ?>">
+                        <img src="<?= $rThumb ?>" alt="<?= h($art['title']) ?>" class="cp-card-thumb" loading="lazy">
                     </a>
-                    <span class="cp-badge-floating <?= $article['is_job_posting'] ? 'job-badge' : '' ?>">
-                        <?= $article['is_job_posting'] ? 'Job Opening' : h($article['category_name']) ?>
+                    <span class="cp-badge-floating" style="background:linear-gradient(135deg, #059669 0%, #10b981 100%); color:#fff;">
+                        ★ Editor's Pick
                     </span>
                 </div>
 
                 <div class="cp-card-body">
                     <div class="cp-card-meta-top">
-                        <span class="cp-card-cat-name"><?= h($article['category_name']) ?></span>
+                        <span class="cp-card-cat-name"><?= h($art['category_name']) ?></span>
                         <span>&bull;</span>
-                        <span><?= format_date($article['published_at']) ?></span>
+                        <span><?= format_date($art['published_at']) ?></span>
                     </div>
 
                     <h3 class="cp-card-title">
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>">
-                            <?= h($article['title']) ?>
+                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($art['slug']) ?>">
+                            <?= h($art['title']) ?>
                         </a>
                     </h3>
 
-                    <p class="cp-card-excerpt">
-                        <?= h($article['excerpt']) ?>
-                    </p>
-
-                    <?php if ($article['is_job_posting'] && !empty($article['job_company'])): ?>
-                    <div class="cp-job-chips-box">
-                        <span><?= h($article['job_company']) ?></span>
-                        <?php if (!empty($article['job_salary'])): ?>
-                            <span>&bull; <?= h($article['job_salary']) ?></span>
-                        <?php endif; ?>
+                    <?php if (!empty($rTags)): ?>
+                    <div class="card-tags-chip-row">
+                        <?php foreach (array_slice($rTags, 0, 3) as $tg): ?>
+                            <span class="card-tag-chip">#<?= h($tg) ?></span>
+                        <?php endforeach; ?>
                     </div>
                     <?php endif; ?>
 
+                    <p class="cp-card-excerpt">
+                        <?= h($art['excerpt']) ?>
+                    </p>
+
                     <div class="cp-card-footer">
                         <div class="cp-author-chip">
-                            <span class="cp-author-avatar"><?= strtoupper(substr($article['author_name'], 0, 1)) ?></span>
-                            <span><?= h($article['author_name']) ?></span>
+                            <span class="cp-author-avatar"><?= strtoupper(substr($art['author_name'], 0, 1)) ?></span>
+                            <span><?= h($art['author_name']) ?></span>
                         </div>
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>" class="cp-card-read-link">
+                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($art['slug']) ?>" class="cp-card-read-link">
                             Read Guide &rarr;
                         </a>
                     </div>
                 </div>
             </article>
             <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+<!-- ================= 7. SECTION: NEWSLETTER (Stay in the Loop) ================= -->
+<?php if (!empty($newsletterSec['is_enabled'])): ?>
+<section class="dynamic-home-section" id="section-newsletter">
+    <div class="site-container">
+        <div class="home-newsletter-box">
+            <div class="home-newsletter-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            </div>
+            <h2 class="home-newsletter-title"><?= h($newsletterSec['title'] ?: 'Stay in the loop') ?></h2>
+            <p class="home-newsletter-sub"><?= h($newsletterSec['subtitle'] ?: 'Get new career updates, hiring alerts, and interview strategies delivered to your inbox.') ?></p>
+
+            <form class="home-newsletter-form" onsubmit="event.preventDefault(); alert('Thank you for subscribing to CareerNexaa! You are now in the loop.'); this.reset();">
+                <input type="email" class="home-newsletter-input" placeholder="Enter your work email address..." required>
+                <button type="submit" class="home-newsletter-btn">
+                    Subscribe Free
+                </button>
+            </form>
+            <p style="font-size:0.75rem; color:#a7f3d0; margin-top:1rem; opacity:0.8;">🔒 Zero spam. Unsubscribe at any time with one click.</p>
         </div>
     </div>
 </section>
