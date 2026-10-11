@@ -38,6 +38,24 @@ $headerCategories = get_all_categories();
 // Track real live active visitor
 track_active_visitor($pageTitle);
 $dynamicHeaderMenu = get_header_menu();
+
+// Fetch recent job vacancies & career updates for the notification bell
+$headerNotifications = [];
+try {
+    $hDb = getDBConnection();
+    $hNotifStmt = $hDb->query("
+        SELECT a.id, a.title, a.slug, a.is_job_posting, a.job_company, a.published_at,
+               c.name as category_name
+        FROM articles a
+        LEFT JOIN categories c ON a.category_id = c.id
+        WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL)
+        ORDER BY a.published_at DESC
+        LIMIT 5
+    ");
+    $headerNotifications = $hNotifStmt->fetchAll();
+} catch (Exception $e) {
+    $headerNotifications = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -170,6 +188,86 @@ $dynamicHeaderMenu = get_header_menu();
                 <button type="button" class="pine-icon-btn md-hidden" id="mobileSearchBtn" aria-label="Search">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
                 </button>
+
+                <!-- Notification Bell Icon & Interactive Dropdown -->
+                <div class="site-bell-group" id="siteBellGroup">
+                    <button type="button" class="site-bell-btn" id="siteBellBtn" aria-label="Instant Notifications" aria-expanded="false" title="Instant Job & Career Notifications">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <?php if (!empty($headerNotifications)): ?>
+                            <span class="site-bell-badge" id="siteBellBadge"><?= count($headerNotifications) ?></span>
+                        <?php endif; ?>
+                    </button>
+
+                    <!-- Notifications Dropdown Popup -->
+                    <div class="site-notif-dropdown" id="siteNotifDropdown" role="dialog" aria-modal="false" aria-label="Job & Career Notifications">
+                        <div class="site-notif-header">
+                            <div class="site-notif-header-title">
+                                <span class="site-notif-title">Notifications</span>
+                                <span class="site-notif-badge-pill"><?= count($headerNotifications) ?> New</span>
+                            </div>
+                            <button type="button" class="site-notif-close-btn" id="siteNotifCloseBtn" aria-label="Close notification panel">&times;</button>
+                        </div>
+
+                        <!-- Instant Push Notification Alert Box -->
+                        <div class="site-notif-push-card">
+                            <div class="site-notif-push-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                </svg>
+                            </div>
+                            <div class="site-notif-push-content">
+                                <div class="site-notif-push-heading">Instant Hiring Alerts</div>
+                                <div class="site-notif-push-sub">Get live exam and job updates on your device.</div>
+                            </div>
+                            <button type="button" class="site-notif-enable-btn" id="siteNotifPushBtn" onclick="requestSitePushNotifications(this)">
+                                Turn On
+                            </button>
+                        </div>
+
+                        <!-- Notifications List -->
+                        <div class="site-notif-body">
+                            <?php if (!empty($headerNotifications)): ?>
+                                <div class="site-notif-list">
+                                    <?php foreach ($headerNotifications as $n): ?>
+                                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($n['slug']) ?>" class="site-notif-item">
+                                            <div class="site-notif-item-icon <?= $n['is_job_posting'] ? 'job-icon' : 'guide-icon' ?>">
+                                                <?php if ($n['is_job_posting']): ?>
+                                                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                                                <?php else: ?>
+                                                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="site-notif-item-content">
+                                                <div class="site-notif-item-meta">
+                                                    <span class="site-notif-type-tag <?= $n['is_job_posting'] ? 'job' : 'guide' ?>">
+                                                        <?= $n['is_job_posting'] ? 'Job Vacancy' : h($n['category_name'] ?? 'Career Guide') ?>
+                                                    </span>
+                                                    <span class="site-notif-item-date"><?= format_date($n['published_at']) ?></span>
+                                                </div>
+                                                <div class="site-notif-item-title"><?= h($n['title']) ?></div>
+                                            </div>
+                                        </a>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php else: ?>
+                                <div class="site-notif-empty">
+                                    <p>No new notifications right now.</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Dropdown Footer -->
+                        <div class="site-notif-footer">
+                            <a href="<?= BASE_URL ?>/articles.php" class="site-notif-view-all">
+                                View all jobs & career updates &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Mobile Menu Toggle -->
                 <button type="button" class="pine-icon-btn lg-hidden" id="mobileMenuToggle" aria-expanded="false" aria-controls="mobileNavMenu" aria-label="Toggle navigation menu">

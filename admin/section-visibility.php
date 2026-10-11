@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Fetch home sections
 $homeSections = $db->query("
     SELECT * FROM section_visibility 
-    WHERE section_key IN ('hero', 'latest', 'categories', 'popular', 'articles', 'recommended', 'newsletter')
+    WHERE section_key IN ('hero', 'latest', 'categories', 'popular', 'articles', 'recommended', 'notification', 'newsletter')
     ORDER BY sort_order ASC, id ASC
 ")->fetchAll(PDO::FETCH_ASSOC);
 
@@ -230,13 +230,13 @@ require_once __DIR__ . '/includes/admin-header.php';
                 <div style="display:flex; flex-direction:column; gap:1.25rem;">
 
                     <?php 
-                    $sectionOrderKeys = ['hero', 'latest', 'categories', 'popular', 'articles', 'recommended', 'newsletter'];
+                    $sectionOrderKeys = ['hero', 'latest', 'categories', 'popular', 'articles', 'recommended', 'notification'];
                     foreach ($sectionOrderKeys as $secKey):
-                        $sec = $sectionsByKey[$secKey] ?? [
+                        $sec = $sectionsByKey[$secKey] ?? ($secKey === 'notification' ? ($sectionsByKey['newsletter'] ?? null) : null) ?? [
                             'section_key' => $secKey,
                             'section_name' => strtoupper($secKey),
-                            'title' => ucfirst($secKey),
-                            'subtitle' => '',
+                            'title' => ($secKey === 'notification') ? 'Instant Job & Career Notifications' : ucfirst($secKey),
+                            'subtitle' => ($secKey === 'notification') ? 'Turn on alerts to receive verified hiring, career guides & breaking exam updates directly on your device.' : '',
                             'item_limit' => 6,
                             'category_id' => null,
                             'is_enabled' => 1
@@ -256,7 +256,7 @@ require_once __DIR__ . '/includes/admin-header.php';
                             </label>
 
                             <span style="font-size:0.8rem; font-weight:800; color:#64748b; letter-spacing:0.04em;">
-                                <?= strtoupper($sec['section_name']) ?>
+                                <?= strtoupper($sec['section_name'] ?? $secKey) ?>
                             </span>
                         </div>
 
@@ -276,7 +276,7 @@ require_once __DIR__ . '/includes/admin-header.php';
                                    placeholder="Section Subtitle / Description"
                                    style="width:100%; padding:0.6rem 0.85rem; border:1px solid #cbd5e1; border-radius:8px; font-size:0.9rem; color:#475569; box-sizing:border-box;">
 
-                            <?php if ($secKey !== 'newsletter'): ?>
+                            <?php if (!in_array($secKey, ['newsletter', 'notification'])): ?>
                             <!-- Limit Input -->
                             <input type="number" 
                                    name="sections[<?= $secKey ?>][limit]" 

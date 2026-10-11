@@ -1079,7 +1079,7 @@ function get_home_sections_config() {
     $configCache = [];
     try {
         $db = getDBConnection();
-        $stmt = $db->query("SELECT * FROM section_visibility WHERE section_key IN ('hero', 'latest', 'categories', 'popular', 'articles', 'recommended', 'newsletter') ORDER BY sort_order ASC, id ASC");
+        $stmt = $db->query("SELECT * FROM section_visibility WHERE section_key IN ('hero', 'latest', 'categories', 'popular', 'articles', 'recommended', 'newsletter', 'notification') ORDER BY sort_order ASC, id ASC");
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $configCache[$row['section_key']] = $row;
         }
@@ -1103,6 +1103,13 @@ function get_home_section($key, $defaultTitle = '', $defaultSubtitle = '', $defa
     $configs = get_home_sections_config();
     if (isset($configs[$key])) {
         return $configs[$key];
+    }
+    // Fallback between notification and newsletter
+    if ($key === 'notification' && isset($configs['newsletter'])) {
+        return $configs['newsletter'];
+    }
+    if ($key === 'newsletter' && isset($configs['notification'])) {
+        return $configs['notification'];
     }
     return [
         'section_key' => $key,

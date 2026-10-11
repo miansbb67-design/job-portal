@@ -65,6 +65,58 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 1d. Notification Bell Dropdown & Native Push Handler
+    const siteBellGroup = document.getElementById('siteBellGroup');
+    const siteBellBtn = document.getElementById('siteBellBtn');
+    const siteNotifCloseBtn = document.getElementById('siteNotifCloseBtn');
+    const siteNotifPushBtn = document.getElementById('siteNotifPushBtn');
+
+    if (siteBellGroup && siteBellBtn) {
+        siteBellBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = siteBellGroup.classList.toggle('is-open');
+            siteBellBtn.setAttribute('aria-expanded', isOpen);
+            if (isOpen && topicsDropdownGroup) {
+                topicsDropdownGroup.classList.remove('is-open');
+            }
+        });
+
+        if (siteNotifCloseBtn) {
+            siteNotifCloseBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                siteBellGroup.classList.remove('is-open');
+                siteBellBtn.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        // Close when clicking anywhere outside
+        document.addEventListener('click', (e) => {
+            if (!siteBellGroup.contains(e.target)) {
+                siteBellGroup.classList.remove('is-open');
+                siteBellBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && siteBellGroup.classList.contains('is-open')) {
+                siteBellGroup.classList.remove('is-open');
+                siteBellBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Check if browser notifications are already enabled
+        if ('Notification' in window && siteNotifPushBtn) {
+            if (Notification.permission === 'granted') {
+                siteNotifPushBtn.textContent = '✓ Active';
+                siteNotifPushBtn.classList.add('is-active');
+            } else if (Notification.permission === 'denied') {
+                siteNotifPushBtn.textContent = 'Blocked';
+                siteNotifPushBtn.classList.add('is-active');
+            }
+        }
+    }
+
     // 2. Back To Top Button
     const backToTopBtn = document.getElementById('backToTop');
     if (backToTopBtn) {
@@ -351,3 +403,52 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+/**
+ * Global push notification permission request handler
+ */
+window.requestSitePushNotifications = function(btn) {
+    if (!('Notification' in window)) {
+        alert('This browser does not support desktop notifications.');
+        return;
+    }
+
+    if (Notification.permission === 'granted') {
+        if (btn) {
+            btn.textContent = '✓ Active';
+            btn.classList.add('is-active');
+        }
+        try {
+            new Notification('CareerNexaa Notifications Active', {
+                body: 'You are set up to receive the latest job vacancies and exam alerts!',
+                icon: (window.BASE_URL || '') + '/favicon.svg'
+            });
+        } catch (e) {}
+        return;
+    }
+
+    if (Notification.permission === 'denied') {
+        alert('Notifications are currently blocked in your browser settings. Please allow notifications for CareerNexaa in your browser address bar.');
+        return;
+    }
+
+    Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+            if (btn) {
+                btn.textContent = '✓ Active';
+                btn.classList.add('is-active');
+            }
+            try {
+                new Notification('Instant Alerts Enabled!', {
+                    body: 'You will receive verified hiring updates and career guides from CareerNexaa.',
+                    icon: (window.BASE_URL || '') + '/favicon.svg'
+                });
+            } catch (e) {}
+        } else {
+            if (btn) {
+                btn.textContent = 'Disabled';
+            }
+        }
+    });
+};
+
