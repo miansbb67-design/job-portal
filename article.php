@@ -151,89 +151,109 @@ if (!empty($article['is_job_posting']) && !empty($article['job_company'])) {
 
 $extraHead = $structuredDataJson;
 
-// Fetch Related Articles from same category
+// Calculate read time and author initials
+$wordCount = str_word_count(strip_tags($article['content'] ?? ''));
+$readTime = max(1, ceil($wordCount / 200));
+
+$authorInitials = '';
+$authorParts = preg_split('/\s+/', trim($article['author_name'] ?? 'Emma'));
+if (!empty($authorParts[0])) $authorInitials .= mb_substr($authorParts[0], 0, 1);
+if (!empty($authorParts[1])) $authorInitials .= mb_substr($authorParts[1], 0, 1);
+if (empty($authorInitials)) $authorInitials = 'EM';
+$authorInitials = strtoupper($authorInitials);
+
+// Fetch 4 Related Articles for the sidebar
 $relatedStmt = $db->prepare("
     SELECT a.*, c.name as category_name, c.slug as category_slug
     FROM articles a
     JOIN categories c ON a.category_id = c.id
     WHERE a.category_id = ? AND a.id != ? AND a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL)
     ORDER BY a.published_at DESC
-    LIMIT 3
+    LIMIT 4
 ");
 $relatedStmt->execute([$article['category_id'], $article['id']]);
-$relatedArticles = $relatedStmt->fetchAll();
+$sidebarRelated = $relatedStmt->fetchAll();
+
+// If fewer than 4 in same category, backfill with recent articles
+if (count($sidebarRelated) < 4) {
+    $needed = 4 - count($sidebarRelated);
+    $excludeIds = array_merge([$article['id']], array_column($sidebarRelated, 'id'));
+    $placeholders = implode(',', array_fill(0, count($excludeIds), '?'));
+    $fillStmt = $db->prepare("
+        SELECT a.*, c.name as category_name, c.slug as category_slug
+        FROM articles a
+        JOIN categories c ON a.category_id = c.id
+        WHERE a.id NOT IN ($placeholders) AND a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL)
+        ORDER BY a.published_at DESC
+        LIMIT $needed
+    ");
+    $fillStmt->execute($excludeIds);
+    $fillArticles = $fillStmt->fetchAll();
+    $sidebarRelated = array_merge($sidebarRelated, $fillArticles);
+}
+
+// Fetch Topics (all active categories)
+$sidebarTopics = get_all_categories();
 
 include __DIR__ . '/includes/header.php';
 ?>
 
-<!-- Article Header Section -->
-<header class="single-article-header">
-    <div class="site-container single-article-container">
-        <!-- Breadcrumbs -->
-        <nav class="article-breadcrumbs" aria-label="Breadcrumbs">
-            <a href="<?= BASE_URL ?>/">Home</a>
-            <span>&rsaquo;</span>
-            <a href="<?= BASE_URL ?>/articles">Articles</a>
-            <span>&rsaquo;</span>
-            <a href="<?= get_category_url($article['category_slug']) ?>">
-                <?= h($article['category_name']) ?>
-            </a>
-            <span>&rsaquo;</span>
-            <span style="color:var(--text-primary); font-weight:600;"><?= truncate_words($article['title'], 35) ?></span>
-        </nav>
+<!-- Article Detail Page: 2-Column Editorial Layout (Picture 1 Match) -->
+<div class="article-detail-page">
+    <div class="site-container article-layout-container">
+        <!-- LEFT MAIN COLUMN -->
+        <article class="article-main-stream">
+            <!-- 1. Breadcrumbs with / separator -->
+            <nav class="article-breadcrumbs" aria-label="Breadcrumbs">
+                <a href="<?= BASE_URL ?>/">Home</a>
+                <span class="crumb-sep">/</span>
+                <a href="<?= BASE_URL ?>/articles">Articles</a>
+                <span class="crumb-sep">/</span>
+                <a href="<?= get_category_url($article['category_slug']) ?>"><?= h($article['category_name']) ?></a>
+                <span class="crumb-sep">/</span>
+                <span class="crumb-current"><?= h($article['title']) ?></span>
+            </nav>
 
-        <h1 class="single-title"><?= h($article['title']) ?></h1>
-
-        <div class="single-meta-bar">
-            <span>By <strong><?= h($article['author_name']) ?></strong></span>
-            <span class="meta-dot">&bull;</span>
-            <span>Published on <?= format_date($article['published_at']) ?></span>
-            <?php if (!empty($article['updated_at']) && $article['updated_at'] !== $article['published_at']): ?>
-                <span class="meta-dot">&bull;</span>
-                <span style="color:var(--accent-emerald);">Updated: <?= format_date($article['updated_at']) ?></span>
-            <?php endif; ?>
-            <span class="meta-dot">&bull;</span>
-            <span><?= (int)$article['views'] ?> views</span>
-            <span class="meta-dot">&bull;</span>
-            <a href="#comments" style="color:var(--text-muted); text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                <span id="topCommentsCount"><?= $commentsCount ?></span> comments
-            </a>
-            <span class="meta-dot">&bull;</span>
-            <a href="#articleReactions" style="color:var(--primary); font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
-                <span id="topLikesCount"><?= (int)$reactionsData['likes'] ?></span> likes
-            </a>
-            <span class="meta-dot">&bull;</span>
-            <span class="article-badge <?= $article['is_job_posting'] ? 'job-badge' : '' ?>" style="position:static;">
-                <?= $article['is_job_posting'] ? 'Job Opportunity' : h($article['category_name']) ?>
-            </span>
-        </div>
-    </div>
-</header>
-
-<!-- Article Body Section -->
-<div class="page-section" style="padding-top: 2rem;">
-    <div class="site-container single-article-container">
-
-
-        <!-- Lead Excerpt -->
-        <div class="single-lead-excerpt">
-            <?= h($article['excerpt']) ?>
-        </div>
-
-        <!-- Featured Image -->
-        <?php 
-        $singleFeaturedImg = get_article_featured_image_url($article);
-        if (!empty($singleFeaturedImg)): 
-        ?>
-            <div class="single-featured-image-wrap">
-                <img src="<?= h($singleFeaturedImg) ?>" 
-                     alt="<?= h(!empty($article['image_alt']) ? $article['image_alt'] : $article['title']) ?>" 
-                     class="single-featured-image"
-                     loading="eager">
+            <!-- 2. Category Kicker Pill + Read Time -->
+            <div class="article-kicker-row">
+                <a href="<?= get_category_url($article['category_slug']) ?>" class="article-cat-pill">
+                    <?= h(strtoupper($article['category_name'])) ?>
+                </a>
+                <span class="article-read-kicker">ARTICLE &bull; <?= $readTime ?> MIN READ</span>
             </div>
-        <?php endif; ?>
+
+            <!-- 3. H1 Title -->
+            <h1 class="article-hero-title"><?= h($article['title']) ?></h1>
+
+            <!-- 4. Lead Excerpt (Clean subtitle paragraph, NO green box) -->
+            <?php if (!empty($article['excerpt'])): ?>
+                <p class="article-lead-text"><?= h($article['excerpt']) ?></p>
+            <?php endif; ?>
+
+            <!-- 5. Author & Meta Row -->
+            <div class="article-author-bar">
+                <div class="author-avatar-circle" title="<?= h($article['author_name']) ?>">
+                    <?= h($authorInitials) ?>
+                </div>
+                <span class="author-display-name"><?= h($article['author_name']) ?></span>
+                <span class="author-meta-dot">&bull;</span>
+                <span class="author-pub-date"><?= date('F j, Y', strtotime($article['published_at'])) ?></span>
+                <span class="author-meta-dot">&bull;</span>
+                <span class="author-view-count"><?= (int)$article['views'] ?> views</span>
+            </div>
+
+            <!-- 6. Featured Image -->
+            <?php 
+            $singleFeaturedImg = get_article_featured_image_url($article);
+            if (!empty($singleFeaturedImg)): 
+            ?>
+                <div class="article-featured-banner">
+                    <img src="<?= h($singleFeaturedImg) ?>" 
+                         alt="<?= h(!empty($article['image_alt']) ? $article['image_alt'] : $article['title']) ?>" 
+                         class="article-featured-img"
+                         loading="eager">
+                </div>
+            <?php endif; ?>
 
         <!-- Genuine Job Posting Highlight Card (Shown ONLY for genuine Job Posts) -->
         <?php if (!empty($article['is_job_posting']) && !empty($article['job_company'])): ?>
@@ -475,59 +495,45 @@ include __DIR__ . '/includes/header.php';
         </section>
         <?php endif; ?>
 
+        </article>
+
+        <!-- RIGHT SIDEBAR COLUMN (Picture 1 Match) -->
+        <aside class="article-sidebar-rail">
+
+            <!-- 2. RELATED Section -->
+            <?php if (!empty($sidebarRelated)): ?>
+            <div class="sidebar-widget-block">
+                <h3 class="sidebar-widget-title">RELATED</h3>
+                <div class="sidebar-related-stack">
+                    <?php foreach ($sidebarRelated as $rel): ?>
+                    <?php $relThumb = get_article_thumbnail_url($rel); ?>
+                    <a href="<?= get_article_url($rel['slug']) ?>" class="sidebar-related-card">
+                        <img src="<?= h($relThumb) ?>" alt="<?= h($rel['title']) ?>" class="sidebar-related-img" loading="lazy">
+                        <div class="sidebar-related-details">
+                            <h4 class="sidebar-related-head"><?= h($rel['title']) ?></h4>
+                            <span class="sidebar-related-time"><?= date('M j, Y', strtotime($rel['published_at'])) ?></span>
+                        </div>
+                    </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- 3. TOPICS Section -->
+            <?php if (!empty($sidebarTopics)): ?>
+            <div class="sidebar-widget-block">
+                <h3 class="sidebar-widget-title">TOPICS</h3>
+                <div class="sidebar-topics-cloud">
+                    <?php foreach ($sidebarTopics as $topic): ?>
+                    <a href="<?= get_category_url($topic['slug']) ?>" class="sidebar-topic-pill">
+                        <?= h($topic['name']) ?>
+                    </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+        </aside>
     </div>
 </div>
-
-<!-- Related Articles Section -->
-<?php if (!empty($relatedArticles)): ?>
-<section class="page-section page-section-alt">
-    <div class="site-container">
-        <div class="section-header">
-            <div class="section-title-wrap">
-                <h2>Related Articles in <?= h($article['category_name']) ?></h2>
-                <p class="section-subtitle">Continue reading recommended employment resources from this sector.</p>
-            </div>
-        </div>
-
-        <div class="articles-grid">
-            <?php foreach ($relatedArticles as $rel): ?>
-                <article class="article-card">
-                    <div class="article-thumb-wrap">
-                        <?php 
-                        $thumbPath = get_article_thumbnail_url($rel);
-                        ?>
-                        <img src="<?= h($thumbPath) ?>" alt="<?= h($rel['title']) ?>" class="article-thumb" loading="lazy">
-                        <span class="article-badge"><?= h($rel['category_name']) ?></span>
-                    </div>
-
-                    <div class="article-content">
-                        <div class="article-meta">
-                            <span><?= format_date($rel['published_at']) ?></span>
-                            <span class="meta-dot">&bull;</span>
-                            <span><?= (int)$rel['views'] ?> views</span>
-                        </div>
-
-                        <h3 class="article-title">
-                            <a href="<?= get_article_url($rel['slug']) ?>">
-                                <?= h($rel['title']) ?>
-                            </a>
-                        </h3>
-
-                        <p class="article-excerpt">
-                            <?= h($rel['excerpt']) ?>
-                        </p>
-
-                        <div class="article-footer">
-                            <a href="<?= get_article_url($rel['slug']) ?>" class="read-more-link">
-                                Read Guide &rarr;
-                            </a>
-                        </div>
-                    </div>
-                </article>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
-<?php endif; ?>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
