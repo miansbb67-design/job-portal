@@ -145,7 +145,7 @@ include __DIR__ . '/includes/header.php';
 
 <section class="page-banner">
     <div class="site-container">
-        <h1>Contact Our Editorial Team</h1>
+        <h1>Contact Our Editorial Team-check</h1>
         <p>Questions about career guides, job postings, or partnership inquiries? We are here to help.</p>
     </div>
 </section>
