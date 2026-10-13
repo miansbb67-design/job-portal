@@ -260,6 +260,12 @@ $currentAdminTab = $_GET['tab'] ?? 'overview';
                                 Reports &amp; Export
                             </a>
                         </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/analytics.php?tab=google" class="admin-submenu-item <?= ($isAnalyticsActive && $currentAdminTab === 'google') ? 'active' : '' ?>" style="display:flex; align-items:center; justify-content:space-between;">
+                                <span>Google Analytics (GA4)</span>
+                                <span style="font-size:0.65rem; background:#ecfdf5; color:#059669; padding:1px 6px; border-radius:999px; font-weight:700; border:1px solid #a7f3d0;">API</span>
+                            </a>
+                        </li>
                     </ul>
                 </li>
 
