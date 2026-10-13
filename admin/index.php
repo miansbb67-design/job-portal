@@ -796,18 +796,23 @@ function initTrafficOverviewChart() {
                 y: {
                     min: 0, // STRICT ZERO FLOOR - NO NEGATIVE DIPS
                     beginAtZero: true,
+                    suggestedMax: 5, // Clean integer baseline instead of fractional 0.1 ticks
                     grid: {
                         color: '#f1f5f9',
                         drawBorder: false
                     },
                     ticks: {
+                        precision: 0, // Strict integer numbers only - no decimals
+                        stepSize: 1,
                         color: '#94a3b8',
                         font: {
                             family: 'Inter, sans-serif',
                             size: 11
                         },
                         callback: function(value) {
-                            return Number(value).toLocaleString();
+                            if (Number.isInteger(value)) {
+                                return Number(value).toLocaleString();
+                            }
                         }
                     }
                 }
@@ -824,7 +829,7 @@ function switchTrafficPeriod(days) {
     // Update active button state
     document.querySelectorAll('.period-btn').forEach(btn => {
         const bDays = btn.getAttribute('data-days');
-        btn.classList.toggle('active', bDays == days);
+        btn.classList.toggle('active', String(bDays) === String(days));
     });
 
     // Update subtitle
@@ -834,16 +839,18 @@ function switchTrafficPeriod(days) {
     }
 
     const d = trafficChartData[days];
-    const maxVal = Math.max(...d.page_views);
-    const peakIndex = d.page_views.indexOf(maxVal);
+    if (!d || !d.labels) return;
+
+    const maxVal = Math.max(...(d.page_views || [0]));
+    const peakIndex = (d.page_views || []).indexOf(maxVal);
 
     trafficChart.data.labels = d.labels;
-    trafficChart.data.datasets[0].data = d.page_views;
+    trafficChart.data.datasets[0].data = d.page_views || [];
     trafficChart.data.datasets[0].pointRadius = function(context) {
         return (context.dataIndex === peakIndex && maxVal > 0) ? 6 : 2;
     };
-    trafficChart.data.datasets[1].data = d.unique_visitors;
-    trafficChart.data.datasets[2].data = d.sessions;
+    trafficChart.data.datasets[1].data = d.unique_visitors || [];
+    trafficChart.data.datasets[2].data = d.sessions || [];
 
     trafficChart.update();
 }
