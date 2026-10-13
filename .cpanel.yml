@@ -1,5 +1,4 @@
-
 deployment:
   tasks:
     - export DEPLOYPATH=/home/careernexaa/public_html/
-    - /bin/cp -R public/. $DEPLOYPATH
+    - /bin/cp -R admin api assets config includes *.php .htaccess favicon.ico favicon.svg $DEPLOYPATH
