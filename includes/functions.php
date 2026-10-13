@@ -400,6 +400,41 @@ function get_article_thumbnail_url($article) {
 }
 
 /**
+ * Resolve high-resolution featured image for large hero displays and single article pages
+ * Prevents small thumbnail pixelation/blurriness on large containers
+ *
+ * @param array|null $article
+ * @return string Full URL to image
+ */
+function get_article_featured_image_url($article) {
+    $defaultImage = BASE_URL . '/assets/images/default-article.jpg';
+    if (!is_array($article)) {
+        return $defaultImage;
+    }
+
+    // 1. High-Resolution Featured Image First (Prevents pixelation)
+    if (!empty($article['featured_image'])) {
+        $url = get_article_image_url($article['featured_image'], false);
+        if (!empty($url)) return $url;
+    }
+
+    // 2. Thumbnail image fallback
+    if (!empty($article['thumbnail_image'])) {
+        $url = get_article_image_url($article['thumbnail_image'], false);
+        if (!empty($url)) return $url;
+    }
+
+    // 3. YouTube HD thumbnail
+    if (!empty($article['video_url'])) {
+        if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $article['video_url'], $match)) {
+            return 'https://img.youtube.com/vi/' . $match[1] . '/hqdefault.jpg';
+        }
+    }
+
+    return $defaultImage;
+}
+
+/**
  * Validate and safely upload a category image file
  *
  * @param array $file $_FILES['image']

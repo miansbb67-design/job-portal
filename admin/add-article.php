@@ -559,9 +559,9 @@ require_once __DIR__ . '/includes/admin-header.php';
                         name="featured_image" 
                         id="featuredImageInput" 
                         class="dropify" 
-                        data-height="165" 
-                        data-max-file-size="4M" 
-                        data-allowed-file-extensions="jpg jpeg png webp gif"
+                        data-height="200" 
+                        data-max-file-size="10M" 
+                        data-allowed-file-extensions="jpg jpeg png webp gif svg"
                     >
                     <input type="hidden" name="existing_featured_image" id="existingFeaturedImage" value="<?= h($featured_image ?? '') ?>">
                 </div>
@@ -590,9 +590,9 @@ require_once __DIR__ . '/includes/admin-header.php';
                         name="thumbnail_image" 
                         id="thumbImageInput" 
                         class="dropify" 
-                        data-height="115" 
-                        data-max-file-size="4M" 
-                        data-allowed-file-extensions="jpg jpeg png webp gif"
+                        data-height="140" 
+                        data-max-file-size="10M" 
+                        data-allowed-file-extensions="jpg jpeg png webp gif svg"
                     >
                     <input type="hidden" name="existing_thumbnail_image" id="existingThumbnailImage" value="<?= h($thumbnail_image ?? '') ?>">
                 </div>

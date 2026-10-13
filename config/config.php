@@ -102,9 +102,9 @@ define('ADMIN_URL', BASE_URL . '/admin');
 // Step 8: File Upload Settings
 define('UPLOAD_DIR', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'articles' . DIRECTORY_SEPARATOR);
 define('UPLOAD_URL', BASE_URL . '/uploads/articles/');
-define('MAX_FILE_SIZE', 4 * 1024 * 1024); // 4MB
-define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'webp']);
-define('ALLOWED_MIME_TYPES', ['image/jpeg', 'image/png', 'image/webp']);
+define('MAX_FILE_SIZE', 10 * 1024 * 1024); // 10MB HD Upload Support
+define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'webp', 'svg', 'gif']);
+define('ALLOWED_MIME_TYPES', ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif']);
 
 // Step 9: Default Pagination & Ads
 define('ARTICLES_PER_PAGE', 6);

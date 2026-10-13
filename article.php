@@ -76,7 +76,7 @@ $articlePublishedTime = date('c', strtotime($article['published_at'] ?? $article
 $articleModifiedTime = date('c', strtotime($article['updated_at'] ?? $article['created_at']));
 $canonicalUrl = BASE_URL . '/article.php?slug=' . urlencode($article['slug']);
 $ogType = 'article';
-$ogImage = get_article_thumbnail_url($article);
+$ogImage = get_article_featured_image_url($article);
 
 // Structured Data (JSON-LD)
 // STRICT REQUIREMENT: Add JobPosting structured data ONLY when is_job_posting == 1 and essential data is present!
@@ -224,7 +224,7 @@ include __DIR__ . '/includes/header.php';
 
         <!-- Featured Image -->
         <?php 
-        $singleFeaturedImg = get_article_thumbnail_url($article);
+        $singleFeaturedImg = get_article_featured_image_url($article);
         if (!empty($singleFeaturedImg)): 
         ?>
             <div class="single-featured-image-wrap">

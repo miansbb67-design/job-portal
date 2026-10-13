@@ -4373,3 +4373,38 @@ select.form-control {
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
 }
 
+/* ==========================================================================
+   High-DPI Crisp Image Previews & Dropify Optimization (Prevents Pixelation)
+   ========================================================================== */
+.dropify-wrapper .dropify-render img {
+    object-fit: contain !important;
+    max-height: 100% !important;
+    max-width: 100% !important;
+    image-rendering: auto !important;
+    image-rendering: -webkit-optimize-contrast !important;
+    -ms-interpolation-mode: bicubic !important;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08)) !important;
+    border-radius: 6px !important;
+}
+
+.dropify-wrapper {
+    background-color: #fafbfd !important;
+    border: 2px dashed #cbd5e1 !important;
+    border-radius: 10px !important;
+    transition: all 0.2s ease !important;
+}
+
+.dropify-wrapper:hover {
+    border-color: #10b981 !important;
+    background-color: #f0fdf4 !important;
+}
+
+.admin-table img,
+.media-grid img,
+.pcat-thumb {
+    image-rendering: auto !important;
+    image-rendering: -webkit-optimize-contrast !important;
+    -ms-interpolation-mode: bicubic !important;
+}
+
+

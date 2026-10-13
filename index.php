@@ -106,7 +106,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
             <!-- Left: Editorial Spotlight Guide (58% width) -->
             <?php if ($showHeroFeatured): ?>
             <?php 
-                $spotThumb = get_article_thumbnail_url($spotlight);
+                $spotThumb = get_article_featured_image_url($spotlight);
             ?>
             <article class="editorial-spotlight-card">
                 <div class="spotlight-media-wrap">
