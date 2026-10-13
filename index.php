@@ -250,7 +250,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                 <h2><?= h(!empty($secCfg_topCats['title']) ? $secCfg_topCats['title'] : 'Browse Top Categories') ?></h2>
                 <p class="section-header-sub"><?= h(!empty($secCfg_topCats['subtitle']) ? $secCfg_topCats['subtitle'] : 'Find the right career path, exam preparation guides, and job opportunities.') ?></p>
             </div>
-            <a href="<?= BASE_URL ?>/categories.php" class="section-action-btn">All Categories &rarr;</a>
+            <a href="<?= BASE_URL ?>/categories.php" class="section-action-btn">All Categoriess &rarr;</a>
         </div>
 
         <div class="sector-tracks-grid">
