@@ -1,4 +1,5 @@
 <?php
+echo 'here';
 /**
  * Public Website Header
  * Reusable HTML head, SEO metadata, navigation, and mobile menu.
