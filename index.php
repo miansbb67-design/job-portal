@@ -183,28 +183,55 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                     </div>
                     <?php endif; ?>
 
-                    <!-- Trending Quick Reads -->
-                    <?php foreach ($radarArticles as $rArt): ?>
-                    <?php 
-                        $rThumb = get_article_thumbnail_url($rArt);
-                    ?>
-                    <div class="radar-article-row">
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($rArt['slug']) ?>" class="radar-thumb-box">
-                            <img src="<?= $rThumb ?>" alt="<?= h($rArt['title']) ?>" loading="lazy">
-                        </a>
-                        <div class="radar-article-info">
-                            <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($rArt['category_slug']) ?>" class="radar-cat-tag">
-                                <?= h($rArt['category_name']) ?>
-                            </a>
-                            <h4 class="radar-row-title">
-                                <a href="<?= BASE_URL ?>/article.php?slug=<?= h($rArt['slug']) ?>">
-                                    <?= h($rArt['title']) ?>
+                    <!-- Trending Quick Reads / Real-time Radar Articles -->
+                    <?php if (!empty($radarArticles)): ?>
+                    <div class="radar-articles-container" id="radarArticlesContainer">
+                        <div class="radar-articles-track <?= count($radarArticles) > 2 ? 'is-animated' : '' ?>" id="radarArticlesTrack">
+                            <?php foreach ($radarArticles as $rArt): ?>
+                            <?php 
+                                $rThumb = get_article_thumbnail_url($rArt);
+                            ?>
+                            <div class="radar-article-row">
+                                <a href="<?= BASE_URL ?>/article.php?slug=<?= h($rArt['slug']) ?>" class="radar-thumb-box">
+                                    <img src="<?= $rThumb ?>" alt="<?= h($rArt['title']) ?>" loading="lazy">
                                 </a>
-                            </h4>
-                            <span class="radar-meta-text"><?= format_date($rArt['published_at']) ?> &bull; <?= (int)$rArt['views'] ?> views</span>
+                                <div class="radar-article-info">
+                                    <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($rArt['category_slug']) ?>" class="radar-cat-tag">
+                                        <?= h($rArt['category_name']) ?>
+                                    </a>
+                                    <h4 class="radar-row-title">
+                                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($rArt['slug']) ?>">
+                                            <?= h($rArt['title']) ?>
+                                        </a>
+                                    </h4>
+                                    <span class="radar-meta-text"><?= format_date($rArt['published_at']) ?> &bull; <?= (int)$rArt['views'] ?> views</span>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                            <?php if (count($radarArticles) > 2): ?>
+                                <?php foreach ($radarArticles as $rArt): ?>
+                                <?php $rThumb = get_article_thumbnail_url($rArt); ?>
+                                <div class="radar-article-row" aria-hidden="true">
+                                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($rArt['slug']) ?>" class="radar-thumb-box" tabindex="-1">
+                                        <img src="<?= $rThumb ?>" alt="<?= h($rArt['title']) ?>" loading="lazy">
+                                    </a>
+                                    <div class="radar-article-info">
+                                        <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($rArt['category_slug']) ?>" class="radar-cat-tag" tabindex="-1">
+                                            <?= h($rArt['category_name']) ?>
+                                        </a>
+                                        <h4 class="radar-row-title">
+                                            <a href="<?= BASE_URL ?>/article.php?slug=<?= h($rArt['slug']) ?>" tabindex="-1">
+                                                <?= h($rArt['title']) ?>
+                                            </a>
+                                        </h4>
+                                        <span class="radar-meta-text"><?= format_date($rArt['published_at']) ?> &bull; <?= (int)$rArt['views'] ?> views</span>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </div>
                     </div>
-                    <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php endif; ?>
@@ -215,12 +242,13 @@ $showLiveRadar    = is_section_visible('live_job_radar');
 
 <!-- ================= Section 1: Explore by Career Track (6 Cards) ================= -->
 <?php if (is_section_visible('top_categories') && !empty($categories)): ?>
+<?php $secCfg_topCats = get_home_section('top_categories', 'Browse Top Categories', 'Find the right career path, exam preparation guides, and job opportunities.'); ?>
 <section class="page-section">
     <div class="site-container">
         <div class="section-header-row">
             <div>
-                <h2>Browse Top Categories</h2>
-                <p class="section-header-sub">Find the right career path, exam preparation guides, and job opportunities.</p>
+                <h2><?= h(!empty($secCfg_topCats['title']) ? $secCfg_topCats['title'] : 'Browse Top Categories') ?></h2>
+                <p class="section-header-sub"><?= h(!empty($secCfg_topCats['subtitle']) ? $secCfg_topCats['subtitle'] : 'Find the right career path, exam preparation guides, and job opportunities.') ?></p>
             </div>
             <a href="<?= BASE_URL ?>/categories.php" class="section-action-btn">All Categories &rarr;</a>
         </div>
@@ -254,12 +282,13 @@ $showLiveRadar    = is_section_visible('live_job_radar');
 
 <!-- ================= Section 2: Trending Career Strategies (3-Column Grid) ================= -->
 <?php if (is_section_visible('trending_guides') && !empty($trendingGuides)): ?>
+<?php $secCfg_trending = get_home_section('trending_guides', 'Trending Career Guides', 'Top interview tips, ATS resume frameworks, and career growth roadmaps.'); ?>
 <section class="page-section page-section-alt">
     <div class="site-container">
         <div class="section-header-row">
             <div>
-                <h2>Trending Career Guides</h2>
-                <p class="section-header-sub">Top interview tips, ATS resume frameworks, and career growth roadmaps.</p>
+                <h2><?= h(!empty($secCfg_trending['title']) ? $secCfg_trending['title'] : 'Trending Career Guides') ?></h2>
+                <p class="section-header-sub"><?= h(!empty($secCfg_trending['subtitle']) ? $secCfg_trending['subtitle'] : 'Top interview tips, ATS resume frameworks, and career growth roadmaps.') ?></p>
             </div>
             <a href="<?= BASE_URL ?>/articles.php?trending=1" class="section-action-btn">View All Guides &rarr;</a>
         </div>
@@ -315,12 +344,13 @@ $showLiveRadar    = is_section_visible('live_job_radar');
 
 <!-- ================= Section 3: Verified Job Openings & Hiring Alerts ================= -->
 <?php if (is_section_visible('jobs_section') && !empty($activeJobs)): ?>
+<?php $secCfg_jobs = get_home_section('jobs_section', 'Latest Job Openings', 'Verified government, corporate, and tech jobs with direct application details.'); ?>
 <section class="page-section">
     <div class="site-container">
         <div class="section-header-row">
             <div>
-                <h2>Latest Job Openings</h2>
-                <p class="section-header-sub">Verified government, corporate, and tech jobs with direct application details.</p>
+                <h2><?= h(!empty($secCfg_jobs['title']) ? $secCfg_jobs['title'] : 'Latest Job Openings') ?></h2>
+                <p class="section-header-sub"><?= h(!empty($secCfg_jobs['subtitle']) ? $secCfg_jobs['subtitle'] : 'Verified government, corporate, and tech jobs with direct application details.') ?></p>
             </div>
             <a href="<?= BASE_URL ?>/articles.php" class="section-action-btn">View All Jobs &rarr;</a>
         </div>
@@ -368,12 +398,13 @@ $showLiveRadar    = is_section_visible('live_job_radar');
 
 <!-- ================= Section 4: Career Success Toolkit Banner ================= -->
 <?php if (is_section_visible('career_toolkit')): ?>
+<?php $secCfg_toolkit = get_home_section('career_toolkit', 'Career Success Toolkit', 'Free roadmaps, templates, and frameworks to accelerate your job search.'); ?>
 <div class="site-container">
     <section class="career-toolkit-section">
         <div class="site-container">
             <div style="text-align:center; max-width:680px; margin:0 auto 3rem;">
-                <h2 style="font-size:2.2rem; color:#ffffff; margin-bottom:0.75rem;">Career Success Toolkit</h2>
-                <p style="color:#d1fae5; font-size:1.05rem;">Free roadmaps, templates, and frameworks to accelerate your job search.</p>
+                <h2 style="font-size:2.2rem; color:#ffffff; margin-bottom:0.75rem;"><?= h(!empty($secCfg_toolkit['title']) ? $secCfg_toolkit['title'] : 'Career Success Toolkit') ?></h2>
+                <p style="color:#d1fae5; font-size:1.05rem;"><?= h(!empty($secCfg_toolkit['subtitle']) ? $secCfg_toolkit['subtitle'] : 'Free roadmaps, templates, and frameworks to accelerate your job search.') ?></p>
             </div>
 
             <div class="career-toolkit-grid">
@@ -411,12 +442,13 @@ $showLiveRadar    = is_section_visible('live_job_radar');
 
 <!-- ================= Section 5: Latest Articles & Guides ================= -->
 <?php if (is_section_visible('latest_articles') && !empty($latestArticles)): ?>
+<?php $secCfg_latest = get_home_section('latest_articles', 'Latest Articles & News', 'Recent career advice, exam schedules, and recruitment updates.'); ?>
 <section class="page-section">
     <div class="site-container">
         <div class="section-header-row">
             <div>
-                <h2>Latest Articles & News</h2>
-                <p class="section-header-sub">Recent career advice, exam schedules, and recruitment updates.</p>
+                <h2><?= h(!empty($secCfg_latest['title']) ? $secCfg_latest['title'] : 'Latest Articles & News') ?></h2>
+                <p class="section-header-sub"><?= h(!empty($secCfg_latest['subtitle']) ? $secCfg_latest['subtitle'] : 'Recent career advice, exam schedules, and recruitment updates.') ?></p>
             </div>
             <a href="<?= BASE_URL ?>/articles.php" class="section-action-btn">View All Articles &rarr;</a>
         </div>

@@ -41,6 +41,7 @@ $dynamicHeaderMenu = get_header_menu();
 
 // Fetch recent job vacancies & career updates for the notification bell
 $headerNotifications = [];
+$unreadNotifCount = 0;
 try {
     $hDb = getDBConnection();
     $hNotifStmt = $hDb->query("
@@ -53,8 +54,24 @@ try {
         LIMIT 5
     ");
     $headerNotifications = $hNotifStmt->fetchAll();
+
+    // Check read notifications from cookie
+    $rawReadCookie = $_COOKIE['site_read_notifications'] ?? '';
+    $readNotifIds = [];
+    if (!empty($rawReadCookie)) {
+        $readNotifIds = array_filter(array_map('intval', explode(',', $rawReadCookie)));
+    }
+
+    foreach ($headerNotifications as &$hnItem) {
+        $hnItem['is_read'] = in_array((int)$hnItem['id'], $readNotifIds, true);
+        if (!$hnItem['is_read']) {
+            $unreadNotifCount++;
+        }
+    }
+    unset($hnItem);
 } catch (Exception $e) {
     $headerNotifications = [];
+    $unreadNotifCount = 0;
 }
 ?>
 <!DOCTYPE html>
@@ -120,7 +137,7 @@ try {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=<?= filemtime(__DIR__ . '/../assets/css/style.css') ?>">
 
     <script>window.BASE_URL = '<?= BASE_URL ?>';</script>
 
@@ -206,9 +223,7 @@ try {
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                         </svg>
-                        <?php if (!empty($headerNotifications)): ?>
-                            <span class="site-bell-badge" id="siteBellBadge"><?= count($headerNotifications) ?></span>
-                        <?php endif; ?>
+                        <span class="site-bell-badge" id="siteBellBadge" style="<?= $unreadNotifCount <= 0 ? 'display:none;' : '' ?>"><?= $unreadNotifCount ?></span>
                     </button>
 
                     <!-- Notifications Dropdown Popup -->
@@ -216,9 +231,16 @@ try {
                         <div class="site-notif-header">
                             <div class="site-notif-header-title">
                                 <span class="site-notif-title">Notifications</span>
-                                <span class="site-notif-badge-pill"><?= count($headerNotifications) ?> New</span>
+                                <span class="site-notif-badge-pill <?= $unreadNotifCount <= 0 ? 'zero' : '' ?>" id="siteNotifBadgePill">
+                                    <?= $unreadNotifCount > 0 ? ($unreadNotifCount . ' New') : 'All Caught Up' ?>
+                                </span>
                             </div>
-                            <button type="button" class="site-notif-close-btn" id="siteNotifCloseBtn" aria-label="Close notification panel">&times;</button>
+                            <div class="site-notif-header-actions">
+                                <button type="button" class="site-notif-mark-all" id="siteNotifMarkAllBtn" title="Mark all notifications as read" <?= $unreadNotifCount <= 0 ? 'style="display:none;"' : '' ?>>
+                                    Mark all read
+                                </button>
+                                <button type="button" class="site-notif-close-btn" id="siteNotifCloseBtn" aria-label="Close notification panel">&times;</button>
+                            </div>
                         </div>
 
                         <!-- Instant Push Notification Alert Box -->
@@ -241,9 +263,11 @@ try {
                         <!-- Notifications List -->
                         <div class="site-notif-body">
                             <?php if (!empty($headerNotifications)): ?>
-                                <div class="site-notif-list">
+                                <div class="site-notif-list" id="siteNotifList">
                                     <?php foreach ($headerNotifications as $n): ?>
-                                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($n['slug']) ?>" class="site-notif-item">
+                                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($n['slug']) ?>" 
+                                           class="site-notif-item <?= !empty($n['is_read']) ? 'is-read' : 'is-unread' ?>"
+                                           data-id="<?= (int)$n['id'] ?>">
                                             <div class="site-notif-item-icon <?= $n['is_job_posting'] ? 'job-icon' : 'guide-icon' ?>">
                                                 <?php if ($n['is_job_posting']): ?>
                                                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
@@ -260,6 +284,7 @@ try {
                                                 </div>
                                                 <div class="site-notif-item-title"><?= h($n['title']) ?></div>
                                             </div>
+                                            <span class="site-notif-unread-dot" title="Unread notification" <?= !empty($n['is_read']) ? 'style="display:none;"' : '' ?>></span>
                                         </a>
                                     <?php endforeach; ?>
                                 </div>

@@ -458,6 +458,35 @@ h1, h2, h3, h4, h5, h6 {
     border: 1px solid #a7f3d0;
 }
 
+.site-notif-badge-pill.zero {
+    background: #f1f5f9;
+    color: #64748b;
+    border-color: #e2e8f0;
+}
+
+.site-notif-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.site-notif-mark-all {
+    border: none;
+    background: transparent;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #059669;
+    cursor: pointer;
+    padding: 0.2rem 0.45rem;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+
+.site-notif-mark-all:hover {
+    background: #ecfdf5;
+    color: #047857;
+}
+
 .site-notif-close-btn {
     border: none;
     background: transparent;
@@ -571,11 +600,37 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 10px;
     text-decoration: none;
     color: inherit;
-    transition: background-color 0.15s ease;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+    position: relative;
 }
 
 .site-notif-item:hover {
     background-color: #f8fafc;
+}
+
+.site-notif-item.is-read {
+    opacity: 0.68;
+}
+
+.site-notif-item.is-read:hover {
+    opacity: 1;
+    background-color: #f8fafc;
+}
+
+.site-notif-item.is-read .site-notif-item-title {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.site-notif-unread-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #ef4444;
+    box-shadow: 0 0 0 2px #ffffff;
+    flex-shrink: 0;
+    margin-top: 6px;
+    margin-left: auto;
 }
 
 .site-notif-item-icon {
@@ -1107,9 +1162,39 @@ h1, h2, h3, h4, h5, h6 {
 .radar-items-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.85rem;
     flex: 1;
-    justify-content: space-between;
+    justify-content: flex-start;
+}
+
+.radar-articles-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    overflow: hidden;
+    position: relative;
+    max-height: 380px;
+    margin-top: 0.25rem;
+}
+
+.radar-articles-track {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    width: 100%;
+}
+
+.radar-articles-track.is-animated {
+    animation: radarTickerScroll 22s linear infinite;
+}
+
+.radar-articles-track.is-animated:hover {
+    animation-play-state: paused;
+}
+
+@keyframes radarTickerScroll {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-50%); }
 }
 
 /* Job Spotlight Item in Radar */
@@ -1172,13 +1257,17 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     gap: 0.85rem;
     align-items: center;
-    padding: 0.5rem;
+    padding: 0.65rem 0.75rem;
     border-radius: var(--radius-md);
-    transition: var(--transition);
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .radar-article-row:hover {
-    background: #f8fafc;
-    transform: translateX(3px);
+    background: #ffffff;
+    border-color: #10b981;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);
+    transform: translateX(4px);
 }
 .radar-thumb-box {
     width: 84px;

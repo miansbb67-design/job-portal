@@ -116,7 +116,49 @@ $currentAdminTab = $_GET['tab'] ?? 'overview';
     
     <!-- Chart.js UMD Library (Offline & Interactive High-Performance Charts) -->
     <script src="<?= BASE_URL ?>/assets/vendor/chartjs/chart.umd.min.js"></script>
-    <script>window.ADMIN_URL = '<?= ADMIN_URL ?>';</script>
+    <script>
+        window.ADMIN_URL = '<?= ADMIN_URL ?>';
+
+        // Instant-ready Notification Center Functions
+        window.toggleNotificationDropdown = function(event) {
+            if (event) {
+                event.stopPropagation();
+                if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+                event.preventDefault();
+            }
+            var wrap = document.getElementById('adminBellWrap') || document.querySelector('.admin-bell-wrap');
+            var dropdown = document.getElementById('adminNotificationsDropdown');
+            var btn = document.getElementById('adminBellBtn') || document.querySelector('.admin-bell-btn');
+            if (!dropdown) return;
+
+            var isOpen = dropdown.classList.contains('show') || dropdown.classList.contains('active') || (wrap && wrap.classList.contains('open'));
+            if (isOpen) {
+                dropdown.classList.remove('show', 'active');
+                if (wrap) wrap.classList.remove('open');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            } else {
+                dropdown.classList.add('show', 'active');
+                if (wrap) wrap.classList.add('open');
+                if (btn) btn.setAttribute('aria-expanded', 'true');
+            }
+        };
+
+        window.closeNotificationDropdown = function() {
+            var wrap = document.getElementById('adminBellWrap') || document.querySelector('.admin-bell-wrap');
+            var dropdown = document.getElementById('adminNotificationsDropdown');
+            var btn = document.getElementById('adminBellBtn') || document.querySelector('.admin-bell-btn');
+            if (dropdown) dropdown.classList.remove('show', 'active');
+            if (wrap) wrap.classList.remove('open');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+        };
+
+        document.addEventListener('click', function(e) {
+            var wrap = document.getElementById('adminBellWrap') || document.querySelector('.admin-bell-wrap');
+            if (wrap && !wrap.contains(e.target)) {
+                window.closeNotificationDropdown();
+            }
+        });
+    </script>
 </head>
 <body class="admin-body">
 
@@ -324,7 +366,7 @@ $currentAdminTab = $_GET['tab'] ?? 'overview';
                         </li>
                         <li>
                             <a href="<?= ADMIN_URL ?>/section-visibility.php" class="admin-submenu-item <?= ($currentAdminScript === 'section-visibility.php') ? 'active' : '' ?>">
-                                Home Sections &amp; Menus
+                                Home Sections (Enable/Disable)
                             </a>
                         </li>
                     </ul>
@@ -348,7 +390,7 @@ $currentAdminTab = $_GET['tab'] ?? 'overview';
                 <li>
                     <a href="<?= ADMIN_URL ?>/section-visibility.php" class="admin-nav-item <?= ($currentAdminScript === 'section-visibility.php') ? 'active' : '' ?>">
                         <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-                        <span class="nav-label">Home Sections &amp; Menus</span>
+                        <span class="nav-label">Home Sections (Enable/Disable)</span>
                     </a>
                 </li>
                 <?php endif; ?>

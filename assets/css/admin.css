@@ -2836,23 +2836,32 @@ select.form-control {
 /* Dropdown Container */
 .admin-notifications-dropdown {
     position: absolute;
-    top: calc(100% + 12px);
+    top: calc(100% + 10px);
     right: -10px;
     width: 380px;
     max-width: calc(100vw - 24px);
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 14px;
-    box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.12), 0 10px 15px -5px rgba(15, 23, 42, 0.05);
-    z-index: 1050;
+    box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.16), 0 10px 15px -5px rgba(15, 23, 42, 0.08);
+    z-index: 9999 !important;
     display: none;
     flex-direction: column;
     overflow: hidden;
     transform-origin: top right;
+}
+.admin-bell-wrap.open .admin-notifications-dropdown,
+.admin-notifications-dropdown.show,
+.admin-notifications-dropdown.active {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
     animation: notifDropdownIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-.admin-notifications-dropdown.show {
-    display: flex;
+.admin-bell-btn svg,
+.admin-bell-btn .bell-dot {
+    pointer-events: none;
 }
 @keyframes notifDropdownIn {
     from {
@@ -3105,10 +3114,16 @@ select.form-control {
     text-decoration: underline;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 580px) {
     .admin-notifications-dropdown {
-        width: calc(100vw - 20px);
-        right: -60px;
+        position: fixed !important;
+        top: 60px !important;
+        left: 12px !important;
+        right: 12px !important;
+        width: calc(100vw - 24px) !important;
+        max-width: 100vw !important;
+        border-radius: 14px !important;
+        box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.3) !important;
     }
 }
 .admin-profile-chip-clean {

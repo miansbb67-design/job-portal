@@ -65,18 +65,107 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 1d. Notification Bell Dropdown & Native Push Handler
+    // 1d. Notification Bell Dropdown, Read Tracker & Native Push Handler
     const siteBellGroup = document.getElementById('siteBellGroup');
     const siteBellBtn = document.getElementById('siteBellBtn');
     const siteNotifCloseBtn = document.getElementById('siteNotifCloseBtn');
     const siteNotifPushBtn = document.getElementById('siteNotifPushBtn');
+    const siteBellBadge = document.getElementById('siteBellBadge');
+    const siteNotifBadgePill = document.getElementById('siteNotifBadgePill');
+    const siteNotifMarkAllBtn = document.getElementById('siteNotifMarkAllBtn');
+
+    // Read Notification Storage Helpers (Cookie + LocalStorage Sync)
+    function getReadNotificationIds() {
+        let ids = [];
+        try {
+            const rawLocal = localStorage.getItem('site_read_notifications');
+            if (rawLocal) {
+                ids = rawLocal.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0);
+            }
+        } catch(e) {}
+
+        try {
+            const match = document.cookie.match(/(?:^|;\s*)site_read_notifications=([^;]*)/);
+            if (match && match[1]) {
+                const cookieIds = decodeURIComponent(match[1]).split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0);
+                ids = Array.from(new Set([...ids, ...cookieIds]));
+            }
+        } catch(e) {}
+
+        return ids;
+    }
+
+    function saveReadNotificationIds(ids) {
+        const unique = Array.from(new Set(ids.map(n => parseInt(n, 10)).filter(n => !isNaN(n) && n > 0)));
+        const val = unique.join(',');
+
+        try {
+            localStorage.setItem('site_read_notifications', val);
+        } catch(e) {}
+
+        // Persist in cookie so PHP renders unread count accurately on next load
+        document.cookie = `site_read_notifications=${encodeURIComponent(val)}; path=/; max-age=31536000; SameSite=Lax`;
+    }
+
+    function syncNotificationUI() {
+        const items = document.querySelectorAll('.site-notif-item');
+        if (!items || items.length === 0) return;
+
+        const readIds = getReadNotificationIds();
+        let unreadCount = 0;
+
+        items.forEach(item => {
+            const id = parseInt(item.getAttribute('data-id'), 10);
+            const dot = item.querySelector('.site-notif-unread-dot');
+            if (id && readIds.includes(id)) {
+                item.classList.add('is-read');
+                item.classList.remove('is-unread');
+                if (dot) dot.style.display = 'none';
+            } else {
+                item.classList.remove('is-read');
+                item.classList.add('is-unread');
+                if (dot) dot.style.display = '';
+                unreadCount++;
+            }
+        });
+
+        // Update Bell Badge
+        if (siteBellBadge) {
+            if (unreadCount > 0) {
+                siteBellBadge.textContent = unreadCount;
+                siteBellBadge.style.display = '';
+            } else {
+                siteBellBadge.textContent = '0';
+                siteBellBadge.style.display = 'none';
+            }
+        }
+
+        // Update Dropdown Pill
+        if (siteNotifBadgePill) {
+            if (unreadCount > 0) {
+                siteNotifBadgePill.textContent = `${unreadCount} New`;
+                siteNotifBadgePill.classList.remove('zero');
+            } else {
+                siteNotifBadgePill.textContent = 'All Caught Up';
+                siteNotifBadgePill.classList.add('zero');
+            }
+        }
+
+        // Update Mark All Read button visibility
+        if (siteNotifMarkAllBtn) {
+            siteNotifMarkAllBtn.style.display = unreadCount > 0 ? '' : 'none';
+        }
+    }
+
+    // Initialize & Sync notification state immediately
+    syncNotificationUI();
 
     if (siteBellGroup && siteBellBtn) {
         siteBellBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             const isOpen = siteBellGroup.classList.toggle('is-open');
             siteBellBtn.setAttribute('aria-expanded', isOpen);
-            if (isOpen && topicsDropdownGroup) {
+            if (isOpen && typeof topicsDropdownGroup !== 'undefined' && topicsDropdownGroup) {
                 topicsDropdownGroup.classList.remove('is-open');
             }
         });
@@ -104,6 +193,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 siteBellBtn.setAttribute('aria-expanded', 'false');
             }
         });
+
+        // Handle single notification item click (mark as read before navigating)
+        document.querySelectorAll('.site-notif-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const id = parseInt(this.getAttribute('data-id'), 10);
+                if (id && !isNaN(id)) {
+                    const readList = getReadNotificationIds();
+                    if (!readList.includes(id)) {
+                        readList.push(id);
+                        saveReadNotificationIds(readList);
+                        syncNotificationUI();
+                    }
+                }
+            });
+        });
+
+        // Handle "Mark all read" button
+        if (siteNotifMarkAllBtn) {
+            siteNotifMarkAllBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const allItems = document.querySelectorAll('.site-notif-item');
+                const toAdd = [];
+                allItems.forEach(item => {
+                    const id = parseInt(item.getAttribute('data-id'), 10);
+                    if (id && !isNaN(id)) toAdd.push(id);
+                });
+                const cur = getReadNotificationIds();
+                const merged = Array.from(new Set([...cur, ...toAdd]));
+                saveReadNotificationIds(merged);
+                syncNotificationUI();
+            });
+        }
 
         // Check if browser notifications are already enabled
         if ('Notification' in window && siteNotifPushBtn) {

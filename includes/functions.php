@@ -1114,7 +1114,7 @@ function get_home_sections_config() {
     $configCache = [];
     try {
         $db = getDBConnection();
-        $stmt = $db->query("SELECT * FROM section_visibility WHERE section_key IN ('hero', 'latest', 'categories', 'popular', 'articles', 'recommended', 'newsletter', 'notification') ORDER BY sort_order ASC, id ASC");
+        $stmt = $db->query("SELECT * FROM section_visibility ORDER BY sort_order ASC, id ASC");
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $configCache[$row['section_key']] = $row;
         }

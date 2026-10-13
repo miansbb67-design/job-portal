@@ -180,7 +180,11 @@ if (!empty($currentFavicon)) {
             Full administrative access to change website brand name, upload/replace logo, customize favicon, and manage site rules.
         </p>
     </div>
-    <div style="display:flex; gap:0.5rem; align-items:center;">
+    <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+        <a href="<?= ADMIN_URL ?>/section-visibility.php" class="admin-btn" style="padding:0.6rem 1.15rem; font-size:0.88rem; display:inline-flex; align-items:center; gap:0.45rem; text-decoration:none; background:#2563eb; color:#fff; border-radius:8px; font-weight:700; box-shadow:0 2px 6px rgba(37,99,235,0.25);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+            Home Sections (Enable / Disable)
+        </a>
         <a href="<?= BASE_URL ?>/" target="_blank" class="admin-btn admin-btn-secondary" style="padding:0.6rem 1.1rem; font-size:0.88rem; display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none; background:#fff; border:1px solid #cbd5e1; border-radius:8px; color:#334155; font-weight:600;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
             View Live Website
