@@ -102,7 +102,7 @@ include __DIR__ . '/includes/header.php';
         <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem; font-size:0.85rem; color:#64748b; font-weight:600;">
             <a href="<?= BASE_URL ?>/" style="color:#64748b; text-decoration:none;">Home</a>
             <span>&rsaquo;</span>
-            <a href="<?= BASE_URL ?>/articles.php" style="color:#64748b; text-decoration:none;">Articles</a>
+            <a href="<?= BASE_URL ?>/articles" style="color:#64748b; text-decoration:none;">Articles</a>
             <span>&rsaquo;</span>
             <span style="color:#059669;">#<?= h($tagName) ?></span>
         </div>
@@ -123,7 +123,7 @@ include __DIR__ . '/includes/header.php';
             </div>
 
             <div>
-                <a href="<?= BASE_URL ?>/articles.php" class="admin-btn" style="background:#ffffff; border:1px solid #cbd5e1; color:#334155; padding:0.55rem 1.15rem; border-radius:8px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
+                <a href="<?= BASE_URL ?>/articles" class="admin-btn" style="background:#ffffff; border:1px solid #cbd5e1; color:#334155; padding:0.55rem 1.15rem; border-radius:8px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
                     &larr; All Articles
                 </a>
             </div>
@@ -140,7 +140,7 @@ include __DIR__ . '/includes/header.php';
             </div>
             <h3 style="font-family:var(--font-heading); font-size:1.35rem; color:#0f172a; margin-bottom:0.5rem;">No Articles Found</h3>
             <p style="color:#64748b; font-size:0.95rem; margin-bottom:1.5rem;">There are currently no published articles tagged under "<?= h($tagName) ?>".</p>
-            <a href="<?= BASE_URL ?>/articles.php" class="admin-btn admin-btn-primary" style="padding:0.6rem 1.5rem; border-radius:8px; text-decoration:none; display:inline-block; font-weight:700;">
+            <a href="<?= BASE_URL ?>/articles" class="admin-btn admin-btn-primary" style="padding:0.6rem 1.5rem; border-radius:8px; text-decoration:none; display:inline-block; font-weight:700;">
                 Browse All Guides
             </a>
         </div>
@@ -154,7 +154,7 @@ include __DIR__ . '/includes/header.php';
             ?>
             <article class="cp-article-card">
                 <div class="cp-card-thumb-wrap">
-                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($art['slug']) ?>">
+                    <a href="<?= get_article_url($art['slug']) ?>">
                         <img src="<?= $thumbPath ?>" alt="<?= h($art['title']) ?>" class="cp-card-thumb" loading="lazy">
                     </a>
                     <span class="cp-badge-floating <?= $art['is_job_posting'] ? 'job-badge' : '' ?>">
@@ -170,7 +170,7 @@ include __DIR__ . '/includes/header.php';
                     </div>
 
                     <h3 class="cp-card-title">
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($art['slug']) ?>">
+                        <a href="<?= get_article_url($art['slug']) ?>">
                             <?= h($art['title']) ?>
                         </a>
                     </h3>
@@ -194,7 +194,7 @@ include __DIR__ . '/includes/header.php';
                             <span class="cp-author-avatar"><?= strtoupper(substr($art['author_name'], 0, 1)) ?></span>
                             <span><?= h($art['author_name']) ?></span>
                         </div>
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($art['slug']) ?>" class="cp-card-read-link">
+                        <a href="<?= get_article_url($art['slug']) ?>" class="cp-card-read-link">
                             <?= $art['is_job_posting'] ? 'View Job &rarr;' : 'Read Guide &rarr;' ?>
                         </a>
                     </div>

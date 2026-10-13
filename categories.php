@@ -20,7 +20,7 @@ if (!empty($slug)) {
 
     if (!$category) {
         set_flash('error', 'The requested category does not exist.');
-        header('Location: ' . BASE_URL . '/categories.php');
+        header('Location: ' . BASE_URL . '/categories');
         exit;
     }
 
@@ -58,7 +58,7 @@ if (!empty($slug)) {
             <nav class="article-breadcrumbs" style="justify-content:center; color:#94a3b8; margin-bottom:0.75rem;">
                 <a href="<?= BASE_URL ?>/" style="color:#cbd5e1;">Home</a>
                 <span>&rsaquo;</span>
-                <a href="<?= BASE_URL ?>/categories.php" style="color:#cbd5e1;">Categories</a>
+                <a href="<?= BASE_URL ?>/categories" style="color:#cbd5e1;">Categories</a>
                 <span>&rsaquo;</span>
                 <span style="color:#ffffff; font-weight:600;"><?= h($category['name']) ?></span>
             </nav>
@@ -74,7 +74,7 @@ if (!empty($slug)) {
                     <h2>Articles in this Sector</h2>
                     <p class="section-subtitle">Showing <?= count($articles) ?> of <?= $totalArticles ?> published articles</p>
                 </div>
-                <a href="<?= BASE_URL ?>/categories.php" class="view-all-link">&larr; All Categories</a>
+                <a href="<?= BASE_URL ?>/categories" class="view-all-link">&larr; All Categories</a>
             </div>
 
             <?php if (!empty($articles)): ?>
@@ -99,7 +99,7 @@ if (!empty($slug)) {
                                 </div>
 
                                 <h3 class="article-title">
-                                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>">
+                                    <a href="<?= get_article_url($article['slug']) ?>">
                                         <?= h($article['title']) ?>
                                     </a>
                                 </h3>
@@ -118,7 +118,7 @@ if (!empty($slug)) {
                                     <span style="font-weight:600; color:var(--text-muted); font-size:0.825rem;">
                                         <?= h($article['category_name']) ?>
                                     </span>
-                                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>" class="read-more-link">
+                                    <a href="<?= get_article_url($article['slug']) ?>" class="read-more-link">
                                         Read Guide &rarr;
                                     </a>
                                 </div>
@@ -131,7 +131,7 @@ if (!empty($slug)) {
                     <nav class="pagination-nav">
                         <div class="pagination">
                             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                                <a href="?slug=<?= urlencode($slug) ?>&page=<?= $i ?>" class="page-btn <?= ($i === $currentPage) ? 'active' : '' ?>">
+                                <a href="<?= get_category_url($slug) ?>?page=<?= $i ?>" class="page-btn <?= ($i === $currentPage) ? 'active' : '' ?>">
                                     <?= $i ?>
                                 </a>
                             <?php endfor; ?>
@@ -143,7 +143,7 @@ if (!empty($slug)) {
                 <div class="empty-state-card">
                     <h3>No Articles Found in this Category</h3>
                     <p style="color:var(--text-muted); margin:0.75rem 0 1.5rem;">New career guides are being added to this sector shortly.</p>
-                    <a href="<?= BASE_URL ?>/articles.php" class="btn btn-primary">Browse All Articles</a>
+                    <a href="<?= BASE_URL ?>/articles" class="btn btn-primary">Browse All Articles</a>
                 </div>
             <?php endif; ?>
         </div>
@@ -185,7 +185,7 @@ if (!empty($slug)) {
                         ? $categoryImages[$cat['slug']] 
                         : BASE_URL . '/assets/images/default-article.jpg';
                 ?>
-                <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($cat['slug']) ?>" class="category-photo-tile" style="height: 170px;">
+                <a href="<?= get_category_url($cat['slug']) ?>" class="category-photo-tile" style="height: 170px;">
                     <img src="<?= $tileImg ?>" alt="<?= h($cat['name']) ?>" class="cat-tile-img" loading="lazy">
                     <div class="cat-tile-scrim"></div>
                     <div class="cat-tile-content">

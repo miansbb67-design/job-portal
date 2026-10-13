@@ -27,9 +27,17 @@
     # Tag Clean URL: /tag/sample-slug
     RewriteRule ^tag/([a-zA-Z0-9_-]+)/?$ tag.php?slug=$1 [QSA,L]
 
-    # Standard clean paths
-    RewriteRule ^articles/?$ articles.php [L]
-    RewriteRule ^categories/?$ categories.php [L]
+    # Page Clean URL: /page/sample-slug
+    RewriteRule ^page/([a-zA-Z0-9_-]+)/?$ page.php?slug=$1 [QSA,L]
+
+    # Clean sections & filters paths
+    RewriteRule ^vlogs/?$ articles.php?vlogs=1 [QSA,L]
+    RewriteRule ^vlog/?$ articles.php?vlogs=1 [QSA,L]
+    RewriteRule ^trending/?$ articles.php?trending=1 [QSA,L]
+    RewriteRule ^jobs/?$ articles.php?jobs=1 [QSA,L]
+    RewriteRule ^search/?$ search.php [QSA,L]
+    RewriteRule ^articles/?$ articles.php [QSA,L]
+    RewriteRule ^categories/?$ categories.php [QSA,L]
     RewriteRule ^about/?$ about.php [L]
     RewriteRule ^contact/?$ contact.php [L]
     RewriteRule ^privacy-policy/?$ privacy-policy.php [L]

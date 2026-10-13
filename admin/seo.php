@@ -53,14 +53,17 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         // Static routes
         $staticPages = [
             ['path' => '', 'freq' => 'daily', 'prio' => '1.0'],
-            ['path' => '/articles.php', 'freq' => 'daily', 'prio' => '0.9'],
-            ['path' => '/categories.php', 'freq' => 'weekly', 'prio' => '0.8'],
-            ['path' => '/about.php', 'freq' => 'monthly', 'prio' => '0.6'],
-            ['path' => '/contact.php', 'freq' => 'monthly', 'prio' => '0.6'],
-            ['path' => '/privacy-policy.php', 'freq' => 'yearly', 'prio' => '0.5'],
-            ['path' => '/terms.php', 'freq' => 'yearly', 'prio' => '0.5'],
-            ['path' => '/cookie-policy.php', 'freq' => 'yearly', 'prio' => '0.5'],
-            ['path' => '/disclaimer.php', 'freq' => 'yearly', 'prio' => '0.5']
+            ['path' => '/articles', 'freq' => 'daily', 'prio' => '0.9'],
+            ['path' => '/vlogs', 'freq' => 'daily', 'prio' => '0.9'],
+            ['path' => '/trending', 'freq' => 'daily', 'prio' => '0.9'],
+            ['path' => '/jobs', 'freq' => 'daily', 'prio' => '0.9'],
+            ['path' => '/categories', 'freq' => 'weekly', 'prio' => '0.8'],
+            ['path' => '/about', 'freq' => 'monthly', 'prio' => '0.6'],
+            ['path' => '/contact', 'freq' => 'monthly', 'prio' => '0.6'],
+            ['path' => '/privacy-policy', 'freq' => 'yearly', 'prio' => '0.5'],
+            ['path' => '/terms', 'freq' => 'yearly', 'prio' => '0.5'],
+            ['path' => '/cookie-policy', 'freq' => 'yearly', 'prio' => '0.5'],
+            ['path' => '/disclaimer', 'freq' => 'yearly', 'prio' => '0.5']
         ];
 
         foreach ($staticPages as $sp) {
@@ -76,7 +79,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         foreach ($categories as $cat) {
             $catDate = !empty($cat['created_at']) ? date('Y-m-d', strtotime($cat['created_at'])) : date('Y-m-d');
             $xml .= "    <url>\n";
-            $xml .= "        <loc>" . htmlspecialchars(BASE_URL . '/categories.php?slug=' . $cat['slug']) . "</loc>\n";
+            $xml .= "        <loc>" . htmlspecialchars(get_category_url($cat['slug'])) . "</loc>\n";
             $xml .= "        <lastmod>{$catDate}</lastmod>\n";
             $xml .= "        <changefreq>weekly</changefreq>\n";
             $xml .= "        <priority>0.7</priority>\n";
@@ -87,7 +90,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         foreach ($articles as $art) {
             $modDate = !empty($art['updated_at']) ? date('Y-m-d', strtotime($art['updated_at'])) : (!empty($art['created_at']) ? date('Y-m-d', strtotime($art['created_at'])) : date('Y-m-d'));
             $xml .= "    <url>\n";
-            $xml .= "        <loc>" . htmlspecialchars(BASE_URL . '/article.php?slug=' . $art['slug']) . "</loc>\n";
+            $xml .= "        <loc>" . htmlspecialchars(get_article_url($art['slug'])) . "</loc>\n";
             $xml .= "        <lastmod>{$modDate}</lastmod>\n";
             $xml .= "        <changefreq>weekly</changefreq>\n";
             $xml .= "        <priority>0.8</priority>\n";
@@ -532,12 +535,12 @@ require_once __DIR__ . '/includes/admin-header.php';
                         </td>
                         <td style="padding:1rem 1.25rem; max-width:320px;">
                             <div style="font-weight:700; color:#0f172a; margin-bottom:0.2rem;">
-                                <a href="<?= BASE_URL ?>/article.php?slug=<?= h($row['article']['slug']) ?>" target="_blank" style="color:#0f172a; text-decoration:none;">
+                                <a href="<?= get_article_url($row['article']['slug']) ?>" target="_blank" style="color:#0f172a; text-decoration:none;">
                                     <?= h($row['article']['title']) ?>
                                 </a>
                             </div>
                             <div style="font-family:monospace; color:#0284c7; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                /article.php?slug=<?= h($row['article']['slug']) ?>
+                                /article/<?= h($row['article']['slug']) ?>
                             </div>
                         </td>
                         <td style="padding:1rem 1.25rem;">
@@ -866,7 +869,7 @@ require_once __DIR__ . '/includes/admin-header.php';
 
                 <div>
                     <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:0.35rem;">Target Destination URL (New)</label>
-                    <input type="text" name="target_url" class="form-input" placeholder="/article.php?slug=new-slug" required style="width:100%; padding:0.6rem 0.8rem; border:1px solid #cbd5e1; border-radius:8px;">
+                    <input type="text" name="target_url" class="form-input" placeholder="/article/new-slug" required style="width:100%; padding:0.6rem 0.8rem; border:1px solid #cbd5e1; border-radius:8px;">
                 </div>
 
                 <div>

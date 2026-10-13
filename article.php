@@ -57,7 +57,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['submit_com
     } else {
         set_flash('error', 'Security verification failed or session expired. Please try again.');
     }
-    header('Location: ' . BASE_URL . '/article.php?slug=' . urlencode($article['slug']) . '#comments');
+    header('Location: ' . get_article_url($article['slug']) . '#comments');
     exit;
 }
 
@@ -74,7 +74,7 @@ $metaAuthor = !empty($article['author_name']) ? $article['author_name'] : SITE_N
 $articleSection = !empty($article['category_name']) ? $article['category_name'] : 'Career Advice';
 $articlePublishedTime = date('c', strtotime($article['published_at'] ?? $article['created_at']));
 $articleModifiedTime = date('c', strtotime($article['updated_at'] ?? $article['created_at']));
-$canonicalUrl = BASE_URL . '/article.php?slug=' . urlencode($article['slug']);
+$canonicalUrl = get_article_url($article['slug']);
 $ogType = 'article';
 $ogImage = get_article_featured_image_url($article);
 
@@ -173,9 +173,9 @@ include __DIR__ . '/includes/header.php';
         <nav class="article-breadcrumbs" aria-label="Breadcrumbs">
             <a href="<?= BASE_URL ?>/">Home</a>
             <span>&rsaquo;</span>
-            <a href="<?= BASE_URL ?>/articles.php">Articles</a>
+            <a href="<?= BASE_URL ?>/articles">Articles</a>
             <span>&rsaquo;</span>
-            <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($article['category_slug']) ?>">
+            <a href="<?= get_category_url($article['category_slug']) ?>">
                 <?= h($article['category_name']) ?>
             </a>
             <span>&rsaquo;</span>
@@ -300,7 +300,7 @@ include __DIR__ . '/includes/header.php';
                     </span>
                     <?php foreach ($keywordTags as $tag): ?>
                         <?php if (strlen($tag) > 1 && strtolower($tag) !== strtolower(SITE_NAME)): ?>
-                            <a href="<?= BASE_URL ?>/search.php?q=<?= urlencode($tag) ?>" class="article-tag-badge" style="display:inline-flex; align-items:center; background:var(--bg-surface-elevated); color:var(--text-main); font-size:0.775rem; font-weight:600; padding:0.25rem 0.65rem; border-radius:9999px; border:1px solid var(--border-color); text-decoration:none; transition:all 0.15s ease;">
+                            <a href="<?= BASE_URL ?>/search?q=<?= urlencode($tag) ?>" class="article-tag-badge" style="display:inline-flex; align-items:center; background:var(--bg-surface-elevated); color:var(--text-main); font-size:0.775rem; font-weight:600; padding:0.25rem 0.65rem; border-radius:9999px; border:1px solid var(--border-color); text-decoration:none; transition:all 0.15s ease;">
                                 #<?= h($tag) ?>
                             </a>
                         <?php endif; ?>
@@ -367,7 +367,7 @@ include __DIR__ . '/includes/header.php';
 
         <!-- Editorial Ethics Disclaimer -->
         <div style="margin-top:2.5rem; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1.35rem; font-size:0.85rem; color:var(--text-muted); line-height:1.6;">
-            <strong style="color:#ffffff;">Editorial Transparency & Policy Note:</strong> At <?= SITE_NAME ?>, our mission is to deliver truthful, carefully vetted career insights. All job postings and guides are verified against official company releases. For additional questions or to report out-of-date information, please visit our <a href="<?= BASE_URL ?>/contact.php">Contact Page</a>.
+            <strong style="color:#ffffff;">Editorial Transparency & Policy Note:</strong> At <?= SITE_NAME ?>, our mission is to deliver truthful, carefully vetted career insights. All job postings and guides are verified against official company releases. For additional questions or to report out-of-date information, please visit our <a href="<?= BASE_URL ?>/contact">Contact Page</a>.
         </div>
 
         <?php if (is_section_visible('article_comments')): ?>
@@ -405,7 +405,7 @@ include __DIR__ . '/includes/header.php';
                     </div>
                 <?php endif; ?>
 
-                <form id="articleCommentForm" method="POST" action="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>#comments">
+                <form id="articleCommentForm" method="POST" action="<?= get_article_url($article['slug']) ?>#comments">
                     <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                     <input type="hidden" name="article_id" value="<?= (int)$article['id'] ?>">
                     <!-- Anti-spam Honeypot (Positioned off-screen, autofill-safe) -->
@@ -508,7 +508,7 @@ include __DIR__ . '/includes/header.php';
                         </div>
 
                         <h3 class="article-title">
-                            <a href="<?= BASE_URL ?>/article.php?slug=<?= h($rel['slug']) ?>">
+                            <a href="<?= get_article_url($rel['slug']) ?>">
                                 <?= h($rel['title']) ?>
                             </a>
                         </h3>
@@ -518,7 +518,7 @@ include __DIR__ . '/includes/header.php';
                         </p>
 
                         <div class="article-footer">
-                            <a href="<?= BASE_URL ?>/article.php?slug=<?= h($rel['slug']) ?>" class="read-more-link">
+                            <a href="<?= get_article_url($rel['slug']) ?>" class="read-more-link">
                                 Read Guide &rarr;
                             </a>
                         </div>

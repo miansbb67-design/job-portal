@@ -1593,31 +1593,47 @@ function get_device_breakdown_stats() {
 function get_page_view_url($slug) {
     $cleanSlug = trim(strtolower((string)$slug));
     
-    // Direct canonical script mapping
+    // Direct canonical clean URL mapping
     $mapping = [
-        'about' => 'about.php',
-        'about-us' => 'about.php',
-        'privacy' => 'privacy-policy.php',
-        'privacy-policy' => 'privacy-policy.php',
-        'terms' => 'terms.php',
-        'terms-and-conditions' => 'terms.php',
-        'cookie-policy' => 'cookie-policy.php',
-        'cookies' => 'cookie-policy.php',
-        'disclaimer' => 'disclaimer.php',
-        'contact' => 'contact.php',
-        'contact-us' => 'contact.php'
+        'about' => 'about',
+        'about-us' => 'about',
+        'privacy' => 'privacy-policy',
+        'privacy-policy' => 'privacy-policy',
+        'terms' => 'terms',
+        'terms-and-conditions' => 'terms',
+        'cookie-policy' => 'cookie-policy',
+        'cookies' => 'cookie-policy',
+        'disclaimer' => 'disclaimer',
+        'contact' => 'contact',
+        'contact-us' => 'contact'
     ];
 
     if (isset($mapping[$cleanSlug])) {
         return BASE_URL . '/' . $mapping[$cleanSlug];
     }
 
-    $directFile = dirname(__DIR__) . DIRECTORY_SEPARATOR . $cleanSlug . '.php';
-    if (file_exists($directFile)) {
-        return BASE_URL . '/' . $cleanSlug . '.php';
-    }
+    return BASE_URL . '/page/' . urlencode($cleanSlug);
+}
 
-    return BASE_URL . '/page.php?slug=' . urlencode($cleanSlug);
+/**
+ * Generate clean SEO article URL
+ */
+function get_article_url($slug) {
+    return BASE_URL . '/article/' . urlencode($slug);
+}
+
+/**
+ * Generate clean SEO category URL
+ */
+function get_category_url($slug) {
+    return BASE_URL . '/category/' . urlencode($slug);
+}
+
+/**
+ * Generate clean SEO tag URL
+ */
+function get_tag_url($slug) {
+    return BASE_URL . '/tag/' . urlencode($slug);
 }
 
 /**
@@ -1628,14 +1644,28 @@ function get_page_view_url($slug) {
 function get_header_menu() {
     $default = [
         ['id' => '1', 'label' => 'Home', 'url' => '/', 'enabled' => true],
-        ['id' => '2', 'label' => 'Vlogs', 'url' => '/articles.php?video=1', 'enabled' => true],
-        ['id' => '3', 'label' => 'Articles', 'url' => '/articles.php', 'enabled' => true],
-        ['id' => '4', 'label' => 'Trending', 'url' => '/articles.php?trending=1', 'enabled' => true]
+        ['id' => '2', 'label' => 'Vlogs', 'url' => '/vlogs', 'enabled' => true],
+        ['id' => '3', 'label' => 'Articles', 'url' => '/articles', 'enabled' => true],
+        ['id' => '4', 'label' => 'Trending', 'url' => '/trending', 'enabled' => true]
     ];
     $raw = get_setting('header_menu_items');
     if (!empty($raw)) {
         $decoded = json_decode($raw, true);
         if (is_array($decoded) && !empty($decoded)) {
+            // Auto-normalize legacy queries to clean slugs
+            foreach ($decoded as &$item) {
+                if (isset($item['url'])) {
+                    if (strpos($item['url'], 'video=1') !== false || strpos($item['url'], 'vlog') !== false) {
+                        $item['url'] = '/vlogs';
+                    } elseif (strpos($item['url'], 'trending=1') !== false) {
+                        $item['url'] = '/trending';
+                    } elseif ($item['url'] === '/articles.php') {
+                        $item['url'] = '/articles';
+                    } elseif ($item['url'] === '/categories.php') {
+                        $item['url'] = '/categories';
+                    }
+                }
+            }
             return $decoded;
         }
     }
@@ -1649,13 +1679,24 @@ function get_header_menu() {
  */
 function get_footer_menu() {
     $default = [
-        ['id' => '1', 'label' => 'Popular', 'url' => '/articles.php?trending=1', 'enabled' => true],
-        ['id' => '2', 'label' => 'Search', 'url' => '/search.php', 'enabled' => true]
+        ['id' => '1', 'label' => 'Popular', 'url' => '/trending', 'enabled' => true],
+        ['id' => '2', 'label' => 'Search', 'url' => '/search', 'enabled' => true]
     ];
     $raw = get_setting('footer_menu_items');
     if (!empty($raw)) {
         $decoded = json_decode($raw, true);
         if (is_array($decoded) && !empty($decoded)) {
+            foreach ($decoded as &$item) {
+                if (isset($item['url'])) {
+                    if (strpos($item['url'], 'trending=1') !== false) {
+                        $item['url'] = '/trending';
+                    } elseif ($item['url'] === '/search.php') {
+                        $item['url'] = '/search';
+                    } elseif ($item['url'] === '/articles.php') {
+                        $item['url'] = '/articles';
+                    }
+                }
+            }
             return $decoded;
         }
     }

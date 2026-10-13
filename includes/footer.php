@@ -52,10 +52,10 @@ $footerCopyrightText = get_setting('site_copyright', '© ' . date('Y') . ' ' . $
                             <?php endforeach; ?>
                         <?php else: ?>
                             <li><a href="<?= BASE_URL ?>/">Home</a></li>
-                            <li><a href="<?= BASE_URL ?>/articles.php">All Jobs & Articles</a></li>
-                            <li><a href="<?= BASE_URL ?>/categories.php">Job Categories</a></li>
-                            <li><a href="<?= BASE_URL ?>/about.php">About Us</a></li>
-                            <li><a href="<?= BASE_URL ?>/contact.php">Contact Us</a></li>
+                            <li><a href="<?= BASE_URL ?>/articles">All Jobs & Articles</a></li>
+                            <li><a href="<?= BASE_URL ?>/categories">Job Categories</a></li>
+                            <li><a href="<?= BASE_URL ?>/about">About Us</a></li>
+                            <li><a href="<?= BASE_URL ?>/contact">Contact Us</a></li>
                         <?php endif; ?>
                     </ul>
                 </div>
@@ -69,7 +69,7 @@ $footerCopyrightText = get_setting('site_copyright', '© ' . date('Y') . ' ' . $
                         foreach ($footerCats as $fcat): 
                         ?>
                             <li>
-                                <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($fcat['slug']) ?>">
+                                <a href="<?= BASE_URL ?>/category/<?= h($fcat['slug']) ?>">
                                     <?= h($fcat['name']) ?>
                                 </a>
                             </li>
@@ -84,11 +84,11 @@ $footerCopyrightText = get_setting('site_copyright', '© ' . date('Y') . ' ' . $
                         Committed to transparent hiring alerts and verified career advice. Review our policies:
                     </p>
                     <ul class="footer-links legal-links">
-                        <li><a href="<?= BASE_URL ?>/privacy-policy.php">Privacy Policy</a></li>
-                        <li><a href="<?= BASE_URL ?>/cookie-policy.php">Cookie Policy</a></li>
-                        <li><a href="<?= BASE_URL ?>/terms.php">Terms of Service</a></li>
-                        <li><a href="<?= BASE_URL ?>/disclaimer.php">Editorial Disclaimer</a></li>
-                        <li><a href="<?= BASE_URL ?>/contact.php">Report an Issue</a></li>
+                        <li><a href="<?= BASE_URL ?>/privacy-policy">Privacy Policy</a></li>
+                        <li><a href="<?= BASE_URL ?>/cookie-policy">Cookie Policy</a></li>
+                        <li><a href="<?= BASE_URL ?>/terms">Terms of Service</a></li>
+                        <li><a href="<?= BASE_URL ?>/disclaimer">Editorial Disclaimer</a></li>
+                        <li><a href="<?= BASE_URL ?>/contact">Report an Issue</a></li>
                     </ul>
                 </div>
             </div>
@@ -100,10 +100,10 @@ $footerCopyrightText = get_setting('site_copyright', '© ' . date('Y') . ' ' . $
                     <?= h($footerCopyrightText) ?>
                 </p>
                 <div class="footer-legal-inline">
-                    <a href="<?= BASE_URL ?>/privacy-policy.php">Privacy</a> &bull; 
-                    <a href="<?= BASE_URL ?>/cookie-policy.php">Cookies</a> &bull; 
-                    <a href="<?= BASE_URL ?>/terms.php">Terms</a> &bull; 
-                    <a href="<?= BASE_URL ?>/disclaimer.php">Disclaimer</a> &bull; 
+                    <a href="<?= BASE_URL ?>/privacy-policy">Privacy</a> &bull; 
+                    <a href="<?= BASE_URL ?>/cookie-policy">Cookies</a> &bull; 
+                    <a href="<?= BASE_URL ?>/terms">Terms</a> &bull; 
+                    <a href="<?= BASE_URL ?>/disclaimer">Disclaimer</a> &bull; 
                     <button type="button" onclick="showCookieBanner()" class="cookie-manage-btn">Cookie Settings</button>
                 </div>
             </div>

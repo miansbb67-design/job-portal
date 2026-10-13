@@ -336,7 +336,7 @@ require_once __DIR__ . '/includes/admin-header.php';
                     <tr style="border-bottom:1px solid #f1f5f9;">
                         <td style="padding:0.75rem 1.25rem; font-weight:800; color:#64748b;">#<?= $i++ ?></td>
                         <td style="padding:0.75rem 1.25rem; font-weight:700; color:#0f172a;">
-                            <a href="<?= BASE_URL ?>/article.php?slug=<?= h($art['slug']) ?>" target="_blank" style="color:inherit; text-decoration:none;">
+                            <a href="<?= get_article_url($art['slug']) ?>" target="_blank" style="color:inherit; text-decoration:none;">
                                 <?= h($art['title']) ?>
                             </a>
                         </td>
@@ -516,10 +516,10 @@ require_once __DIR__ . '/includes/admin-header.php';
                         <?php foreach ($gaData['top_pages'] as $pg): ?>
                             <tr style="border-bottom:1px solid #f1f5f9; font-size:0.85rem;">
                                 <td style="padding:0.75rem 1rem;">
-                                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($pg['slug']) ?>" target="_blank" style="font-weight:700; color:#0f172a; text-decoration:none;">
+                                    <a href="<?= get_article_url($pg['slug']) ?>" target="_blank" style="font-weight:700; color:#0f172a; text-decoration:none;">
                                         <?= h($pg['title']) ?>
                                     </a>
-                                    <div style="font-size:0.72rem; color:#94a3b8; font-family:monospace;">/article.php?slug=<?= h($pg['slug']) ?></div>
+                                    <div style="font-size:0.72rem; color:#94a3b8; font-family:monospace;">/article/<?= h($pg['slug']) ?></div>
                                 </td>
                                 <td style="padding:0.75rem 1rem;">
                                     <span style="font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:999px; background:<?= $pg['is_job_posting'] ? '#ecfdf5' : '#eff6ff' ?>; color:<?= $pg['is_job_posting'] ? '#059669' : '#2563eb' ?>;">

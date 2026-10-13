@@ -172,8 +172,18 @@ try {
                         }
                         $fullHUrl = (strpos($hUrl, 'http') === 0) ? $hUrl : rtrim(BASE_URL, '/') . $hUrl;
                         $isActive = false;
-                        if ($hUrl === '/' && $currentScript === 'index.php') $isActive = true;
-                        elseif ($hUrl !== '/' && strpos($_SERVER['REQUEST_URI'] ?? '', $hUrl) !== false) $isActive = true;
+                        $reqUri = $_SERVER['REQUEST_URI'] ?? '';
+                        if ($hUrl === '/' && ($currentScript === 'index.php' && ($reqUri === '/' || $reqUri === BASE_URL . '/' || substr($reqUri, -1) === '/'))) {
+                            $isActive = true;
+                        } elseif ($hUrl === '/vlogs' && (strpos($reqUri, '/vlogs') !== false || isset($_GET['vlogs']) || isset($_GET['video']))) {
+                            $isActive = true;
+                        } elseif ($hUrl === '/trending' && (strpos($reqUri, '/trending') !== false || isset($_GET['trending']))) {
+                            $isActive = true;
+                        } elseif ($hUrl === '/articles' && (strpos($reqUri, '/articles') !== false && !isset($_GET['vlogs']) && !isset($_GET['video']) && !isset($_GET['trending']))) {
+                            $isActive = true;
+                        } elseif ($hUrl !== '/' && strpos($reqUri, $hUrl) !== false) {
+                            $isActive = true;
+                        }
                         ?>
                         <a href="<?= h($fullHUrl) ?>" class="pine-nav-link <?= $isActive ? 'active' : '' ?>">
                             <?= h($hItem['label']) ?>
@@ -181,8 +191,9 @@ try {
                     <?php endforeach; ?>
                 <?php else: ?>
                     <a href="<?= BASE_URL ?>/" class="pine-nav-link <?= ($currentScript == 'index.php') ? 'active' : '' ?>">Home</a>
-                    <a href="<?= BASE_URL ?>/articles.php" class="pine-nav-link <?= ($currentScript == 'articles.php' && empty($_GET['trending'])) ? 'active' : '' ?>">Jobs & Articles</a>
-                    <a href="<?= BASE_URL ?>/articles.php?trending=1" class="pine-nav-link <?= (!empty($_GET['trending'])) ? 'active' : '' ?>">Trending</a>
+                    <a href="<?= BASE_URL ?>/vlogs" class="pine-nav-link <?= (strpos($_SERVER['REQUEST_URI'] ?? '', 'vlogs') !== false || isset($_GET['vlogs']) || isset($_GET['video'])) ? 'active' : '' ?>">Vlogs</a>
+                    <a href="<?= BASE_URL ?>/articles" class="pine-nav-link <?= ($currentScript == 'articles.php' && empty($_GET['trending']) && empty($_GET['vlogs']) && empty($_GET['video'])) ? 'active' : '' ?>">Jobs & Articles</a>
+                    <a href="<?= BASE_URL ?>/trending" class="pine-nav-link <?= (!empty($_GET['trending'])) ? 'active' : '' ?>">Trending</a>
                 <?php endif; ?>
                 
                 <!-- Topics Dropdown Menu -->
@@ -192,12 +203,12 @@ try {
                     </button>
                     <div class="pine-dropdown-card" id="topicsMenuDropdown">
                         <?php foreach ($headerCategories as $cat): ?>
-                            <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($cat['slug']) ?>" class="pine-dropdown-item">
+                            <a href="<?= BASE_URL ?>/category/<?= h($cat['slug']) ?>" class="pine-dropdown-item">
                                 <?= h($cat['name']) ?>
                             </a>
                         <?php endforeach; ?>
                         <div class="pine-dropdown-divider"></div>
-                        <a href="<?= BASE_URL ?>/categories.php" class="pine-dropdown-item view-all">
+                        <a href="<?= BASE_URL ?>/categories" class="pine-dropdown-item view-all">
                             All Categories &rarr;
                         </a>
                     </div>
@@ -206,7 +217,7 @@ try {
 
             <!-- Search Form on Right & Mobile Controls -->
             <div class="pine-header-right">
-                <form action="<?= BASE_URL ?>/search.php" method="GET" class="pine-search-form" role="search">
+                <form action="<?= BASE_URL ?>/search" method="GET" class="pine-search-form" role="search">
                     <label for="q-header" class="sr-only">Search</label>
                     <input id="q-header" type="search" name="q" maxlength="100" value="<?= isset($_GET['q']) ? h($_GET['q']) : '' ?>" placeholder="Search jobs, guides, exams…" autocomplete="off" class="pine-search-input" oninput="this.value = this.value.replace(/[<>]/g, '')">
                 </form>
@@ -265,7 +276,7 @@ try {
                             <?php if (!empty($headerNotifications)): ?>
                                 <div class="site-notif-list" id="siteNotifList">
                                     <?php foreach ($headerNotifications as $n): ?>
-                                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($n['slug']) ?>" 
+                                        <a href="<?= get_article_url($n['slug']) ?>" 
                                            class="site-notif-item <?= !empty($n['is_read']) ? 'is-read' : 'is-unread' ?>"
                                            data-id="<?= (int)$n['id'] ?>">
                                             <div class="site-notif-item-icon <?= $n['is_job_posting'] ? 'job-icon' : 'guide-icon' ?>">
@@ -324,14 +335,15 @@ try {
         <nav class="mobile-nav-panel" id="mobileNavMenu" hidden aria-label="Mobile Navigation">
             <div class="site-container mobile-nav-inner">
                 <a href="<?= BASE_URL ?>/" class="mobile-nav-link <?= ($currentScript == 'index.php') ? 'active' : '' ?>">Home</a>
-                <a href="<?= BASE_URL ?>/articles.php" class="mobile-nav-link <?= ($currentScript == 'articles.php' && empty($_GET['trending'])) ? 'active' : '' ?>">Articles</a>
-                <a href="<?= BASE_URL ?>/articles.php?trending=1" class="mobile-nav-link <?= (!empty($_GET['trending'])) ? 'active' : '' ?>">Trending</a>
+                <a href="<?= BASE_URL ?>/vlogs" class="mobile-nav-link <?= (!empty($_GET['vlogs']) || !empty($_GET['video'])) ? 'active' : '' ?>">Vlogs</a>
+                <a href="<?= BASE_URL ?>/articles" class="mobile-nav-link <?= ($currentScript == 'articles.php' && empty($_GET['trending']) && empty($_GET['vlogs']) && empty($_GET['video'])) ? 'active' : '' ?>">Articles</a>
+                <a href="<?= BASE_URL ?>/trending" class="mobile-nav-link <?= (!empty($_GET['trending'])) ? 'active' : '' ?>">Trending</a>
                 
                 <div class="mobile-topics-section">
                     <span class="mobile-topics-title">Topics</span>
                     <div class="mobile-chips-grid">
                         <?php foreach ($headerCategories as $cat): ?>
-                            <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($cat['slug']) ?>" class="mobile-topic-chip">
+                            <a href="<?= get_category_url($cat['slug']) ?>" class="mobile-topic-chip">
                                 <?= h($cat['name']) ?>
                             </a>
                         <?php endforeach; ?>

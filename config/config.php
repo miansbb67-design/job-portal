@@ -79,8 +79,8 @@ if (!empty($envBaseUrl) && strpos($envBaseUrl, 'http') === 0) {
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
     
     // Auto-detect root vs subdirectory path
-    $docRoot = !empty($_SERVER['DOCUMENT_ROOT']) ? rtrim(str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT']) ?: $_SERVER['DOCUMENT_ROOT']), '/') : '';
     $appRoot = rtrim(str_replace('\\', '/', realpath(dirname(__DIR__)) ?: dirname(__DIR__)), '/');
+    $docRoot = !empty($_SERVER['DOCUMENT_ROOT']) ? rtrim(str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT']) ?: $_SERVER['DOCUMENT_ROOT']), '/') : (strpos($appRoot, '/htdocs') !== false ? substr($appRoot, 0, strpos($appRoot, '/htdocs') + 7) : '');
     $subDir = '';
 
     if ($docRoot && $appRoot && strpos(strtolower($appRoot), strtolower($docRoot)) === 0) {

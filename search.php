@@ -93,7 +93,7 @@ include __DIR__ . '/includes/header.php';
     <div class="site-container">
         <!-- Search Bar with Hardened Input -->
         <div style="max-width: 680px; margin: 0 auto 3rem;">
-            <form action="<?= BASE_URL ?>/search.php" method="GET" style="display:flex; gap:0.5rem;" role="search">
+            <form action="<?= BASE_URL ?>/search" method="GET" style="display:flex; gap:0.5rem;" role="search">
                 <input 
                     type="search" 
                     name="q" 
@@ -154,7 +154,7 @@ include __DIR__ . '/includes/header.php';
                                 </div>
 
                                 <h3 class="article-title">
-                                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>">
+                                    <a href="<?= get_article_url($article['slug']) ?>">
                                         <?= h($article['title']) ?>
                                     </a>
                                 </h3>
@@ -170,10 +170,10 @@ include __DIR__ . '/includes/header.php';
                                 <?php endif; ?>
 
                                 <div class="article-footer">
-                                    <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($article['category_slug']) ?>" style="font-weight:600; color:var(--text-muted); font-size:0.825rem;">
+                                    <a href="<?= get_category_url($article['category_slug']) ?>" style="font-weight:600; color:var(--text-muted); font-size:0.825rem;">
                                         <?= h($article['category_name']) ?>
                                     </a>
-                                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>" class="read-more-link">
+                                    <a href="<?= get_article_url($article['slug']) ?>" class="read-more-link">
                                         Read Guide &rarr;
                                     </a>
                                 </div>
@@ -188,7 +188,7 @@ include __DIR__ . '/includes/header.php';
                     <p style="color:var(--text-muted); max-width:480px; margin:0 auto 1.5rem;">
                         Try searching with different keywords like "Remote", "Resume", "Civil", or "Interview".
                     </p>
-                    <a href="<?= BASE_URL ?>/articles.php" class="btn btn-primary">Browse All Articles</a>
+                    <a href="<?= BASE_URL ?>/articles" class="btn btn-primary">Browse All Articles</a>
                 </div>
             <?php endif; ?>
 

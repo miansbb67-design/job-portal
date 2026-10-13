@@ -390,7 +390,7 @@ require_once __DIR__ . '/includes/admin-header.php';
                                     </button>
 
                                     <!-- Preview Button (Opens public site in new tab) -->
-                                    <a href="<?= BASE_URL ?>/article.php?slug=<?= urlencode($art['slug']) ?>" target="_blank" class="btn-action-outline btn-action-preview" title="View live article">
+                                    <a href="<?= get_article_url($art['slug']) ?>" target="_blank" class="btn-action-outline btn-action-preview" title="View live article">
                                         Preview
                                     </a>
 
@@ -416,7 +416,7 @@ require_once __DIR__ . '/includes/admin-header.php';
                                             </form>
 
                                             <!-- Copy URL -->
-                                            <button type="button" class="dropdown-menu-item" onclick="copyArticleUrl('<?= BASE_URL ?>/article.php?slug=<?= urlencode($art['slug']) ?>')">
+                                            <button type="button" class="dropdown-menu-item" onclick="copyArticleUrl('<?= get_article_url($art['slug']) ?>')">
                                                 Copy Article Link
                                             </button>
 

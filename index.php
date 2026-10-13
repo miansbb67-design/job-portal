@@ -113,7 +113,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                     <img src="<?= $spotThumb ?>" alt="<?= h($spotlight['title']) ?>" class="spotlight-img" loading="eager">
                     <div class="spotlight-badge-row">
                         <span class="badge-editorial">★ Featured Guide</span>
-                        <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($spotlight['category_slug']) ?>" class="badge-cat-tag">
+                        <a href="<?= get_category_url($spotlight['category_slug']) ?>" class="badge-cat-tag">
                             <?= h($spotlight['category_name']) ?>
                         </a>
                     </div>
@@ -121,7 +121,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
 
                 <div class="spotlight-content">
                     <h2 class="spotlight-title">
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($spotlight['slug']) ?>">
+                        <a href="<?= BASE_URL ?>/article/<?= h($spotlight['slug']) ?>">
                             <?= h($spotlight['title']) ?>
                         </a>
                     </h2>
@@ -139,7 +139,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                             </div>
                         </div>
 
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($spotlight['slug']) ?>" class="read-guide-btn">
+                        <a href="<?= BASE_URL ?>/article/<?= h($spotlight['slug']) ?>" class="read-guide-btn">
                             Read Guide &rarr;
                         </a>
                     </div>
@@ -155,7 +155,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                         <span class="live-pulse-dot"></span>
                         <h3 class="radar-heading">Live Job Radar</h3>
                     </div>
-                    <a href="<?= BASE_URL ?>/articles.php" class="radar-view-all">All Guides &rarr;</a>
+                    <a href="<?= BASE_URL ?>/articles" class="radar-view-all">All Guides &rarr;</a>
                 </div>
 
                 <div class="radar-items-list">
@@ -170,7 +170,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                             <?php endif; ?>
                         </div>
                         <h4 class="radar-job-title">
-                            <a href="<?= BASE_URL ?>/article.php?slug=<?= h($radarJob['slug']) ?>">
+                            <a href="<?= BASE_URL ?>/article/<?= h($radarJob['slug']) ?>">
                                 <?= h($radarJob['title']) ?>
                             </a>
                         </h4>
@@ -192,15 +192,15 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                                 $rThumb = get_article_thumbnail_url($rArt);
                             ?>
                             <div class="radar-article-row">
-                                <a href="<?= BASE_URL ?>/article.php?slug=<?= h($rArt['slug']) ?>" class="radar-thumb-box">
+                                <a href="<?= BASE_URL ?>/article/<?= h($rArt['slug']) ?>" class="radar-thumb-box">
                                     <img src="<?= $rThumb ?>" alt="<?= h($rArt['title']) ?>" loading="lazy">
                                 </a>
                                 <div class="radar-article-info">
-                                    <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($rArt['category_slug']) ?>" class="radar-cat-tag">
+                                    <a href="<?= BASE_URL ?>/category/<?= h($rArt['category_slug']) ?>" class="radar-cat-tag">
                                         <?= h($rArt['category_name']) ?>
                                     </a>
                                     <h4 class="radar-row-title">
-                                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($rArt['slug']) ?>">
+                                        <a href="<?= BASE_URL ?>/article/<?= h($rArt['slug']) ?>">
                                             <?= h($rArt['title']) ?>
                                         </a>
                                     </h4>
@@ -212,15 +212,15 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                                 <?php foreach ($radarArticles as $rArt): ?>
                                 <?php $rThumb = get_article_thumbnail_url($rArt); ?>
                                 <div class="radar-article-row" aria-hidden="true">
-                                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($rArt['slug']) ?>" class="radar-thumb-box" tabindex="-1">
+                                    <a href="<?= BASE_URL ?>/article/<?= h($rArt['slug']) ?>" class="radar-thumb-box" tabindex="-1">
                                         <img src="<?= $rThumb ?>" alt="<?= h($rArt['title']) ?>" loading="lazy">
                                     </a>
                                     <div class="radar-article-info">
-                                        <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($rArt['category_slug']) ?>" class="radar-cat-tag" tabindex="-1">
+                                        <a href="<?= BASE_URL ?>/category/<?= h($rArt['category_slug']) ?>" class="radar-cat-tag" tabindex="-1">
                                             <?= h($rArt['category_name']) ?>
                                         </a>
                                         <h4 class="radar-row-title">
-                                            <a href="<?= BASE_URL ?>/article.php?slug=<?= h($rArt['slug']) ?>" tabindex="-1">
+                                            <a href="<?= BASE_URL ?>/article/<?= h($rArt['slug']) ?>" tabindex="-1">
                                                 <?= h($rArt['title']) ?>
                                             </a>
                                         </h4>
@@ -250,12 +250,12 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                 <h2><?= h(!empty($secCfg_topCats['title']) ? $secCfg_topCats['title'] : 'Browse Top Categories') ?></h2>
                 <p class="section-header-sub"><?= h(!empty($secCfg_topCats['subtitle']) ? $secCfg_topCats['subtitle'] : 'Find the right career path, exam preparation guides, and job opportunities.') ?></p>
             </div>
-            <a href="<?= BASE_URL ?>/categories.php" class="section-action-btn">All Categories &rarr;</a>
+            <a href="<?= BASE_URL ?>/categories" class="section-action-btn">All Categories &rarr;</a>
         </div>
 
         <div class="sector-tracks-grid">
             <?php foreach ($categories as $cat): ?>
-                <a href="<?= BASE_URL ?>/categories.php?slug=<?= h($cat['slug']) ?>" class="sector-card">
+                <a href="<?= get_category_url($cat['slug']) ?>" class="sector-card">
                     <div class="sector-icon-box">
                         <?php if (strpos($cat['slug'], 'govt') !== false || strpos($cat['slug'], 'government') !== false): ?>
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 2L2 7h20L12 2z"></path></svg>
@@ -290,7 +290,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                 <h2><?= h(!empty($secCfg_trending['title']) ? $secCfg_trending['title'] : 'Trending Career Guides') ?></h2>
                 <p class="section-header-sub"><?= h(!empty($secCfg_trending['subtitle']) ? $secCfg_trending['subtitle'] : 'Top interview tips, ATS resume frameworks, and career growth roadmaps.') ?></p>
             </div>
-            <a href="<?= BASE_URL ?>/articles.php?trending=1" class="section-action-btn">View All Guides &rarr;</a>
+            <a href="<?= BASE_URL ?>/trending" class="section-action-btn">View All Guides &rarr;</a>
         </div>
 
         <div class="cp-card-grid-3">
@@ -300,7 +300,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
             ?>
             <article class="cp-article-card">
                 <div class="cp-card-thumb-wrap">
-                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>">
+                    <a href="<?= get_article_url($article['slug']) ?>">
                         <img src="<?= $thumbPath ?>" alt="<?= h($article['title']) ?>" class="cp-card-thumb" loading="lazy">
                     </a>
                     <span class="cp-badge-floating">
@@ -316,7 +316,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                     </div>
 
                     <h3 class="cp-card-title">
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>">
+                        <a href="<?= get_article_url($article['slug']) ?>">
                             <?= h($article['title']) ?>
                         </a>
                     </h3>
@@ -330,7 +330,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                             <span class="cp-author-avatar"><?= strtoupper(substr($article['author_name'], 0, 1)) ?></span>
                             <span><?= h($article['author_name']) ?></span>
                         </div>
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>" class="cp-card-read-link">
+                        <a href="<?= get_article_url($article['slug']) ?>" class="cp-card-read-link">
                             Read Guide &rarr;
                         </a>
                     </div>
@@ -352,7 +352,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                 <h2><?= h(!empty($secCfg_jobs['title']) ? $secCfg_jobs['title'] : 'Latest Job Openings') ?></h2>
                 <p class="section-header-sub"><?= h(!empty($secCfg_jobs['subtitle']) ? $secCfg_jobs['subtitle'] : 'Verified government, corporate, and tech jobs with direct application details.') ?></p>
             </div>
-            <a href="<?= BASE_URL ?>/articles.php" class="section-action-btn">View All Jobs &rarr;</a>
+            <a href="<?= BASE_URL ?>/jobs" class="section-action-btn">View All Jobs &rarr;</a>
         </div>
 
         <div class="job-postings-strip">
@@ -366,7 +366,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                 </div>
 
                 <h3 class="job-vacancy-title">
-                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($job['slug']) ?>">
+                    <a href="<?= get_article_url($job['slug']) ?>">
                         <?= h($job['title']) ?>
                     </a>
                 </h3>
@@ -385,7 +385,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
 
                 <div class="job-vacancy-action-bar">
                     <span style="font-size:0.775rem; color:var(--text-muted);">Posted <?= format_date($job['published_at']) ?></span>
-                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($job['slug']) ?>" class="job-apply-link">
+                    <a href="<?= get_article_url($job['slug']) ?>" class="job-apply-link">
                         View Job & Details &rarr;
                     </a>
                 </div>
@@ -414,7 +414,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                     </div>
                     <h3 class="toolkit-box-title">ATS Resume Blueprint</h3>
                     <p class="toolkit-box-desc">Proven formatting tips and keywords to pass ATS automated filters easily.</p>
-                    <a href="<?= BASE_URL ?>/article.php?slug=how-to-write-an-ats-friendly-resume" class="toolkit-box-link">Read Blueprint &rarr;</a>
+                    <a href="<?= get_article_url('how-to-write-an-ats-friendly-resume') ?>" class="toolkit-box-link">Read Blueprint &rarr;</a>
                 </div>
 
                 <div class="toolkit-box">
@@ -423,7 +423,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                     </div>
                     <h3 class="toolkit-box-title">STAR Interview Method</h3>
                     <p class="toolkit-box-desc">Master behavioral interview questions with structured and confident answers.</p>
-                    <a href="<?= BASE_URL ?>/article.php?slug=mastering-behavioral-interview-star-method" class="toolkit-box-link">View Method &rarr;</a>
+                    <a href="<?= get_article_url('mastering-behavioral-interview-star-method') ?>" class="toolkit-box-link">View Method &rarr;</a>
                 </div>
 
                 <div class="toolkit-box">
@@ -432,7 +432,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                     </div>
                     <h3 class="toolkit-box-title">Remote Job Guide 2026</h3>
                     <p class="toolkit-box-desc">Find high-paying international remote positions and freelance opportunities.</p>
-                    <a href="<?= BASE_URL ?>/article.php?slug=top-10-high-paying-remote-jobs-2026" class="toolkit-box-link">Explore Jobs &rarr;</a>
+                    <a href="<?= get_article_url('top-10-high-paying-remote-jobs-2026') ?>" class="toolkit-box-link">Explore Jobs &rarr;</a>
                 </div>
             </div>
         </div>
@@ -450,7 +450,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                 <h2><?= h(!empty($secCfg_latest['title']) ? $secCfg_latest['title'] : 'Latest Articles & News') ?></h2>
                 <p class="section-header-sub"><?= h(!empty($secCfg_latest['subtitle']) ? $secCfg_latest['subtitle'] : 'Recent career advice, exam schedules, and recruitment updates.') ?></p>
             </div>
-            <a href="<?= BASE_URL ?>/articles.php" class="section-action-btn">View All Articles &rarr;</a>
+            <a href="<?= BASE_URL ?>/articles" class="section-action-btn">View All Articles &rarr;</a>
         </div>
 
         <div class="cp-card-grid-3">
@@ -460,7 +460,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
             ?>
             <article class="cp-article-card">
                 <div class="cp-card-thumb-wrap">
-                    <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>">
+                    <a href="<?= get_article_url($article['slug']) ?>">
                         <img src="<?= $thumbPath ?>" alt="<?= h($article['title']) ?>" class="cp-card-thumb" loading="lazy">
                     </a>
                     <span class="cp-badge-floating <?= $article['is_job_posting'] ? 'job-badge' : '' ?>">
@@ -476,7 +476,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                     </div>
 
                     <h3 class="cp-card-title">
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>">
+                        <a href="<?= get_article_url($article['slug']) ?>">
                             <?= h($article['title']) ?>
                         </a>
                     </h3>
@@ -499,7 +499,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                             <span class="cp-author-avatar"><?= strtoupper(substr($article['author_name'], 0, 1)) ?></span>
                             <span><?= h($article['author_name']) ?></span>
                         </div>
-                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($article['slug']) ?>" class="cp-card-read-link">
+                        <a href="<?= get_article_url($article['slug']) ?>" class="cp-card-read-link">
                             Read Guide &rarr;
                         </a>
                     </div>

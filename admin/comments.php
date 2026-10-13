@@ -198,7 +198,7 @@ include __DIR__ . '/includes/admin-header.php';
                                 <!-- Article Link -->
                                 <td style="padding:1rem 1.25rem;">
                                     <?php if (!empty($row['article_title'])): ?>
-                                        <a href="<?= BASE_URL ?>/article.php?slug=<?= h($row['article_slug']) ?>" target="_blank" style="color:#0f172a; font-weight:600; text-decoration:none; font-size:0.85rem; line-height:1.4; display:block;">
+                                        <a href="<?= get_article_url($row['article_slug']) ?>" target="_blank" style="color:#0f172a; font-weight:600; text-decoration:none; font-size:0.85rem; line-height:1.4; display:block;">
                                             <?= h($row['article_title']) ?> &nearr;
                                         </a>
                                     <?php else: ?>
