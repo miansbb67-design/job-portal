@@ -180,7 +180,7 @@ try {
                         </a>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <a href="<?= BASE_URL ?>/" class="pine-nav-link <?= ($currentScript == 'index.php') ? 'active' : '' ?>">Home</a>
+                    <a href="<?= BASE_URL ?>/" class="pine-nav-link <?= ($currentScript == 'index.php') ? 'active' : '' ?>">Home-</a>
                     <a href="<?= BASE_URL ?>/articles.php" class="pine-nav-link <?= ($currentScript == 'articles.php' && empty($_GET['trending'])) ? 'active' : '' ?>">Jobs & Articles</a>
                     <a href="<?= BASE_URL ?>/articles.php?trending=1" class="pine-nav-link <?= (!empty($_GET['trending'])) ? 'active' : '' ?>">Trending</a>
                 <?php endif; ?>
