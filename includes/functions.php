@@ -1204,8 +1204,93 @@ function track_active_visitor($pageTitle = null) {
         $cleanUrl = mb_substr($reqUri, 0, 255);
         $cleanTitle = mb_substr((string)($pageTitle ?? ''), 0, 150);
         $stmt->execute([$ip, $cleanUrl, $cleanTitle, $device, mb_substr($ref, 0, 255)]);
+
+        // Update daily aggregated stats for charts & reports
+        $db->exec("
+            INSERT INTO daily_traffic_stats (stat_date, page_views, unique_visitors, sessions, created_at, updated_at)
+            VALUES (CURDATE(), 1, 1, 1, NOW(), NOW())
+            ON DUPLICATE KEY UPDATE 
+                page_views = page_views + 1,
+                sessions = sessions + 1,
+                updated_at = NOW()
+        ");
     } catch (Throwable $e) {
         // Silent failure if table temporarily unavailable
+    }
+}
+
+/**
+ * Get daily traffic chart dataset for admin dashboard
+ *
+ * @param int $days (7, 14, or 30)
+ * @return array
+ */
+function get_daily_traffic_chart_data($days = 30) {
+    try {
+        $db = getDBConnection();
+        $days = in_array((int)$days, [7, 14, 30]) ? (int)$days : 30;
+
+        $stmt = $db->prepare("
+            SELECT stat_date, page_views, unique_visitors, sessions 
+            FROM daily_traffic_stats 
+            WHERE stat_date >= (CURDATE() - INTERVAL ? DAY)
+            ORDER BY stat_date ASC
+        ");
+        $stmt->execute([$days - 1]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $dataMap = [];
+        foreach ($rows as $r) {
+            $dataMap[$r['stat_date']] = $r;
+        }
+
+        $labels = [];
+        $displayLabels = [];
+        $pageViews = [];
+        $uniqueVisitors = [];
+        $sessions = [];
+
+        $today = new DateTime('today');
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $d = (clone $today)->modify("-$i days");
+            $dateStr = $d->format('Y-m-d');
+            $labels[] = $dateStr;
+            $displayLabels[] = $d->format('M j');
+
+            if (isset($dataMap[$dateStr])) {
+                $pageViews[] = (int)$dataMap[$dateStr]['page_views'];
+                $uniqueVisitors[] = (int)$dataMap[$dateStr]['unique_visitors'];
+                $sessions[] = (int)$dataMap[$dateStr]['sessions'];
+            } else {
+                $pageViews[] = 0;
+                $uniqueVisitors[] = 0;
+                $sessions[] = 0;
+            }
+        }
+
+        return [
+            'labels' => $labels,
+            'display_labels' => $displayLabels,
+            'page_views' => $pageViews,
+            'unique_visitors' => $uniqueVisitors,
+            'sessions' => $sessions,
+            'total_views' => array_sum($pageViews),
+            'total_visitors' => array_sum($uniqueVisitors),
+            'total_sessions' => array_sum($sessions),
+            'max_views' => !empty($pageViews) ? max($pageViews) : 0,
+        ];
+    } catch (Throwable $e) {
+        return [
+            'labels' => [],
+            'display_labels' => [],
+            'page_views' => [],
+            'unique_visitors' => [],
+            'sessions' => [],
+            'total_views' => 0,
+            'total_visitors' => 0,
+            'total_sessions' => 0,
+            'max_views' => 0,
+        ];
     }
 }
 

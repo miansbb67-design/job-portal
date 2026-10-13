@@ -113,6 +113,9 @@ $currentAdminTab = $_GET['tab'] ?? 'overview';
 
     <!-- Summernote WYSIWYG Editor Stylesheet -->
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/vendor/summernote/summernote-lite.min.css">
+    
+    <!-- Chart.js UMD Library (Offline & Interactive High-Performance Charts) -->
+    <script src="<?= BASE_URL ?>/assets/vendor/chartjs/chart.umd.min.js"></script>
     <script>window.ADMIN_URL = '<?= ADMIN_URL ?>';</script>
 </head>
 <body class="admin-body">

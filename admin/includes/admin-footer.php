@@ -11,6 +11,9 @@
     <script src="<?= BASE_URL ?>/assets/vendor/dropify/dropify.min.js"></script>
     <script src="<?= BASE_URL ?>/assets/vendor/summernote/summernote-lite.min.js"></script>
 
+    <!-- Modern Chart.js Library (High-Performance Canvas Interactive Analytics) -->
+    <script src="<?= BASE_URL ?>/assets/vendor/chartjs/chart.umd.min.js"></script>
+
     <!-- Admin JavaScript File (with auto cache-buster) -->
     <script src="<?= BASE_URL ?>/assets/js/admin.js?v=<?= filemtime(__DIR__ . '/../../assets/js/admin.js') ?>"></script>
 </body>

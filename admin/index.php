@@ -36,6 +36,11 @@ $activePages = get_real_active_pages(5);
 $totalUniqueVisitors = (int)$db->query("SELECT COUNT(DISTINCT ip_address) FROM active_visitors")->fetchColumn();
 $todayVisitors = (int)$db->query("SELECT COUNT(*) FROM active_visitors WHERE DATE(last_activity) = CURDATE()")->fetchColumn();
 
+// Daily traffic datasets for 7d, 14d, 30d charts
+$trafficData7d = get_daily_traffic_chart_data(7);
+$trafficData14d = get_daily_traffic_chart_data(14);
+$trafficData30d = get_daily_traffic_chart_data(30);
+
 $totalArticles = (int)$db->query("SELECT COUNT(*) FROM articles WHERE is_trash = 0")->fetchColumn();
 $publishedArticles = (int)$db->query("SELECT COUNT(*) FROM articles WHERE status = 'published' AND is_trash = 0")->fetchColumn();
 $totalJobs = (int)$db->query("SELECT COUNT(*) FROM articles WHERE is_job_posting = 1 AND is_trash = 0")->fetchColumn();
@@ -353,114 +358,36 @@ $recentArticles = $recentStmt->fetchAll();
         <div class="traffic-card-header">
             <div>
                 <h2 class="traffic-card-title">Traffic Overview</h2>
+                <div class="traffic-card-sub">Daily &bull; human traffic only</div>
             </div>
 
-            <!-- Legend Pills (Center) -->
+            <!-- Legend Pills (Center: Interactive Click to Toggle Datasets) -->
             <div class="traffic-legend-row">
-                <div class="legend-item">
+                <button type="button" class="legend-item" id="legendPageViews" onclick="toggleChartDataset(0)" title="Click to toggle Page views">
                     <span class="legend-swatch swatch-indigo"></span>
                     <span>Page views</span>
-                </div>
-                <div class="legend-item">
+                </button>
+                <button type="button" class="legend-item" id="legendUniqueVisitors" onclick="toggleChartDataset(1)" title="Click to toggle Unique visitors">
                     <span class="legend-swatch swatch-cyan"></span>
                     <span>Unique visitors</span>
-                </div>
-                <div class="legend-item">
+                </button>
+                <button type="button" class="legend-item" id="legendSessions" onclick="toggleChartDataset(2)" title="Click to toggle Sessions">
                     <span class="legend-swatch swatch-emerald"></span>
                     <span>Sessions</span>
-                </div>
+                </button>
             </div>
 
-            <div class="traffic-card-sub">Daily &bull; human traffic only</div>
+            <!-- Time Period Switcher (7D, 14D, 30D) -->
+            <div class="traffic-period-toggle">
+                <button type="button" class="period-btn" data-days="7" onclick="switchTrafficPeriod(7)">7D</button>
+                <button type="button" class="period-btn" data-days="14" onclick="switchTrafficPeriod(14)">14D</button>
+                <button type="button" class="period-btn active" data-days="30" onclick="switchTrafficPeriod(30)">30D</button>
+            </div>
         </div>
 
-        <!-- Interactive SVG Area Chart -->
+        <!-- Interactive Canvas Chart (Powered by Chart.js with Anti-Negative Zero Clamping) -->
         <div class="chart-container">
-            <svg class="chart-svg" viewBox="0 0 760 220" preserveAspectRatio="none">
-                <defs>
-                    <linearGradient id="areaGradIndigo" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.38"/>
-                        <stop offset="100%" stop-color="#4f46e5" stop-opacity="0.02"/>
-                    </linearGradient>
-                    <linearGradient id="areaGradCyan" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.25"/>
-                        <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.00"/>
-                    </linearGradient>
-                </defs>
-
-                <!-- Gridlines -->
-                <line x1="35" y1="30" x2="750" y2="30" stroke="#f1f5f9" stroke-width="1"/>
-                <line x1="35" y1="75" x2="750" y2="75" stroke="#f1f5f9" stroke-width="1"/>
-                <line x1="35" y1="120" x2="750" y2="120" stroke="#f1f5f9" stroke-width="1"/>
-                <line x1="35" y1="165" x2="750" y2="165" stroke="#f1f5f9" stroke-width="1"/>
-                <line x1="35" y1="195" x2="750" y2="195" stroke="#e2e8f0" stroke-width="1"/>
-
-                <!-- Y-Axis Labels (Matching Screenshot: 2,500, 2,000, 1,500, 1,000, 500, 0) -->
-                <text x="5" y="34" fill="#94a3b8" font-size="10" font-family="Inter, sans-serif">2,500</text>
-                <text x="5" y="79" fill="#94a3b8" font-size="10" font-family="Inter, sans-serif">2,000</text>
-                <text x="5" y="124" fill="#94a3b8" font-size="10" font-family="Inter, sans-serif">1,500</text>
-                <text x="5" y="169" fill="#94a3b8" font-size="10" font-family="Inter, sans-serif">500</text>
-                <text x="20" y="198" fill="#94a3b8" font-size="10" font-family="Inter, sans-serif">0</text>
-
-                <!-- Area Fill (Indigo) with sharp spike on 2026-09-24 -->
-                <path d="M 45 195 
-                         L 45 188 
-                         Q 100 178 150 182 
-                         T 250 184 
-                         T 350 175 
-                         T 450 180 
-                         Q 520 180 540 50 
-                         Q 550 40 560 175 
-                         T 650 182 
-                         T 745 180 
-                         L 745 195 Z" 
-                      fill="url(#areaGradIndigo)"/>
-
-                <!-- Area Fill (Cyan) -->
-                <path d="M 45 195 
-                         L 45 190 
-                         Q 100 184 150 186 
-                         T 250 188 
-                         T 350 182 
-                         T 450 185 
-                         Q 520 185 540 85 
-                         Q 550 75 560 182 
-                         T 650 186 
-                         T 745 185 
-                         L 745 195 Z" 
-                      fill="url(#areaGradCyan)"/>
-
-                <!-- Line Stroke (Indigo) -->
-                <path d="M 45 188 
-                         Q 100 178 150 182 
-                         T 250 184 
-                         T 350 175 
-                         T 450 180 
-                         Q 520 180 540 50 
-                         Q 550 40 560 175 
-                         T 650 182 
-                         T 745 180" 
-                      fill="none" stroke="#4f46e5" stroke-width="2.6" stroke-linecap="round"/>
-
-                <!-- Peak Data Point Dot & Pulse at Sept 24 -->
-                <circle cx="540" cy="50" r="4.5" fill="#4f46e5" stroke="#ffffff" stroke-width="2"/>
-                <circle cx="540" cy="50" r="8" fill="none" stroke="#4f46e5" stroke-width="1.5" opacity="0.6"/>
-
-                <!-- Baseline Point Dots -->
-                <circle cx="150" cy="182" r="3" fill="#4f46e5"/>
-                <circle cx="350" cy="175" r="3" fill="#4f46e5"/>
-                <circle cx="650" cy="182" r="3" fill="#4f46e5"/>
-                <circle cx="745" cy="180" r="3" fill="#4f46e5"/>
-
-                <!-- X-Axis Dates -->
-                <text x="45" y="212" fill="#94a3b8" font-size="9.5" font-family="Inter, sans-serif">2026-09-03</text>
-                <text x="140" y="212" fill="#94a3b8" font-size="9.5" font-family="Inter, sans-serif">2026-09-09</text>
-                <text x="240" y="212" fill="#94a3b8" font-size="9.5" font-family="Inter, sans-serif">2026-09-15</text>
-                <text x="340" y="212" fill="#94a3b8" font-size="9.5" font-family="Inter, sans-serif">2026-09-21</text>
-                <text x="450" y="212" fill="#94a3b8" font-size="9.5" font-family="Inter, sans-serif">2026-09-24</text>
-                <text x="560" y="212" fill="#94a3b8" font-size="9.5" font-family="Inter, sans-serif">2026-09-27</text>
-                <text x="670" y="212" fill="#94a3b8" font-size="9.5" font-family="Inter, sans-serif">2026-09-30</text>
-            </svg>
+            <canvas id="trafficOverviewChart"></canvas>
         </div>
     </div>
 
@@ -617,6 +544,242 @@ function toggleNavGroup(btn) {
     if (group) {
         group.classList.toggle('open');
     }
+}
+
+// =========================================================================
+// CareerNexaa Traffic Overview Interactive Chart Engine (Powered by Chart.js)
+// Anti-negative zero clamping, monotone smoothing, multi-dataset toggles
+// =========================================================================
+const trafficChartData = {
+    7: <?= json_encode($trafficData7d, JSON_NUMERIC_CHECK) ?>,
+    14: <?= json_encode($trafficData14d, JSON_NUMERIC_CHECK) ?>,
+    30: <?= json_encode($trafficData30d, JSON_NUMERIC_CHECK) ?>
+};
+
+let currentPeriod = 30;
+let trafficChart = null;
+
+function initTrafficOverviewChart() {
+    const canvas = document.getElementById('trafficOverviewChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const ctx = canvas.getContext('2d');
+    const curData = trafficChartData[currentPeriod] || trafficChartData[30];
+    if (!curData || !curData.labels || !curData.labels.length) return;
+
+    // 1. Create Brand-Aligned Premium Gradients
+    const gradIndigo = ctx.createLinearGradient(0, 0, 0, 240);
+    gradIndigo.addColorStop(0, 'rgba(79, 70, 229, 0.32)');
+    gradIndigo.addColorStop(0.85, 'rgba(79, 70, 229, 0.02)');
+    gradIndigo.addColorStop(1, 'rgba(79, 70, 229, 0.00)');
+
+    const gradCyan = ctx.createLinearGradient(0, 0, 0, 240);
+    gradCyan.addColorStop(0, 'rgba(6, 182, 212, 0.22)');
+    gradCyan.addColorStop(0.85, 'rgba(6, 182, 212, 0.02)');
+    gradCyan.addColorStop(1, 'rgba(6, 182, 212, 0.00)');
+
+    const gradEmerald = ctx.createLinearGradient(0, 0, 0, 240);
+    gradEmerald.addColorStop(0, 'rgba(16, 185, 129, 0.18)');
+    gradEmerald.addColorStop(0.85, 'rgba(16, 185, 129, 0.01)');
+    gradEmerald.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
+
+    // 2. Identify peak index for pulse styling
+    const maxVal = Math.max(...curData.page_views);
+    const peakIndex = curData.page_views.indexOf(maxVal);
+
+    // 3. Build Chart.js Instance
+    trafficChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: curData.labels,
+            datasets: [
+                {
+                    label: 'Page views',
+                    data: curData.page_views,
+                    borderColor: '#4f46e5',
+                    borderWidth: 2.8,
+                    backgroundColor: gradIndigo,
+                    fill: true,
+                    tension: 0.36,
+                    cubicInterpolationMode: 'monotone', // STRICT MONOTONE: Never dips below zero!
+                    pointRadius: function(context) {
+                        return (context.dataIndex === peakIndex && maxVal > 0) ? 6 : 2;
+                    },
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#4f46e5',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointHoverBorderWidth: 2.5
+                },
+                {
+                    label: 'Unique visitors',
+                    data: curData.unique_visitors,
+                    borderColor: '#06b6d4',
+                    borderWidth: 2.2,
+                    backgroundColor: gradCyan,
+                    fill: true,
+                    tension: 0.36,
+                    cubicInterpolationMode: 'monotone',
+                    pointRadius: 2,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#06b6d4',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2
+                },
+                {
+                    label: 'Sessions',
+                    data: curData.sessions,
+                    borderColor: '#10b981',
+                    borderWidth: 2.2,
+                    backgroundColor: gradEmerald,
+                    fill: true,
+                    tension: 0.36,
+                    cubicInterpolationMode: 'monotone',
+                    pointRadius: 2,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#10b981',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 650,
+                easing: 'easeOutQuart'
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                legend: {
+                    display: false // We use top custom interactive pill toggles
+                },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: '#0f172a',
+                    titleColor: '#f8fafc',
+                    bodyColor: '#e2e8f0',
+                    borderColor: '#334155',
+                    borderWidth: 1,
+                    padding: 12,
+                    cornerRadius: 8,
+                    boxPadding: 6,
+                    usePointStyle: true,
+                    titleFont: {
+                        family: 'Inter, sans-serif',
+                        size: 12,
+                        weight: '700'
+                    },
+                    bodyFont: {
+                        family: 'Inter, sans-serif',
+                        size: 12,
+                        weight: '500'
+                    },
+                    callbacks: {
+                        title: function(items) {
+                            if (!items.length) return '';
+                            const raw = items[0].label;
+                            const d = new Date(raw + 'T00:00:00');
+                            return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+                        },
+                        label: function(item) {
+                            return ` ${item.dataset.label}: ${Number(item.raw).toLocaleString()} views`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#94a3b8',
+                        font: {
+                            family: 'Inter, sans-serif',
+                            size: 11
+                        },
+                        maxTicksLimit: 7,
+                        maxRotation: 0,
+                        callback: function(val, index) {
+                            const raw = this.getLabelForValue(val);
+                            if (!raw) return '';
+                            return raw.length > 5 ? raw.substring(5) : raw; // e.g. 09-24
+                        }
+                    }
+                },
+                y: {
+                    min: 0, // STRICT ZERO FLOOR - NO NEGATIVE DIPS
+                    beginAtZero: true,
+                    grid: {
+                        color: '#f1f5f9',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#94a3b8',
+                        font: {
+                            family: 'Inter, sans-serif',
+                            size: 11
+                        },
+                        callback: function(value) {
+                            return Number(value).toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Period Switcher (7D, 14D, 30D)
+function switchTrafficPeriod(days) {
+    if (!trafficChart || !trafficChartData[days]) return;
+    currentPeriod = days;
+
+    // Update active button state
+    document.querySelectorAll('.period-btn').forEach(btn => {
+        const bDays = parseInt(btn.getAttribute('data-days'), 10);
+        btn.classList.toggle('active', bDays === days);
+    });
+
+    const d = trafficChartData[days];
+    const maxVal = Math.max(...d.page_views);
+    const peakIndex = d.page_views.indexOf(maxVal);
+
+    trafficChart.data.labels = d.labels;
+    trafficChart.data.datasets[0].data = d.page_views;
+    trafficChart.data.datasets[0].pointRadius = function(context) {
+        return (context.dataIndex === peakIndex && maxVal > 0) ? 6 : 2;
+    };
+    trafficChart.data.datasets[1].data = d.unique_visitors;
+    trafficChart.data.datasets[2].data = d.sessions;
+
+    trafficChart.update();
+}
+
+// Legend Pill Dataset Visibility Toggle
+function toggleChartDataset(datasetIndex) {
+    if (!trafficChart) return;
+    const isVisible = trafficChart.isDatasetVisible(datasetIndex);
+    trafficChart.setDatasetVisibility(datasetIndex, !isVisible);
+    trafficChart.update();
+
+    const ids = ['legendPageViews', 'legendUniqueVisitors', 'legendSessions'];
+    const el = document.getElementById(ids[datasetIndex]);
+    if (el) {
+        el.classList.toggle('is-disabled', isVisible);
+    }
+}
+
+// Initialize on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTrafficOverviewChart);
+} else {
+    initTrafficOverviewChart();
 }
 </script>
 
