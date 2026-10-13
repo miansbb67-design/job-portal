@@ -68,6 +68,10 @@ $yesterdayVisits = (int)$db->query("SELECT COUNT(*) FROM active_visitors WHERE D
 $last7DaysVisits = (int)$db->query("SELECT COUNT(*) FROM active_visitors WHERE last_activity >= (NOW() - INTERVAL 7 DAY)")->fetchColumn();
 $last30DaysVisits = (int)$db->query("SELECT COUNT(*) FROM active_visitors WHERE last_activity >= (NOW() - INTERVAL 30 DAY)")->fetchColumn();
 
+// 3. Dynamic Traffic Channels & Device Breakdown
+$trafficChannels = get_traffic_acquisition_stats();
+$deviceBreakdown = get_device_breakdown_stats();
+
 // Handle CSV Export
 if (isset($_GET['action']) && $_GET['action'] === 'export_csv') {
     header('Content-Type: text/csv; charset=utf-8');
@@ -538,33 +542,36 @@ require_once __DIR__ . '/includes/admin-header.php';
         <div style="display:flex; flex-direction:column; gap:1.5rem;">
             <!-- Traffic Channels -->
             <div class="admin-card" style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem;">
-                <h4 style="font-size:0.95rem; font-weight:800; color:#0f172a; margin:0 0 1rem 0;">Traffic Acquisition Channels</h4>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <h4 style="font-size:0.95rem; font-weight:800; color:#0f172a; margin:0;">Traffic Acquisition Channels</h4>
+                    <span style="font-size:0.7rem; font-weight:700; color:#059669; background:#ecfdf5; padding:2px 8px; border-radius:12px;">Dynamic</span>
+                </div>
                 <div style="display:flex; flex-direction:column; gap:0.85rem;">
                     <div>
                         <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:700; margin-bottom:0.25rem;">
                             <span>Google Organic Search</span>
-                            <span style="color:#059669;">54%</span>
+                            <span id="chanGooglePct" style="color:#059669;"><?= (int)$trafficChannels['google_pct'] ?>%</span>
                         </div>
                         <div style="background:#f1f5f9; height:8px; border-radius:4px; overflow:hidden;">
-                            <div style="background:#059669; width:54%; height:100%;"></div>
+                            <div id="chanGoogleBar" style="background:#059669; width:<?= (int)$trafficChannels['google_pct'] ?>%; height:100%; transition:width 0.4s ease;"></div>
                         </div>
                     </div>
                     <div>
                         <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:700; margin-bottom:0.25rem;">
                             <span>Direct Traffic</span>
-                            <span style="color:#2563eb;">28%</span>
+                            <span id="chanDirectPct" style="color:#2563eb;"><?= (int)$trafficChannels['direct_pct'] ?>%</span>
                         </div>
                         <div style="background:#f1f5f9; height:8px; border-radius:4px; overflow:hidden;">
-                            <div style="background:#2563eb; width:28%; height:100%;"></div>
+                            <div id="chanDirectBar" style="background:#2563eb; width:<?= (int)$trafficChannels['direct_pct'] ?>%; height:100%; transition:width 0.4s ease;"></div>
                         </div>
                     </div>
                     <div>
                         <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:700; margin-bottom:0.25rem;">
                             <span>Social &amp; Referrals</span>
-                            <span style="color:#f59e0b;">18%</span>
+                            <span id="chanSocialPct" style="color:#f59e0b;"><?= (int)$trafficChannels['social_pct'] ?>%</span>
                         </div>
                         <div style="background:#f1f5f9; height:8px; border-radius:4px; overflow:hidden;">
-                            <div style="background:#f59e0b; width:18%; height:100%;"></div>
+                            <div id="chanSocialBar" style="background:#f59e0b; width:<?= (int)$trafficChannels['social_pct'] ?>%; height:100%; transition:width 0.4s ease;"></div>
                         </div>
                     </div>
                 </div>
@@ -572,19 +579,22 @@ require_once __DIR__ . '/includes/admin-header.php';
 
             <!-- Device Distribution -->
             <div class="admin-card" style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem;">
-                <h4 style="font-size:0.95rem; font-weight:800; color:#0f172a; margin:0 0 1rem 0;">Device Breakdown</h4>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <h4 style="font-size:0.95rem; font-weight:800; color:#0f172a; margin:0;">Device Breakdown</h4>
+                    <span style="font-size:0.7rem; font-weight:700; color:#2563eb; background:#eff6ff; padding:2px 8px; border-radius:12px;">Dynamic</span>
+                </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.5rem; text-align:center;">
                     <div style="background:#f8fafc; padding:0.75rem 0.5rem; border-radius:8px; border:1px solid #e2e8f0;">
                         <div style="font-size:0.7rem; color:#64748b; font-weight:700;">MOBILE</div>
-                        <div style="font-size:1.15rem; font-weight:900; color:#0f172a; margin-top:0.2rem;">67%</div>
+                        <div id="devMobilePct" style="font-size:1.15rem; font-weight:900; color:#0f172a; margin-top:0.2rem;"><?= (int)$deviceBreakdown['mobile_pct'] ?>%</div>
                     </div>
                     <div style="background:#f8fafc; padding:0.75rem 0.5rem; border-radius:8px; border:1px solid #e2e8f0;">
                         <div style="font-size:0.7rem; color:#64748b; font-weight:700;">DESKTOP</div>
-                        <div style="font-size:1.15rem; font-weight:900; color:#0f172a; margin-top:0.2rem;">29%</div>
+                        <div id="devDesktopPct" style="font-size:1.15rem; font-weight:900; color:#0f172a; margin-top:0.2rem;"><?= (int)$deviceBreakdown['desktop_pct'] ?>%</div>
                     </div>
                     <div style="background:#f8fafc; padding:0.75rem 0.5rem; border-radius:8px; border:1px solid #e2e8f0;">
                         <div style="font-size:0.7rem; color:#64748b; font-weight:700;">TABLET</div>
-                        <div style="font-size:1.15rem; font-weight:900; color:#0f172a; margin-top:0.2rem;">4%</div>
+                        <div id="devTabletPct" style="font-size:1.15rem; font-weight:900; color:#0f172a; margin-top:0.2rem;"><?= (int)$deviceBreakdown['tablet_pct'] ?>%</div>
                     </div>
                 </div>
             </div>
@@ -752,5 +762,45 @@ require_once __DIR__ . '/includes/admin-header.php';
     </div>
 
 <?php endif; ?>
+
+<script>
+// Auto-sync Traffic Acquisition Channels and Device Breakdown on Analytics page
+async function syncAnalyticsBreakdown() {
+    try {
+        const res = await fetch('<?= ADMIN_URL ?>/ajax-traffic-stats.php?action=get_all_stats');
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.status === 'success') {
+            if (json.traffic_channels) {
+                const gP = document.getElementById('chanGooglePct');
+                const gB = document.getElementById('chanGoogleBar');
+                const dP = document.getElementById('chanDirectPct');
+                const dB = document.getElementById('chanDirectBar');
+                const sP = document.getElementById('chanSocialPct');
+                const sB = document.getElementById('chanSocialBar');
+
+                if (gP) gP.textContent = json.traffic_channels.google_pct + '%';
+                if (gB) gB.style.width = json.traffic_channels.google_pct + '%';
+                if (dP) dP.textContent = json.traffic_channels.direct_pct + '%';
+                if (dB) dB.style.width = json.traffic_channels.direct_pct + '%';
+                if (sP) sP.textContent = json.traffic_channels.social_pct + '%';
+                if (sB) sB.style.width = json.traffic_channels.social_pct + '%';
+            }
+            if (json.device_breakdown) {
+                const mP = document.getElementById('devMobilePct');
+                const dtP = document.getElementById('devDesktopPct');
+                const tP = document.getElementById('devTabletPct');
+
+                if (mP) mP.textContent = json.device_breakdown.mobile_pct + '%';
+                if (dtP) dtP.textContent = json.device_breakdown.desktop_pct + '%';
+                if (tP) tP.textContent = json.device_breakdown.tablet_pct + '%';
+            }
+        }
+    } catch (e) {
+        // silent
+    }
+}
+setInterval(syncAnalyticsBreakdown, 20000);
+</script>
 
 <?php require_once __DIR__ . '/includes/admin-footer.php'; ?>

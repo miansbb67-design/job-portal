@@ -24,13 +24,20 @@ $db = getDBConnection();
 $categories = $db->query("SELECT id, name, slug FROM categories ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
 
 // Handle POST submissions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     $token = $_POST['csrf_token'] ?? '';
     if (!verify_csrf_token($token)) {
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_POST['form_type']) && $_POST['form_type'] === 'toggle_single_section')) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'error' => 'Security token expired. Please refresh the page.']);
+            exit;
+        }
         set_flash('error', 'Security token expired. Please refresh the page and try again.');
         header('Location: ' . ADMIN_URL . '/section-visibility.php');
         exit;
     }
+
+    $formType = $_POST['form_type'] ?? '';
 
     // AJAX quick toggle for any section
     if ($formType === 'toggle_single_section') {
@@ -53,9 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sectionsInput = $_POST['sections'] ?? [];
         if (is_array($sectionsInput)) {
             foreach ($sectionsInput as $key => $secData) {
-                $isEnabled = isset($secData['enabled']) ? 1 : 0;
-                $title = isset($secData['title']) ? trim($secData['title']) : null;
-                $subtitle = isset($secData['subtitle']) ? trim($secData['subtitle']) : null;
+                $isEnabled = (!empty($secData['enabled']) && (string)$secData['enabled'] === '1') ? 1 : 0;
+                $title = isset($secData['title']) ? trim($secData['title']) : '';
+                $subtitle = isset($secData['subtitle']) ? trim($secData['subtitle']) : '';
+                $titleVal = ($title === '') ? null : $title;
+                $subVal = ($subtitle === '') ? null : $subtitle;
                 $limit = isset($secData['limit']) && is_numeric($secData['limit']) ? (int)$secData['limit'] : 6;
                 $catId = !empty($secData['category_id']) && is_numeric($secData['category_id']) ? (int)$secData['category_id'] : null;
 
@@ -64,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     SET is_enabled = ?, title = ?, subtitle = ?, item_limit = ?, category_id = ?, updated_at = NOW()
                     WHERE section_key = ?
                 ");
-                $upStmt->execute([$isEnabled, $title, $subtitle, $limit, $catId, $key]);
+                $upStmt->execute([$isEnabled, $titleVal, $subVal, $limit, $catId, $key]);
             }
             log_activity('update', 'settings', "Updated Home Sections configuration");
             set_flash('success', 'Home page sections saved successfully!');
@@ -358,6 +367,7 @@ require_once __DIR__ . '/includes/admin-header.php';
                                     <?= $isEnabled ? '● Visible / On' : '○ Hidden / Off' ?>
                                 </span>
                                 <label class="switch-toggle" title="Click to toggle <?= h($def['name']) ?>">
+                                    <input type="hidden" name="sections[<?= $secKey ?>][enabled]" value="0">
                                     <input type="checkbox" 
                                            name="sections[<?= $secKey ?>][enabled]" 
                                            value="1" 
@@ -442,6 +452,7 @@ require_once __DIR__ . '/includes/admin-header.php';
                                     <?= $gIsEnabled ? '● Enabled' : '○ Disabled' ?>
                                 </span>
                                 <label class="switch-toggle" title="Toggle <?= h($gDef['name']) ?>">
+                                    <input type="hidden" name="sections[<?= $gKey ?>][enabled]" value="0">
                                     <input type="checkbox" 
                                            name="sections[<?= $gKey ?>][enabled]" 
                                            value="1" 

@@ -36,10 +36,15 @@ $activePages = get_real_active_pages(5);
 $totalUniqueVisitors = (int)$db->query("SELECT COUNT(DISTINCT ip_address) FROM active_visitors")->fetchColumn();
 $todayVisitors = (int)$db->query("SELECT COUNT(*) FROM active_visitors WHERE DATE(last_activity) = CURDATE()")->fetchColumn();
 
-// Daily traffic datasets for 7d, 14d, 30d charts
+// Daily & Hourly traffic datasets for Today (24H), 7d, 14d, 30d charts
+$trafficDataToday = get_hourly_traffic_chart_data();
 $trafficData7d = get_daily_traffic_chart_data(7);
 $trafficData14d = get_daily_traffic_chart_data(14);
 $trafficData30d = get_daily_traffic_chart_data(30);
+
+// Dynamic Traffic Acquisition Channels & Device Breakdown
+$trafficChannels = get_traffic_acquisition_stats();
+$deviceBreakdown = get_device_breakdown_stats();
 
 $totalArticles = (int)$db->query("SELECT COUNT(*) FROM articles WHERE is_trash = 0")->fetchColumn();
 $publishedArticles = (int)$db->query("SELECT COUNT(*) FROM articles WHERE status = 'published' AND is_trash = 0")->fetchColumn();
@@ -357,8 +362,14 @@ $recentArticles = $recentStmt->fetchAll();
     <div class="traffic-overview-card" id="traffic">
         <div class="traffic-card-header">
             <div>
-                <h2 class="traffic-card-title">Traffic Overview</h2>
-                <div class="traffic-card-sub">Daily &bull; human traffic only</div>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <h2 class="traffic-card-title">Traffic Overview</h2>
+                    <span class="live-sync-pill" id="liveSyncPill" title="Live Auto-Sync Active">
+                        <span class="live-dot"></span>
+                        <span id="syncStatusText">Live Sync</span>
+                    </span>
+                </div>
+                <div class="traffic-card-sub" id="trafficSubtitle">Daily &bull; human traffic only</div>
             </div>
 
             <!-- Legend Pills (Center: Interactive Click to Toggle Datasets) -->
@@ -377,8 +388,9 @@ $recentArticles = $recentStmt->fetchAll();
                 </button>
             </div>
 
-            <!-- Time Period Switcher (7D, 14D, 30D) -->
+            <!-- Time Period Switcher (Today, 7D, 14D, 30D) -->
             <div class="traffic-period-toggle">
+                <button type="button" class="period-btn" data-days="today" onclick="switchTrafficPeriod('today')">Today</button>
                 <button type="button" class="period-btn" data-days="7" onclick="switchTrafficPeriod(7)">7D</button>
                 <button type="button" class="period-btn" data-days="14" onclick="switchTrafficPeriod(14)">14D</button>
                 <button type="button" class="period-btn active" data-days="30" onclick="switchTrafficPeriod(30)">30D</button>
@@ -426,6 +438,68 @@ $recentArticles = $recentStmt->fetchAll();
             <a href="<?= ADMIN_URL ?>/analytics.php?tab=realtime" class="realtime-bottom-link">
                 Open real-time view &rarr;
             </a>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Dynamic Channels & Device Breakdown Grid ================= -->
+<div class="admin-breakdown-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem; margin-bottom:1.75rem;">
+    <!-- Traffic Acquisition Channels -->
+    <div class="admin-card" style="background:#fff; border:1px solid var(--admin-border); border-radius:14px; padding:1.25rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3 style="font-size:0.95rem; font-weight:800; color:#0f172a; margin:0;">Traffic Acquisition Channels</h3>
+            <span style="font-size:0.7rem; font-weight:700; color:#059669; background:#ecfdf5; padding:2px 8px; border-radius:12px;">Dynamic</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:0.85rem;">
+            <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:700; margin-bottom:0.25rem;">
+                    <span>Google Organic Search</span>
+                    <span id="dashGooglePct" style="color:#059669;"><?= (int)$trafficChannels['google_pct'] ?>%</span>
+                </div>
+                <div style="background:#f1f5f9; height:8px; border-radius:4px; overflow:hidden;">
+                    <div id="dashGoogleBar" style="background:#059669; width:<?= (int)$trafficChannels['google_pct'] ?>%; height:100%; transition:width 0.4s ease;"></div>
+                </div>
+            </div>
+            <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:700; margin-bottom:0.25rem;">
+                    <span>Direct Traffic</span>
+                    <span id="dashDirectPct" style="color:#2563eb;"><?= (int)$trafficChannels['direct_pct'] ?>%</span>
+                </div>
+                <div style="background:#f1f5f9; height:8px; border-radius:4px; overflow:hidden;">
+                    <div id="dashDirectBar" style="background:#2563eb; width:<?= (int)$trafficChannels['direct_pct'] ?>%; height:100%; transition:width 0.4s ease;"></div>
+                </div>
+            </div>
+            <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:700; margin-bottom:0.25rem;">
+                    <span>Social &amp; Referrals</span>
+                    <span id="dashSocialPct" style="color:#f59e0b;"><?= (int)$trafficChannels['social_pct'] ?>%</span>
+                </div>
+                <div style="background:#f1f5f9; height:8px; border-radius:4px; overflow:hidden;">
+                    <div id="dashSocialBar" style="background:#f59e0b; width:<?= (int)$trafficChannels['social_pct'] ?>%; height:100%; transition:width 0.4s ease;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device Distribution -->
+    <div class="admin-card" style="background:#fff; border:1px solid var(--admin-border); border-radius:14px; padding:1.25rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3 style="font-size:0.95rem; font-weight:800; color:#0f172a; margin:0;">Device Breakdown</h3>
+            <span style="font-size:0.7rem; font-weight:700; color:#2563eb; background:#eff6ff; padding:2px 8px; border-radius:12px;">Dynamic</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.65rem; text-align:center;">
+            <div style="background:#f8fafc; padding:0.85rem 0.5rem; border-radius:10px; border:1px solid #e2e8f0;">
+                <div style="font-size:0.7rem; color:#64748b; font-weight:700;">MOBILE</div>
+                <div id="dashMobilePct" style="font-size:1.25rem; font-weight:900; color:#0f172a; margin-top:0.25rem;"><?= (int)$deviceBreakdown['mobile_pct'] ?>%</div>
+            </div>
+            <div style="background:#f8fafc; padding:0.85rem 0.5rem; border-radius:10px; border:1px solid #e2e8f0;">
+                <div style="font-size:0.7rem; color:#64748b; font-weight:700;">DESKTOP</div>
+                <div id="dashDesktopPct" style="font-size:1.25rem; font-weight:900; color:#0f172a; margin-top:0.25rem;"><?= (int)$deviceBreakdown['desktop_pct'] ?>%</div>
+            </div>
+            <div style="background:#f8fafc; padding:0.85rem 0.5rem; border-radius:10px; border:1px solid #e2e8f0;">
+                <div style="font-size:0.7rem; color:#64748b; font-weight:700;">TABLET</div>
+                <div id="dashTabletPct" style="font-size:1.25rem; font-weight:900; color:#0f172a; margin-top:0.25rem;"><?= (int)$deviceBreakdown['tablet_pct'] ?>%</div>
+            </div>
         </div>
     </div>
 </div>
@@ -551,6 +625,7 @@ function toggleNavGroup(btn) {
 // Anti-negative zero clamping, monotone smoothing, multi-dataset toggles
 // =========================================================================
 const trafficChartData = {
+    'today': <?= json_encode($trafficDataToday, JSON_NUMERIC_CHECK) ?>,
     7: <?= json_encode($trafficData7d, JSON_NUMERIC_CHECK) ?>,
     14: <?= json_encode($trafficData14d, JSON_NUMERIC_CHECK) ?>,
     30: <?= json_encode($trafficData30d, JSON_NUMERIC_CHECK) ?>
@@ -683,6 +758,9 @@ function initTrafficOverviewChart() {
                         title: function(items) {
                             if (!items.length) return '';
                             const raw = items[0].label;
+                            if (currentPeriod === 'today') {
+                                return `Today at ${raw}`;
+                            }
                             const d = new Date(raw + 'T00:00:00');
                             return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
                         },
@@ -703,11 +781,14 @@ function initTrafficOverviewChart() {
                             family: 'Inter, sans-serif',
                             size: 11
                         },
-                        maxTicksLimit: 7,
+                        maxTicksLimit: 8,
                         maxRotation: 0,
                         callback: function(val, index) {
                             const raw = this.getLabelForValue(val);
                             if (!raw) return '';
+                            if (currentPeriod === 'today') {
+                                return raw; // e.g. 12 AM, 3 PM
+                            }
                             return raw.length > 5 ? raw.substring(5) : raw; // e.g. 09-24
                         }
                     }
@@ -735,16 +816,22 @@ function initTrafficOverviewChart() {
     });
 }
 
-// Period Switcher (7D, 14D, 30D)
+// Period Switcher (Today, 7D, 14D, 30D)
 function switchTrafficPeriod(days) {
     if (!trafficChart || !trafficChartData[days]) return;
     currentPeriod = days;
 
     // Update active button state
     document.querySelectorAll('.period-btn').forEach(btn => {
-        const bDays = parseInt(btn.getAttribute('data-days'), 10);
-        btn.classList.toggle('active', bDays === days);
+        const bDays = btn.getAttribute('data-days');
+        btn.classList.toggle('active', bDays == days);
     });
+
+    // Update subtitle
+    const subEl = document.getElementById('trafficSubtitle');
+    if (subEl) {
+        subEl.innerHTML = days === 'today' ? 'Today (24-Hour) &bull; human traffic only' : 'Daily &bull; human traffic only';
+    }
 
     const d = trafficChartData[days];
     const maxVal = Math.max(...d.page_views);
@@ -774,6 +861,108 @@ function toggleChartDataset(datasetIndex) {
         el.classList.toggle('is-disabled', isVisible);
     }
 }
+
+// =========================================================================
+// Real-time AJAX Auto-Sync (Every 20 seconds)
+// Updates Chart, Realtime monitor, Traffic Channels, and Device Breakdown
+// =========================================================================
+let isSyncingTraffic = false;
+async function syncLiveTrafficData() {
+    if (isSyncingTraffic) return;
+    isSyncingTraffic = true;
+    try {
+        const res = await fetch('<?= ADMIN_URL ?>/ajax-traffic-stats.php?action=get_all_stats');
+        if (!res.ok) throw new Error('Status ' + res.status);
+        const json = await res.json();
+
+        if (json.status === 'success') {
+            // 1. Update chart data cache
+            if (json.charts) {
+                trafficChartData['today'] = json.charts.today;
+                trafficChartData[7] = json.charts['7'];
+                trafficChartData[14] = json.charts['14'];
+                trafficChartData[30] = json.charts['30'];
+
+                // Live update active chart smoothly
+                if (trafficChart && trafficChartData[currentPeriod]) {
+                    const cur = trafficChartData[currentPeriod];
+                    const maxV = Math.max(...cur.page_views);
+                    const pIndex = cur.page_views.indexOf(maxV);
+
+                    trafficChart.data.labels = cur.labels;
+                    trafficChart.data.datasets[0].data = cur.page_views;
+                    trafficChart.data.datasets[0].pointRadius = function(ctx) {
+                        return (ctx.dataIndex === pIndex && maxV > 0) ? 6 : 2;
+                    };
+                    trafficChart.data.datasets[1].data = cur.unique_visitors;
+                    trafficChart.data.datasets[2].data = cur.sessions;
+                    trafficChart.update('none'); // Silent update without disruptive re-animation
+                }
+            }
+
+            // 2. Update Realtime Counter & Subtext
+            if (json.realtime) {
+                const rtBig = document.querySelector('.realtime-big-num');
+                if (rtBig) {
+                    rtBig.textContent = json.realtime.active_now;
+                    rtBig.style.color = json.realtime.active_now > 0 ? '#10b981' : '#64748b';
+                }
+                const rtSub = document.querySelector('.realtime-subtext');
+                if (rtSub) {
+                    const actT = json.realtime.active_now == 1 ? '1 visitor online (last 5 min)' : `${json.realtime.active_now} visitors online (last 5 min)`;
+                    rtSub.innerHTML = `${actT} &bull; ${json.realtime.today_visitors} views today`;
+                }
+            }
+
+            // 3. Update Traffic Acquisition Channels
+            if (json.traffic_channels) {
+                const gP = document.getElementById('dashGooglePct');
+                const gB = document.getElementById('dashGoogleBar');
+                const dP = document.getElementById('dashDirectPct');
+                const dB = document.getElementById('dashDirectBar');
+                const sP = document.getElementById('dashSocialPct');
+                const sB = document.getElementById('dashSocialBar');
+
+                if (gP) gP.textContent = json.traffic_channels.google_pct + '%';
+                if (gB) gB.style.width = json.traffic_channels.google_pct + '%';
+                if (dP) dP.textContent = json.traffic_channels.direct_pct + '%';
+                if (dB) dB.style.width = json.traffic_channels.direct_pct + '%';
+                if (sP) sP.textContent = json.traffic_channels.social_pct + '%';
+                if (sB) sB.style.width = json.traffic_channels.social_pct + '%';
+            }
+
+            // 4. Update Device Breakdown
+            if (json.device_breakdown) {
+                const mP = document.getElementById('dashMobilePct');
+                const dtP = document.getElementById('dashDesktopPct');
+                const tP = document.getElementById('dashTabletPct');
+
+                if (mP) mP.textContent = json.device_breakdown.mobile_pct + '%';
+                if (dtP) dtP.textContent = json.device_breakdown.desktop_pct + '%';
+                if (tP) tP.textContent = json.device_breakdown.tablet_pct + '%';
+            }
+
+            // Visual feedback on sync pill
+            const pill = document.getElementById('liveSyncPill');
+            const syncTxt = document.getElementById('syncStatusText');
+            if (pill) {
+                pill.classList.add('synced');
+                if (syncTxt) syncTxt.textContent = 'Synced';
+                setTimeout(() => {
+                    pill.classList.remove('synced');
+                    if (syncTxt) syncTxt.textContent = 'Live Sync';
+                }, 1200);
+            }
+        }
+    } catch (e) {
+        console.warn('Traffic stats auto-sync notice:', e);
+    } finally {
+        isSyncingTraffic = false;
+    }
+}
+
+// Background sync every 20 seconds
+setInterval(syncLiveTrafficData, 20000);
 
 // Initialize on page load
 if (document.readyState === 'loading') {
