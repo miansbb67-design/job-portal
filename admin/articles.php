@@ -302,6 +302,13 @@ require_once __DIR__ . '/includes/admin-header.php';
                                             <?= h($art['title']) ?>
                                         </a>
                                         <span class="article-slug-sub">/article/<?= h($art['slug']) ?></span>
+                                        <div class="article-mobile-meta">
+                                            <span class="resp-cat-badge"><?= h($art['category_name'] ?: 'General') ?></span>
+                                            <span class="resp-dot">&bull;</span>
+                                            <span class="resp-date"><?= $dateFormatted ?></span>
+                                            <span class="resp-dot">&bull;</span>
+                                            <span class="resp-views"><?= $viewsCount ?> views</span>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -383,12 +390,12 @@ require_once __DIR__ . '/includes/admin-header.php';
                                     </button>
 
                                     <!-- Preview Button (Opens public site in new tab) -->
-                                    <a href="<?= BASE_URL ?>/article.php?slug=<?= urlencode($art['slug']) ?>" target="_blank" class="btn-action-outline" title="View live article">
+                                    <a href="<?= BASE_URL ?>/article.php?slug=<?= urlencode($art['slug']) ?>" target="_blank" class="btn-action-outline btn-action-preview" title="View live article">
                                         Preview
                                     </a>
 
                                     <!-- Edit Button -->
-                                    <a href="<?= ADMIN_URL ?>/edit-article.php?id=<?= $art['id'] ?>" class="btn-action-outline" title="Edit content">
+                                    <a href="<?= ADMIN_URL ?>/edit-article.php?id=<?= $art['id'] ?>" class="btn-action-outline btn-action-edit" title="Edit content">
                                         Edit
                                     </a>
 

@@ -184,11 +184,11 @@ require_once __DIR__ . '/includes/admin-header.php';
             <table class="pinecast-categories-table">
                 <thead>
                     <tr>
-                        <th style="width: 44%;">NAME</th>
-                        <th style="width: 20%;">SLUG</th>
-                        <th style="width: 12%;">STATUS</th>
-                        <th style="width: 8%; text-align:center;">POSTS</th>
-                        <th style="width: 16%; text-align:right; padding-right:1.75rem;">ACTIONS</th>
+                        <th class="col-cat-name" style="width: 44%;">NAME</th>
+                        <th class="col-cat-slug" style="width: 20%;">SLUG</th>
+                        <th class="col-cat-status" style="width: 12%;">STATUS</th>
+                        <th class="col-cat-posts" style="width: 8%; text-align:center;">POSTS</th>
+                        <th class="col-cat-actions" style="width: 16%; text-align:right; padding-right:1.75rem;">ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -208,35 +208,40 @@ require_once __DIR__ . '/includes/admin-header.php';
                         ?>
                             <tr>
                                 <!-- NAME Column: Thumbnail + Title + Description -->
-                                <td>
+                                <td class="cell-cat-name">
                                     <div class="pcat-name-cell">
                                         <img src="<?= htmlspecialchars($imageUrl) ?>" alt="<?= htmlspecialchars($cat['name']) ?>" class="pcat-thumb" loading="lazy" onerror="this.src='<?= BASE_URL ?>/assets/images/category-placeholder.svg'">
                                         <div class="pcat-info">
                                             <div class="pcat-title"><?= htmlspecialchars($cat['name']) ?></div>
                                             <div class="pcat-desc"><?= htmlspecialchars($cat['description'] ?: 'Curated articles and career insights.') ?></div>
+                                            <div class="cat-mobile-meta">
+                                                <span class="cat-mobile-slug"><?= htmlspecialchars($cleanSlug) ?></span>
+                                                <span>&bull;</span>
+                                                <span><?= (int)$cat['total_articles'] ?> posts</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
 
                                 <!-- SLUG Column: /category/{slug} in muted monospace -->
-                                <td>
+                                <td class="cell-cat-slug">
                                     <span class="pcat-slug"><?= htmlspecialchars($cleanSlug) ?></span>
                                 </td>
 
                                 <!-- STATUS Column: Active Green Pill -->
-                                <td>
+                                <td class="cell-cat-status">
                                     <span class="pcat-status-badge <?= $catStatus === 'active' ? 'pcat-status-active' : 'pcat-status-inactive' ?>">
                                         <?= ucfirst($catStatus) ?>
                                     </span>
                                 </td>
 
                                 <!-- POSTS Column: Total published articles -->
-                                <td style="text-align: center;">
+                                <td class="cell-cat-posts" style="text-align: center;">
                                     <span class="pcat-posts-count"><?= (int)$cat['total_articles'] ?></span>
                                 </td>
 
                                 <!-- ACTIONS Column: View, Edit, Delete -->
-                                <td style="text-align: right; padding-right:1.75rem;">
+                                <td class="cell-cat-actions" style="text-align: right; padding-right:1.75rem;">
                                     <div class="pcat-actions" style="justify-content: flex-end;">
                                         <!-- View Button -->
                                         <a href="<?= BASE_URL ?>/category/<?= urlencode($cat['slug']) ?>" target="_blank" class="btn-pcat-action" title="View category in new tab">

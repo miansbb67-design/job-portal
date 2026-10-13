@@ -104,13 +104,13 @@ $draftJobs = count(array_filter($jobs, fn($j) => $j['status'] === 'draft'));
         <table class="admin-table" style="width:100%; border-collapse:collapse; font-size:0.875rem;">
             <thead>
                 <tr style="background:#f8fafc; border-bottom:1px solid var(--admin-border); color:#475569; font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.04em;">
-                    <th style="padding:0.9rem 1.25rem;">ID</th>
-                    <th style="padding:0.9rem 1.25rem;">Job Title &amp; Company</th>
-                    <th style="padding:0.9rem 1.25rem;">Category</th>
-                    <th style="padding:0.9rem 1.25rem;">Location &amp; Type</th>
-                    <th style="padding:0.9rem 1.25rem; white-space:nowrap;">Status</th>
-                    <th style="padding:0.9rem 1.25rem;">Date Posted</th>
-                    <th style="padding:0.9rem 1.25rem; text-align:right;">Actions</th>
+                    <th class="col-job-id" style="padding:0.9rem 1.25rem;">ID</th>
+                    <th class="col-job-title" style="padding:0.9rem 1.25rem;">Job Title &amp; Company</th>
+                    <th class="col-job-cat" style="padding:0.9rem 1.25rem;">Category</th>
+                    <th class="col-job-loc" style="padding:0.9rem 1.25rem;">Location &amp; Type</th>
+                    <th class="col-job-status" style="padding:0.9rem 1.25rem; white-space:nowrap;">Status</th>
+                    <th class="col-job-date" style="padding:0.9rem 1.25rem;">Date Posted</th>
+                    <th class="col-job-actions" style="padding:0.9rem 1.25rem; text-align:right;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -123,10 +123,10 @@ $draftJobs = count(array_filter($jobs, fn($j) => $j['status'] === 'draft'));
                 <?php else: ?>
                     <?php foreach ($jobs as $job): ?>
                     <tr style="border-bottom:1px solid #f1f5f9;">
-                        <td style="padding:1rem 1.25rem; color:#64748b; font-weight:600;">
+                        <td class="cell-job-id" style="padding:1rem 1.25rem; color:#64748b; font-weight:600;">
                             #<?= (int)$job['id'] ?>
                         </td>
-                        <td style="padding:1rem 1.25rem;">
+                        <td class="cell-job-title" style="padding:1rem 1.25rem;">
                             <div>
                                 <a href="<?= BASE_URL ?>/article/<?= urlencode($job['slug']) ?>" target="_blank" class="admin-table-title-link" title="Open live job in new tab">
                                     <?= h($job['title']) ?>
@@ -143,16 +143,23 @@ $draftJobs = count(array_filter($jobs, fn($j) => $j['status'] === 'draft'));
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                                 </a>
                             </div>
+                            <div class="job-mobile-meta">
+                                <span class="job-badge-meta"><?= h($job['category_name'] ?? 'General') ?></span>
+                                <span>&bull;</span>
+                                <span><?= h($job['job_location'] ?? 'Remote') ?> (<?= h($job['job_type'] ?? 'Full-time') ?>)</span>
+                                <span>&bull;</span>
+                                <span><?= date('M j, Y', strtotime($job['created_at'])) ?></span>
+                            </div>
                         </td>
-                        <td style="padding:1rem 1.25rem; color:#475569;">
+                        <td class="cell-job-cat" style="padding:1rem 1.25rem; color:#475569;">
                             <span style="background:#f1f5f9; padding:0.2rem 0.55rem; border-radius:4px; font-size:0.8rem; font-weight:600;">
                                 <?= h($job['category_name'] ?? 'Uncategorized') ?>
                             </span>
                         </td>
-                        <td style="padding:1rem 1.25rem; color:#64748b; font-size:0.825rem;">
+                        <td class="cell-job-loc" style="padding:1rem 1.25rem; color:#64748b; font-size:0.825rem;">
                             <?= h($job['job_location'] ?? 'Remote') ?> &bull; <?= h($job['job_type'] ?? 'Full-time') ?>
                         </td>
-                        <td style="padding:1rem 1.25rem; white-space:nowrap;">
+                        <td class="cell-job-status" style="padding:1rem 1.25rem; white-space:nowrap;">
                             <?php if (is_super_admin() || has_permission('jobs.publish')): ?>
                             <form action="<?= ADMIN_URL ?>/jobs/index.php" method="POST" style="display:inline; margin:0;">
                                 <?= csrf_field(); ?>
@@ -181,10 +188,10 @@ $draftJobs = count(array_filter($jobs, fn($j) => $j['status'] === 'draft'));
                                 </span>
                             <?php endif; ?>
                         </td>
-                        <td style="padding:1rem 1.25rem; font-size:0.8rem; color:#64748b;">
+                        <td class="cell-job-date" style="padding:1rem 1.25rem; font-size:0.8rem; color:#64748b;">
                             <?= date('M j, Y', strtotime($job['created_at'])) ?>
                         </td>
-                        <td style="padding:1rem 1.25rem; text-align:right;">
+                        <td class="cell-job-actions" style="padding:1rem 1.25rem; text-align:right;">
                             <div class="admin-action-btn-group">
                                 <a href="<?= BASE_URL ?>/article/<?= urlencode($job['slug']) ?>" target="_blank" class="admin-btn-xs" style="background:#f8fafc; border:1px solid #cbd5e1; color:#475569; text-decoration:none;" title="View Live Job">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>

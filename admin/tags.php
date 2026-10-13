@@ -140,7 +140,7 @@ require_once __DIR__ . '/includes/admin-header.php';
 
 <div class="admin-tags-container" style="max-width:1400px; margin:0 auto; padding:1.5rem 2rem 3rem;">
     <!-- Main Two-Column Layout (Matching Screenshot) -->
-    <div style="display:grid; grid-template-columns:1fr 380px; gap:2rem; align-items:start;">
+    <div class="admin-tags-grid">
         
         <!-- ================= LEFT COLUMN: SEARCH & TAGS TABLE ================= -->
         <div>
