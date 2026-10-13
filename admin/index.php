@@ -312,35 +312,35 @@ $recentArticles = $recentStmt->fetchAll();
     <div class="pine-stat-box">
         <div class="pine-stat-label">GOOGLE SEARCH IMPRESSIONS</div>
         <div class="pine-stat-val pine-val-muted">Data unavailable</div>
-        <div class="pine-stat-sub"><a href="#" class="pine-connect-link">Connect Search Console</a></div>
+        <div class="pine-stat-sub"><a href="<?= ADMIN_URL ?>/seo.php?tab=search-console" class="pine-connect-link">Connect Search Console</a></div>
     </div>
 
     <!-- Box 8: Google Search Clicks -->
     <div class="pine-stat-box">
         <div class="pine-stat-label">GOOGLE SEARCH CLICKS</div>
         <div class="pine-stat-val pine-val-muted">Data unavailable</div>
-        <div class="pine-stat-sub"><a href="#" class="pine-connect-link">Connect Search Console</a></div>
+        <div class="pine-stat-sub"><a href="<?= ADMIN_URL ?>/seo.php?tab=search-console" class="pine-connect-link">Connect Search Console</a></div>
     </div>
 
     <!-- Box 9: AdSense Ad Impressions -->
     <div class="pine-stat-box">
         <div class="pine-stat-label">ADSENSE AD IMPRESSIONS</div>
         <div class="pine-stat-val pine-val-muted">Data unavailable</div>
-        <div class="pine-stat-sub"><a href="#" class="pine-connect-link">Connect AdSense API</a></div>
+        <div class="pine-stat-sub"><a href="<?= ADMIN_URL ?>/analytics.php?tab=google" class="pine-connect-link">Connect AdSense API</a></div>
     </div>
 
     <!-- Box 10: AdSense Clicks -->
     <div class="pine-stat-box">
         <div class="pine-stat-label">ADSENSE CLICKS</div>
         <div class="pine-stat-val pine-val-muted">Data unavailable</div>
-        <div class="pine-stat-sub"><a href="#" class="pine-connect-link">Connect AdSense API</a></div>
+        <div class="pine-stat-sub"><a href="<?= ADMIN_URL ?>/analytics.php?tab=google" class="pine-connect-link">Connect AdSense API</a></div>
     </div>
 
     <!-- Box 11: Estimated AdSense Earnings -->
     <div class="pine-stat-box">
         <div class="pine-stat-label">ESTIMATED ADSENSE EARNINGS</div>
         <div class="pine-stat-val pine-val-muted">Data unavailable</div>
-        <div class="pine-stat-sub"><a href="#" class="pine-connect-link">Connect AdSense API</a></div>
+        <div class="pine-stat-sub"><a href="<?= ADMIN_URL ?>/analytics.php?tab=google" class="pine-connect-link">Connect AdSense API</a></div>
     </div>
 
     <!-- Box 12: Engagement Rate -->
@@ -423,7 +423,7 @@ $recentArticles = $recentStmt->fetchAll();
         </div>
 
         <div style="padding-top:1rem; border-top:1px solid var(--admin-border-subtle); margin-top:1rem;">
-            <a href="<?= ADMIN_URL ?>/index.php#realtime" class="realtime-bottom-link">
+            <a href="<?= ADMIN_URL ?>/analytics.php?tab=realtime" class="realtime-bottom-link">
                 Open real-time view &rarr;
             </a>
         </div>
