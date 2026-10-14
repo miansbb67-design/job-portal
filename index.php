@@ -240,6 +240,13 @@ $showLiveRadar    = is_section_visible('live_job_radar');
 </section>
 <?php endif; ?>
 
+<!-- Monetization Slot: Between Content Ad (Between content sections / listing rows) -->
+<?php if (function_exists('render_monetization_ad')): ?>
+    <div class="site-container">
+        <?php render_monetization_ad('between_content_ad'); ?>
+    </div>
+<?php endif; ?>
+
 <!-- ================= Section 1: Explore by Career Track (6 Cards) ================= -->
 <?php if (is_section_visible('top_categories') && !empty($categories)): ?>
 <?php $secCfg_topCats = get_home_section('top_categories', 'Browse Top Categories', 'Find the right career path, exam preparation guides, and job opportunities.'); ?>

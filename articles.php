@@ -197,6 +197,13 @@ include __DIR__ . '/includes/header.php';
                 <?php endforeach; ?>
             </div>
 
+            <!-- Monetization Slot: Between Content Ad (Between content sections / listing rows) -->
+            <?php if (function_exists('render_monetization_ad')): ?>
+                <div style="margin: 2rem 0;">
+                    <?php render_monetization_ad('between_content_ad'); ?>
+                </div>
+            <?php endif; ?>
+
             <!-- Pagination Navigation -->
             <?php 
             $paginationQuery = '';

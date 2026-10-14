@@ -152,6 +152,7 @@ try {
     </script>
 
     <?php if (isset($extraHead)) echo $extraHead; ?>
+    <?php if (function_exists('render_monetization_head_scripts')) render_monetization_head_scripts(); ?>
 </head>
 
 <body>
@@ -373,6 +374,13 @@ try {
                 </div>
             </nav>
         </header>
+    <?php endif; ?>
+
+    <!-- Monetization Slot: Header Ad (Header, after navigation) -->
+    <?php if (function_exists('render_monetization_ad')): ?>
+        <div class="site-container" style="padding-top: 0.5rem;">
+            <?php render_monetization_ad('header_ad'); ?>
+        </div>
     <?php endif; ?>
 
     <!-- Global Flash Notification Container -->

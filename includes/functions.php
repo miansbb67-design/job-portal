@@ -6,6 +6,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/auth_functions.php';
+require_once __DIR__ . '/monetization-functions.php';
 
 /**
  * Escape HTML output to prevent Cross-Site Scripting (XSS)
@@ -1815,4 +1816,23 @@ function get_footer_menu() {
         }
     }
     return $default;
+}
+
+/**
+ * Universal redirect helper
+ *
+ * @param string $url
+ * @return void
+ */
+if (!function_exists('redirect')) {
+    function redirect($url) {
+        if (!headers_sent()) {
+            header('Location: ' . $url);
+            exit;
+        } else {
+            echo '<script>window.location.href = ' . json_encode($url) . ';</script>';
+            echo '<noscript><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($url) . '"></noscript>';
+            exit;
+        }
+    }
 }

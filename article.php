@@ -306,8 +306,18 @@ include __DIR__ . '/includes/header.php';
 
         <!-- Main Prose Content -->
         <div class="article-prose">
-            <?= sanitize_article_html($article['content']) ?>
+            <?php 
+            $cleanedArticleHtml = sanitize_article_html($article['content']);
+            if (function_exists('inject_in_article_ad')) {
+                echo inject_in_article_ad($cleanedArticleHtml);
+            } else {
+                echo $cleanedArticleHtml;
+            }
+            ?>
         </div>
+
+        <!-- Monetization Slot: Below Content Ad (After article / vlog content) -->
+        <?php if (function_exists('render_monetization_ad')) render_monetization_ad('below_content_ad'); ?>
 
         <!-- Article Topic Keywords & Tags -->
         <?php 
@@ -501,6 +511,8 @@ include __DIR__ . '/includes/header.php';
 
         <!-- RIGHT SIDEBAR COLUMN (Picture 1 Match) -->
         <aside class="article-sidebar-rail">
+            <!-- Monetization Slot: Sidebar Ad (Sidebar desktop / tablet) -->
+            <?php if (function_exists('render_monetization_ad')) render_monetization_ad('sidebar_ad'); ?>
 
             <!-- 2. RELATED Section -->
             <?php if (!empty($sidebarRelated)): ?>
@@ -519,6 +531,9 @@ include __DIR__ . '/includes/header.php';
                     <?php endforeach; ?>
                 </div>
             </div>
+
+            <!-- Monetization Slot: Related Content Ad (Related-content area) -->
+            <?php if (function_exists('render_monetization_ad')) render_monetization_ad('related_content_ad'); ?>
             <?php endif; ?>
 
             <!-- 3. TOPICS Section -->

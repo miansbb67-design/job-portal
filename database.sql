@@ -124,6 +124,48 @@ CREATE TABLE IF NOT EXISTS `article_views` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
+-- Table structure for table `ad_placements` (Monetization Ad Slots)
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `ad_placements` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `slot_key` varchar(50) NOT NULL,
+  `slot_name` varchar(100) NOT NULL,
+  `slot_description` varchar(255) DEFAULT NULL,
+  `is_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `ad_network` varchar(50) NOT NULL DEFAULT 'adsense',
+  `custom_code` mediumtext DEFAULT NULL,
+  `device_target` varchar(50) NOT NULL DEFAULT 'all',
+  `sort_order` int(11) NOT NULL DEFAULT 0,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_slot_key` (`slot_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `ad_placements` (`id`, `slot_key`, `slot_name`, `slot_description`, `is_enabled`, `ad_network`, `custom_code`, `device_target`, `sort_order`) VALUES
+(1, 'header_ad', 'Header Ad', 'Header, after navigation', 0, 'adsense', NULL, 'all', 1),
+(2, 'in_article_ad', 'In-Article Ad', 'Between article paragraphs', 0, 'adsense', NULL, 'all', 2),
+(3, 'between_content_ad', 'Between Content Ad', 'Between content sections / listing rows', 0, 'adsense', NULL, 'all', 3),
+(4, 'sidebar_ad', 'Sidebar Ad', 'Sidebar (desktop / tablet)', 0, 'adsense', NULL, 'all', 4),
+(5, 'below_content_ad', 'Below Content Ad', 'After article / vlog content', 0, 'adsense', NULL, 'all', 5),
+(6, 'related_content_ad', 'Related Content Ad', 'Related-content area', 0, 'adsense', NULL, 'all', 6)
+ON DUPLICATE KEY UPDATE slot_name=VALUES(slot_name);
+
+-- --------------------------------------------------------
+-- Table structure for table `ad_units` (Reusable Ad Codes)
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `ad_units` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `unit_name` varchar(100) NOT NULL,
+  `network` varchar(50) NOT NULL DEFAULT 'adsense',
+  `unit_format` varchar(50) NOT NULL DEFAULT 'display',
+  `code_snippet` mediumtext DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 -- Table structure for table `articles`
 -- --------------------------------------------------------
 DROP TABLE IF EXISTS `articles`;
@@ -416,4 +458,48 @@ INSERT INTO `settings` (`id`, `setting_key`, `setting_value`, `setting_group`, `
 INSERT INTO `settings` (`id`, `setting_key`, `setting_value`, `setting_group`, `updated_at`) VALUES ('14', 'site_footer_text', 'CareerNexaa is your trusted portal for verified job vacancies, competitive exam guides, and career growth strategies.', 'branding', '2026-10-08 11:20:09');
 INSERT INTO `settings` (`id`, `setting_key`, `setting_value`, `setting_group`, `updated_at`) VALUES ('15', 'site_copyright', '© 2026 CareerNexaa. All rights reserved.', 'branding', '2026-10-08 11:20:09');
 
+-- --------------------------------------------------------
+-- Table structure for table `ad_placements`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `ad_placements` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `slot_key` VARCHAR(50) NOT NULL,
+  `slot_name` VARCHAR(100) NOT NULL,
+  `slot_description` VARCHAR(255) DEFAULT NULL,
+  `is_enabled` TINYINT(1) NOT NULL DEFAULT 0,
+  `ad_network` VARCHAR(50) NOT NULL DEFAULT 'adsense',
+  `custom_code` MEDIUMTEXT DEFAULT NULL,
+  `device_target` VARCHAR(50) NOT NULL DEFAULT 'all',
+  `sort_order` INT(11) NOT NULL DEFAULT 0,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_slot_key` (`slot_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping default slots for `ad_placements`
+INSERT INTO `ad_placements` (`slot_key`, `slot_name`, `slot_description`, `is_enabled`, `ad_network`, `device_target`, `sort_order`) VALUES
+('header_ad', 'Header Ad', 'Header, after navigation', 0, 'adsense', 'all', 1),
+('in_article_ad', 'In-Article Ad', 'Between article paragraphs', 0, 'adsense', 'all', 2),
+('between_content_ad', 'Between Content Ad', 'Between content sections / listing rows', 0, 'adsense', 'all', 3),
+('sidebar_ad', 'Sidebar Ad', 'Sidebar (desktop / tablet)', 0, 'adsense', 'all', 4),
+('below_content_ad', 'Below Content Ad', 'After article / vlog content', 0, 'adsense', 'all', 5),
+('related_content_ad', 'Related Content Ad', 'Related-content area', 0, 'adsense', 'all', 6)
+ON DUPLICATE KEY UPDATE `slot_name` = VALUES(`slot_name`);
+
+-- --------------------------------------------------------
+-- Table structure for table `ad_units`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `ad_units` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `unit_name` VARCHAR(100) NOT NULL,
+  `network` VARCHAR(50) NOT NULL DEFAULT 'adsense',
+  `unit_format` VARCHAR(50) NOT NULL DEFAULT 'display',
+  `code_snippet` MEDIUMTEXT DEFAULT NULL,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS=1;
+

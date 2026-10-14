@@ -10,7 +10,7 @@ $baseUrl = 'http://localhost/' . $projectDir;
 $routes = [
     'Home Page' => '/',
     'Articles Page' => '/articles.php',
-    'Single Article' => '/article.php?slug=warehouse-logistics-associate-weekend-positions-hiring',
+    'Single Article' => '/article.php?slug=top-10-high-paying-remote-tech-careers-in-2026',
     'Categories Page' => '/categories.php',
     'Specific Category' => '/categories.php?slug=remote-work-from-home',
     'Search Page (with query)' => '/search.php?q=remote',
@@ -121,38 +121,44 @@ if (empty($csrfToken)) {
     echo "Invalid Login Test: " . ($hasInvalidNotice ? "PASSED [Rejected cleanly with error message]" : "FAILED") . "\n";
     if (!$hasInvalidNotice) $allPassed = false;
 
-    // Step C: Attempt Valid Login
-    $ch = curl_init($baseUrl . '/admin/login.php');
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-        'csrf_token' => $csrfToken,
-        'username' => 'admin',
-        'password' => 'Admin@12345'
-    ]));
-    curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieJar);
-    curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieJar);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
-    $goodLoginResponse = curl_exec($ch);
-    $goodLoginCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $redirectUrl = curl_getinfo($ch, CURLINFO_REDIRECT_URL);
-    curl_close($ch);
+    // Step C: Attempt Valid Login (if environment credentials are provided)
+    $testUser = getenv('ADMIN_TEST_USER') ?: '';
+    $testPass = getenv('ADMIN_TEST_PASS') ?: '';
+    if (!empty($testUser) && !empty($testPass)) {
+        $ch = curl_init($baseUrl . '/admin/login.php');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+            'csrf_token' => $csrfToken,
+            'username' => $testUser,
+            'password' => $testPass
+        ]));
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieJar);
+        curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieJar);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+        $goodLoginResponse = curl_exec($ch);
+        $goodLoginCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $redirectUrl = curl_getinfo($ch, CURLINFO_REDIRECT_URL);
+        curl_close($ch);
 
-    $isLoggedIn = ($goodLoginCode === 302 && strpos($redirectUrl, 'index.php') !== false);
-    echo "Valid Login Test: " . ($isLoggedIn ? "PASSED [302 -> admin/index.php]" : "FAILED [Got {$goodLoginCode}]") . "\n";
-    if (!$isLoggedIn) $allPassed = false;
+        $isLoggedIn = ($goodLoginCode === 302 && strpos($redirectUrl, 'index.php') !== false);
+        echo "Valid Login Test: " . ($isLoggedIn ? "PASSED [302 -> admin/index.php]" : "FAILED [Got {$goodLoginCode}]") . "\n";
+        if (!$isLoggedIn) $allPassed = false;
 
-// Step D: Access Admin Dashboard with Authenticated Cookie
-    $ch = curl_init($baseUrl . '/admin/index.php');
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieJar);
-    $dashResponse = curl_exec($ch);
-    $dashCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+        // Step D: Access Admin Dashboard with Authenticated Cookie
+        $ch = curl_init($baseUrl . '/admin/index.php');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieJar);
+        $dashResponse = curl_exec($ch);
+        $dashCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
 
-    $hasWelcome = (stripos($dashResponse, 'Welcome back') !== false);
-    echo "Authenticated Dashboard Access: " . ($hasWelcome && $dashCode === 200 ? "PASSED [Welcome back rendered]" : "FAILED") . "\n";
-    if (!$hasWelcome) $allPassed = false;
+        $hasWelcome = (stripos($dashResponse, 'Welcome back') !== false);
+        echo "Authenticated Dashboard Access: " . ($hasWelcome && $dashCode === 200 ? "PASSED [Welcome back rendered]" : "FAILED") . "\n";
+        if (!$hasWelcome) $allPassed = false;
+    } else {
+        echo "Valid Login Test: SKIPPED (Set ADMIN_TEST_USER & ADMIN_TEST_PASS in environment to test)\n";
+    }
 }
 
 @unlink($cookieJar);
@@ -162,7 +168,7 @@ echo "4. TESTING CLEAN URL REWRITES & SECURITY RULES\n";
 echo "========================================\n";
 
 $rewriteSecurityTests = [
-    'Clean Article Rewrite (/article/slug)'   => ['path' => '/article/warehouse-logistics-associate-weekend-positions-hiring', 'expected' => 200],
+    'Clean Article Rewrite (/article/slug)'   => ['path' => '/article/top-10-high-paying-remote-tech-careers-in-2026', 'expected' => 200],
     'Clean Category Rewrite (/category/slug)' => ['path' => '/category/remote-work-from-home', 'expected' => 200],
     'Clean Route (/about)'                   => ['path' => '/about', 'expected' => 200],
     'Clean Route (/privacy-policy)'          => ['path' => '/privacy-policy', 'expected' => 200],

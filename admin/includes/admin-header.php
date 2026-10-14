@@ -45,6 +45,7 @@ $canMedia      = $isSuperAdmin || has_permission('media.view');
 $canUsers      = $isSuperAdmin || has_permission('users.view');
 $canSettings   = $isSuperAdmin || has_permission('settings.view');
 $canLogs       = $isSuperAdmin || has_permission('logs.view');
+$canMonetization = $isSuperAdmin || has_permission('settings.view') || has_permission('monetization.view');
 
 // Dynamic counts
 $navDb = getDBConnection();
@@ -85,6 +86,7 @@ try {
 $isContentActive = in_array($currentAdminScript, ['articles.php', 'add-article.php', 'edit-article.php', 'categories.php', 'tags.php', 'comments.php']) || in_array($currentAdminDir, ['posts', 'jobs', 'media', 'categories']);
 $isAnalyticsActive = ($currentAdminScript === 'analytics.php' || $currentAdminDir === 'analytics');
 $isSeoActive = ($currentAdminScript === 'seo.php' || $currentAdminDir === 'seo');
+$isMonetizationActive = ($currentAdminDir === 'monetization');
 $currentAdminTab = $_GET['tab'] ?? 'overview';
 ?>
 <!DOCTYPE html>
@@ -349,6 +351,63 @@ $currentAdminTab = $_GET['tab'] ?? 'overview';
                         </li>
                     </ul>
                 </li>
+
+                <!-- Monetization Suite (Exact Match to PineCast TV Admin) -->
+                <?php if ($canMonetization): ?>
+                <li class="admin-nav-group <?= $isMonetizationActive ? 'open' : '' ?>" id="groupMonetization">
+                    <button type="button" class="admin-nav-item group-toggle" onclick="toggleNavGroup(this)">
+                        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                            <path d="M14.5 9.5a2.5 2.5 0 0 0-5 0c0 2 5 2 5 4a2.5 2.5 0 0 1-5 0"></path>
+                        </svg>
+                        <span class="nav-label">Monetization</span>
+                        <svg class="chevron-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <ul class="admin-submenu">
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/monetization/index.php" class="admin-submenu-item <?= ($isMonetizationActive && $currentAdminScript === 'index.php') ? 'active' : '' ?>">
+                                AdSense Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/monetization/ad-units.php" class="admin-submenu-item <?= ($isMonetizationActive && $currentAdminScript === 'ad-units.php') ? 'active' : '' ?>">
+                                Ad Units
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/monetization/adsterra.php" class="admin-submenu-item <?= ($isMonetizationActive && $currentAdminScript === 'adsterra.php') ? 'active' : '' ?>">
+                                Adsterra Ads
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/monetization/monetag.php" class="admin-submenu-item <?= ($isMonetizationActive && $currentAdminScript === 'monetag.php') ? 'active' : '' ?>">
+                                Monetag
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/monetization/placement.php" class="admin-submenu-item <?= ($isMonetizationActive && $currentAdminScript === 'placement.php') ? 'active' : '' ?>">
+                                Ad Placement
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/monetization/ads-txt.php" class="admin-submenu-item <?= ($isMonetizationActive && $currentAdminScript === 'ads-txt.php') ? 'active' : '' ?>">
+                                Ads.txt
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/monetization/settings.php" class="admin-submenu-item <?= ($isMonetizationActive && $currentAdminScript === 'settings.php') ? 'active' : '' ?>">
+                                Monetization Settings
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= ADMIN_URL ?>/monetization/policy-checklist.php" class="admin-submenu-item <?= ($isMonetizationActive && $currentAdminScript === 'policy-checklist.php') ? 'active' : '' ?>">
+                                Policy Checklist
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <?php endif; ?>
 
                 <!-- 5. Pages & Menus -->
                 <?php if ($canPages): ?>

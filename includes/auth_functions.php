@@ -186,6 +186,24 @@ function has_permission($permissionKey, $adminId = null) {
 }
 
 /**
+ * Ensure an admin user is authenticated (Helper alias)
+ */
+if (!function_exists('require_login')) {
+    function require_login() {
+        if (!is_admin_logged_in()) {
+            set_flash('error', 'Please log in to continue.');
+            if (!headers_sent()) {
+                header('Location: ' . ADMIN_URL . '/login.php');
+                exit;
+            } else {
+                echo '<script>window.location.href = "' . ADMIN_URL . '/login.php";</script>';
+                exit;
+            }
+        }
+    }
+}
+
+/**
  * Enforce permission authorization guard
  * Halts execution and displays Access Denied page if unauthorized
  *
