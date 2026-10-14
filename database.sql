@@ -108,6 +108,22 @@ CREATE TABLE `article_reactions` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
+-- Table structure for table `article_views` (Unique IP & Session view tracker)
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `article_views` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `article_id` int(11) NOT NULL,
+  `user_ip` varchar(45) NOT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `last_viewed_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_article_user_ip` (`article_id`,`user_ip`),
+  KEY `idx_article_id` (`article_id`),
+  KEY `idx_user_ip` (`user_ip`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 -- Table structure for table `articles`
 -- --------------------------------------------------------
 DROP TABLE IF EXISTS `articles`;

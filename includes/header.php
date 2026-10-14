@@ -87,6 +87,7 @@ try {
         function gtag() {
             dataLayer.push(arguments);
         }
+        
         gtag('js', new Date());
 
         gtag('config', 'G-XH87VZP3DS');

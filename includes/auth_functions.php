@@ -8,19 +8,32 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/config.php';
 
 /**
- * Get client IP address reliably (accounting for proxies/localhost)
+ * Get client IP address reliably (accounting for Cloudflare, proxies, load balancers & localhost)
  *
  * @return string
  */
 function get_client_ip() {
-    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-        $ip = $_SERVER['HTTP_CLIENT_IP'];
-    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0];
-    } else {
-        $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+    $ipHeaders = [
+        'HTTP_CF_CONNECTING_IP', // Cloudflare
+        'HTTP_X_REAL_IP',        // Nginx / FastCGI
+        'HTTP_CLIENT_IP',        // Client proxy
+        'HTTP_X_FORWARDED_FOR',  // Standard proxies / load balancers
+        'REMOTE_ADDR'            // Standard remote address
+    ];
+
+    foreach ($ipHeaders as $header) {
+        if (!empty($_SERVER[$header])) {
+            $parts = explode(',', $_SERVER[$header]);
+            foreach ($parts as $candidate) {
+                $candidate = trim($candidate);
+                if (filter_var($candidate, FILTER_VALIDATE_IP)) {
+                    return $candidate;
+                }
+            }
+        }
     }
-    return trim($ip);
+
+    return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 }
 
 /**

@@ -790,6 +790,120 @@ function format_brand_name($name = null) {
 }
 
 /**
+ * Record a unique article view based on Client IP Address & Session.
+ * Prevents view counter inflation when a user refreshes the page.
+ *
+ * @param PDO $db
+ * @param int $articleId
+ * @return bool True if view counter was incremented, false if already counted / refresh
+ */
+function record_unique_article_view($db, $articleId) {
+    if (!$db || !$articleId) {
+        return false;
+    }
+
+    $articleId = (int)$articleId;
+
+    // 1. Session check: if already viewed in this browsing session, exit immediately (0ms, no DB query)
+    if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+        @session_start();
+    }
+    if (!isset($_SESSION['viewed_articles']) || !is_array($_SESSION['viewed_articles'])) {
+        $_SESSION['viewed_articles'] = [];
+    }
+    if (in_array($articleId, $_SESSION['viewed_articles'], true)) {
+        return false; // Repeated refresh in the same session -> do not increase view
+    }
+
+    // 2. Filter out common search engine bots and crawlers (Googlebot, Bingbot, etc.)
+    $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    if (!empty($ua) && preg_match('/(bot|crawl|spider|slurp|facebookexternalhit|googlebot|bingbot|yahoo|duckduckbot|baiduspider|yandex)/i', $ua)) {
+        return false;
+    }
+
+    // 3. Client IP address extraction (with Cloudflare & proxy header support)
+    $ip = function_exists('get_client_ip') ? get_client_ip() : ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+    if (empty($ip)) {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+    }
+
+    // 4. Ensure article_views table exists (auto-created on first call)
+    static $viewsTableReady = false;
+    if (!$viewsTableReady) {
+        try {
+            $db->exec("
+                CREATE TABLE IF NOT EXISTS `article_views` (
+                    `id` INT(11) NOT NULL AUTO_INCREMENT,
+                    `article_id` INT(11) NOT NULL,
+                    `user_ip` VARCHAR(45) NOT NULL,
+                    `user_agent` VARCHAR(255) DEFAULT NULL,
+                    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    `last_viewed_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    PRIMARY KEY (`id`),
+                    UNIQUE KEY `idx_article_user_ip` (`article_id`, `user_ip`),
+                    KEY `idx_article_id` (`article_id`),
+                    KEY `idx_user_ip` (`user_ip`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            ");
+            $viewsTableReady = true;
+        } catch (Throwable $t) {
+            // Table already exists or permission restricted
+        }
+    }
+
+    // 5. Check if this IP has already viewed this article within cooldown window (24 hours)
+    try {
+        $checkStmt = $db->prepare("
+            SELECT id, last_viewed_at 
+            FROM article_views 
+            WHERE article_id = ? AND user_ip = ? 
+            LIMIT 1
+        ");
+        $checkStmt->execute([$articleId, $ip]);
+        $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+        $cooldownSeconds = 86400; // 24 Hours cooldown for the same IP address
+        $isNewView = false;
+
+        if ($existing) {
+            $lastViewTime = strtotime($existing['last_viewed_at']);
+            if ((time() - $lastViewTime) > $cooldownSeconds) {
+                // More than 24 hours have passed -> count as a new daily view
+                $updateLog = $db->prepare("UPDATE article_views SET last_viewed_at = NOW(), user_agent = ? WHERE id = ?");
+                $updateLog->execute([mb_substr($ua, 0, 250), $existing['id']]);
+                $isNewView = true;
+            } else {
+                // Visited recently (e.g., page refresh) -> DO NOT increment view count!
+                $isNewView = false;
+            }
+        } else {
+            // Brand new IP viewing this article for the first time
+            $insertLog = $db->prepare("
+                INSERT INTO article_views (article_id, user_ip, user_agent, created_at, last_viewed_at) 
+                VALUES (?, ?, ?, NOW(), NOW())
+            ");
+            $insertLog->execute([$articleId, $ip, mb_substr($ua, 0, 250)]);
+            $isNewView = true;
+        }
+
+        // Cache in session to block subsequent page refreshes in this session
+        $_SESSION['viewed_articles'][] = $articleId;
+
+        // If it's a new unique view, atomically increment counter in articles table
+        if ($isNewView) {
+            $updateViews = $db->prepare("UPDATE articles SET views = views + 1 WHERE id = ?");
+            $updateViews->execute([$articleId]);
+            return true;
+        }
+
+        return false;
+    } catch (Throwable $e) {
+        error_log("Error in record_unique_article_view: " . $e->getMessage());
+        return false;
+    }
+}
+
+/**
  * Get reaction statistics and user reaction state for an article
  *
  * @param int $articleId

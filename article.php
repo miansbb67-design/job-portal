@@ -36,9 +36,11 @@ if (!$article) {
     exit;
 }
 
-// Increment View Count
-$updateViews = $db->prepare("UPDATE articles SET views = views + 1 WHERE id = ?");
-$updateViews->execute([$article['id']]);
+// Record unique view based on Client IP & Session (prevents view count on page refresh)
+$viewWasCounted = record_unique_article_view($db, $article['id']);
+if ($viewWasCounted) {
+    $article['views'] = (int)$article['views'] + 1;
+}
 
 // Handle Traditional Comment Form POST (progressive enhancement fallback)
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['submit_comment'])) {
