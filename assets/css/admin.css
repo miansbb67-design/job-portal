@@ -4692,7 +4692,57 @@ select.form-control {
     max-width: 100% !important;
     height: auto !important;
     border-radius: 8px !important;
-    margin: 0.5rem 0 !important;
+    margin: 0.5rem 0;
+    transition: outline 0.15s ease;
+}
+.note-editor .note-editable img:hover {
+    outline: 2px solid #3b82f6;
+    cursor: pointer;
+}
+.note-editor .note-editable img.img-align-center,
+.note-editor .note-editable img[data-align="center"],
+.note-editor .note-editable img[style*="margin-left: auto"],
+.note-editor .note-editable img[style*="margin: auto"],
+.note-editor .note-editable img[style*="margin: 0px auto"],
+.note-editor .note-editable img[style*="margin: 1.5rem auto"] {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    float: none !important;
+    clear: both !important;
+}
+.note-editor .note-editable img[style*="float: left"],
+.note-editor .note-editable img.note-float-left {
+    float: left !important;
+    margin: 0.5rem 1.25rem 0.75rem 0 !important;
+}
+.note-editor .note-editable img[style*="float: right"],
+.note-editor .note-editable img.note-float-right {
+    float: right !important;
+    margin: 0.5rem 0 0.75rem 1.25rem !important;
+}
+.note-popover .popover-content {
+    padding: 6px 8px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+}
+.note-popover .popover-content .note-btn-group {
+    margin-right: 4px !important;
+}
+.note-popover .popover-content .note-btn {
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    border-radius: 6px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    color: #334155 !important;
+}
+.note-popover .popover-content .note-btn:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
 }
 .note-editor .note-statusbar {
     background: #f8fafc !important;

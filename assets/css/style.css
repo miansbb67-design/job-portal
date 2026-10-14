@@ -2199,10 +2199,17 @@ h1, h2, h3, h4, h5, h6 {
 
 .article-prose img[style*="float: none"],
 .article-prose img[style*="float:none"],
-.article-prose .note-float-none {
-    display: block;
-    margin: 1.5rem auto;
-    float: none;
+.article-prose .note-float-none,
+.article-prose img.img-align-center,
+.article-prose img[data-align="center"],
+.article-prose img[style*="margin-left: auto"],
+.article-prose img[style*="margin: auto"],
+.article-prose img[style*="margin: 0px auto"],
+.article-prose img[style*="margin: 1.5rem auto"] {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    float: none !important;
     clear: both;
 }
 

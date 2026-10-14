@@ -92,7 +92,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. Summernote WYSIWYG Visual Editor Integration
     if (window.jQuery && typeof $.fn.summernote === 'function' && $('#articleContent').length) {
-        // Custom Media Library Button for Summernote toolbar
+        let currentActiveEditorImg = null;
+
+        // Track currently selected/clicked image in editor
+        $(document).on('mousedown click', '.note-editable img', function() {
+            currentActiveEditorImg = this;
+        });
+
+        // Double click an image to directly open the Alt Text & Position modal
+        $(document).on('dblclick', '.note-editable img', function(e) {
+            e.preventDefault();
+            currentActiveEditorImg = this;
+            if (typeof window.openImageAltModal === 'function') {
+                window.openImageAltModal($(this));
+            }
+        });
+
+        function getActiveSummernoteImage(context) {
+            if (context && context.layoutInfo && context.layoutInfo.editor) {
+                const handleTarget = $(context.layoutInfo.editor).find('.note-control-selection').data('target');
+                if (handleTarget && $(handleTarget).length) {
+                    return $(handleTarget);
+                }
+            }
+            if (currentActiveEditorImg && document.body.contains(currentActiveEditorImg)) {
+                return $(currentActiveEditorImg);
+            }
+            const $lastClicked = $('.note-editable img:focus, .note-editable img.selected');
+            if ($lastClicked.length) return $lastClicked.first();
+            return null;
+        }
+
+        window.syncSummernoteVal = function() {
+            if ($('#articleContent').length) {
+                const code = $('#articleContent').summernote('code');
+                $('#articleContent').val(code);
+                if (typeof updateComposerMetrics === 'function') {
+                    updateComposerMetrics();
+                }
+            }
+        };
+
+        // 1. Custom Media Library Button for Summernote toolbar
         const MediaLibraryButton = function(context) {
             const ui = $.summernote.ui;
             const button = ui.button({
@@ -118,13 +159,102 @@ document.addEventListener('DOMContentLoaded', () => {
             return button.render();
         };
 
+        // 2. Custom Center Alignment Button for Image Popover ("chota box")
+        const ImageCenterButton = function(context) {
+            const ui = $.summernote.ui;
+            const button = ui.button({
+                contents: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; display:inline-block;"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="7" y1="12" x2="17" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>',
+                tooltip: 'Center Align Image (margin: auto)',
+                click: function() {
+                    const $img = getActiveSummernoteImage(context);
+                    if ($img && $img.length) {
+                        $img.removeClass('note-float-left note-float-right note-float-none');
+                        $img.addClass('img-align-center');
+                        $img.css({
+                            'display': 'block',
+                            'margin-left': 'auto',
+                            'margin-right': 'auto',
+                            'float': 'none',
+                            'clear': 'both'
+                        });
+                        $img.attr('data-align', 'center');
+                        const $parent = $img.parent('p, div');
+                        if ($parent.length && $parent.text().trim() === '') {
+                            $parent.css('text-align', 'center');
+                        }
+                        window.syncSummernoteVal();
+                        showToast('✓ Image centered!');
+                    }
+                }
+            });
+            return button.render();
+        };
+
+        // 3. Custom Small (50%) & Center Button for Image Popover ("pic ko chota krr center me")
+        const ImageSmallCenterButton = function(context) {
+            const ui = $.summernote.ui;
+            const button = ui.button({
+                contents: '<span style="font-size:11px; font-weight:700; color:#059669; display:inline-flex; align-items:center; gap:2px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="5" width="14" height="14" rx="2"></rect><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg> 50% Center</span>',
+                tooltip: 'Make Small (50%) & Center Align',
+                click: function() {
+                    const $img = getActiveSummernoteImage(context);
+                    if ($img && $img.length) {
+                        $img.removeClass('note-float-left note-float-right note-float-none');
+                        $img.addClass('img-align-center');
+                        $img.css({
+                            'width': '50%',
+                            'max-width': '100%',
+                            'height': 'auto',
+                            'display': 'block',
+                            'margin-left': 'auto',
+                            'margin-right': 'auto',
+                            'float': 'none',
+                            'clear': 'both'
+                        });
+                        $img.attr('data-align', 'center');
+                        $img.attr('data-size', '50%');
+                        const $parent = $img.parent('p, div');
+                        if ($parent.length && $parent.text().trim() === '') {
+                            $parent.css('text-align', 'center');
+                        }
+                        window.syncSummernoteVal();
+                        showToast('✓ Picture resized to 50% and centered!');
+                    }
+                }
+            });
+            return button.render();
+        };
+
+        // 4. Custom Alt Text Button for Image Popover ("alt text likhane ka bi add kro")
+        const ImageAltButton = function(context) {
+            const ui = $.summernote.ui;
+            const button = ui.button({
+                contents: '<span style="font-size:11px; font-weight:700; color:#2563eb; display:inline-flex; align-items:center; gap:3px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg> Alt Text</span>',
+                tooltip: 'Edit Alt Text & Position (SEO)',
+                click: function() {
+                    const $img = getActiveSummernoteImage(context);
+                    if ($img && $img.length) {
+                        if (typeof window.openImageAltModal === 'function') {
+                            window.openImageAltModal($img);
+                        }
+                    } else {
+                        showToast('Please click an image to edit Alt text.');
+                    }
+                }
+            });
+            return button.render();
+        };
+
         $('#articleContent').summernote({
             placeholder: 'Compose high quality, original content here...',
             height: 480,
             minHeight: 320,
             dialogsInBody: true,
             buttons: {
-                mediaLibrary: MediaLibraryButton
+                mediaLibrary: MediaLibraryButton,
+                imageCenter: ImageCenterButton,
+                imageSmallCenter: ImageSmallCenterButton,
+                imageAlt: ImageAltButton
             },
             toolbar: [
                 ['style', ['style']],
@@ -140,7 +270,8 @@ document.addEventListener('DOMContentLoaded', () => {
             popover: {
                 image: [
                     ['image', ['resizeFull', 'resizeHalf', 'resizeQuarter', 'resizeNone']],
-                    ['float', ['floatLeft', 'floatRight', 'floatNone']],
+                    ['float', ['floatLeft', 'imageCenter', 'floatRight', 'floatNone']],
+                    ['custom', ['imageSmallCenter', 'imageAlt']],
                     ['remove', ['removeMedia']]
                 ],
                 link: [
@@ -617,6 +748,9 @@ document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
         closeNotificationDropdown();
         closeMediaLibraryModal();
+        if (typeof window.closeImageAltModal === 'function') {
+            window.closeImageAltModal();
+        }
     }
 });
 
@@ -648,6 +782,185 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 });
+
+// ==========================================================================
+// 9.5 Global Image Alt Text, Alignment & Size Modal Controller
+// ==========================================================================
+let currentEditingImg = null;
+let currentModalAlign = 'center';
+let currentModalSize = '100%';
+
+window.openImageAltModal = function($img) {
+    if (!$img || !$img.length) return;
+    currentEditingImg = $img;
+
+    const src = $img.attr('src') || '';
+    const alt = $img.attr('alt') || '';
+
+    // Determine current alignment
+    const styleFloat = ($img.css('float') || '').toLowerCase();
+    const styleAttr = $img.attr('style') || '';
+    const isMarginCenter = ($img.css('margin-left') === 'auto' && $img.css('margin-right') === 'auto') || 
+                           styleAttr.includes('margin: auto') || 
+                           styleAttr.includes('margin: 0 auto') || 
+                           styleAttr.includes('margin: 1.5rem auto') ||
+                           $img.hasClass('img-align-center') ||
+                           $img.attr('data-align') === 'center';
+
+    if (styleFloat === 'left' || $img.hasClass('note-float-left')) {
+        currentModalAlign = 'left';
+    } else if (styleFloat === 'right' || $img.hasClass('note-float-right')) {
+        currentModalAlign = 'right';
+    } else if (isMarginCenter) {
+        currentModalAlign = 'center';
+    } else {
+        currentModalAlign = 'none';
+    }
+
+    // Determine current size
+    const widthStyle = ($img[0].style.width || '').trim();
+    const dataSize = $img.attr('data-size') || '';
+    if (widthStyle === '100%' || dataSize === '100%') {
+        currentModalSize = '100%';
+    } else if (widthStyle === '50%' || dataSize === '50%') {
+        currentModalSize = '50%';
+    } else if (widthStyle === '25%' || dataSize === '25%') {
+        currentModalSize = '25%';
+    } else if (widthStyle === '' || widthStyle === 'auto') {
+        currentModalSize = 'auto';
+    } else {
+        currentModalSize = 'auto';
+    }
+
+    const preview = document.getElementById('imgModalPreview');
+    const altInput = document.getElementById('imgModalAltInput');
+    if (preview) preview.src = src;
+    if (altInput) {
+        altInput.value = alt;
+        setTimeout(() => {
+            altInput.focus();
+            altInput.select();
+        }, 120);
+    }
+
+    window.updateModalAlignUI(currentModalAlign);
+    window.updateModalSizeUI(currentModalSize);
+
+    const modal = document.getElementById('imageAltModal');
+    if (modal) modal.style.display = 'flex';
+};
+
+window.closeImageAltModal = function(e) {
+    if (e && e.target && e.target.id !== 'imageAltModal' && !e.target.classList.contains('media-modal-close-btn')) {
+        return;
+    }
+    const modal = document.getElementById('imageAltModal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.setModalImgAlign = function(align) {
+    currentModalAlign = align;
+    window.updateModalAlignUI(align);
+};
+
+window.updateModalAlignUI = function(align) {
+    if (window.jQuery) {
+        $('#imgModalAlignGroup .btn-img-choice').removeClass('active');
+        $(`#imgModalAlignGroup .btn-img-choice[data-align="${align}"]`).addClass('active');
+    }
+};
+
+window.setModalImgSize = function(size) {
+    currentModalSize = size;
+    window.updateModalSizeUI(size);
+};
+
+window.updateModalSizeUI = function(size) {
+    if (window.jQuery) {
+        $('#imgModalSizeGroup .btn-img-choice').removeClass('active');
+        $(`#imgModalSizeGroup .btn-img-choice[data-size="${size}"]`).addClass('active');
+    }
+};
+
+window.saveImageAltModal = function() {
+    if (!currentEditingImg || !currentEditingImg.length) {
+        window.closeImageAltModal();
+        return;
+    }
+    const altInput = document.getElementById('imgModalAltInput');
+    const newAlt = altInput ? altInput.value.trim() : '';
+
+    // 1. Update Alt attribute
+    currentEditingImg.attr('alt', newAlt);
+
+    // 2. Update Alignment
+    currentEditingImg.removeClass('note-float-left note-float-right note-float-none img-align-center');
+    if (currentModalAlign === 'center') {
+        currentEditingImg.addClass('img-align-center');
+        currentEditingImg.css({
+            'display': 'block',
+            'margin-left': 'auto',
+            'margin-right': 'auto',
+            'float': 'none',
+            'clear': 'both'
+        });
+        currentEditingImg.attr('data-align', 'center');
+        const $parent = currentEditingImg.parent('p, div');
+        if ($parent.length && $parent.text().trim() === '') {
+            $parent.css('text-align', 'center');
+        }
+    } else if (currentModalAlign === 'left') {
+        currentEditingImg.addClass('note-float-left');
+        currentEditingImg.css({
+            'display': 'inline-block',
+            'float': 'left',
+            'margin': '0.5rem 1.5rem 1.25rem 0',
+            'clear': 'none'
+        });
+        currentEditingImg.attr('data-align', 'left');
+    } else if (currentModalAlign === 'right') {
+        currentEditingImg.addClass('note-float-right');
+        currentEditingImg.css({
+            'display': 'inline-block',
+            'float': 'right',
+            'margin': '0.5rem 0 1.25rem 1.5rem',
+            'clear': 'none'
+        });
+        currentEditingImg.attr('data-align', 'right');
+    } else {
+        currentEditingImg.css({
+            'display': 'inline-block',
+            'float': 'none',
+            'margin': '0.75rem 0',
+            'clear': 'both'
+        });
+        currentEditingImg.removeAttr('data-align');
+    }
+
+    // 3. Update Size
+    if (currentModalSize === '100%') {
+        currentEditingImg.css({ 'width': '100%', 'height': 'auto' });
+        currentEditingImg.attr('data-size', '100%');
+    } else if (currentModalSize === '50%') {
+        currentEditingImg.css({ 'width': '50%', 'max-width': '100%', 'height': 'auto' });
+        currentEditingImg.attr('data-size', '50%');
+    } else if (currentModalSize === '25%') {
+        currentEditingImg.css({ 'width': '25%', 'max-width': '100%', 'height': 'auto' });
+        currentEditingImg.attr('data-size', '25%');
+    } else if (currentModalSize === 'auto') {
+        currentEditingImg.css({ 'width': '', 'height': 'auto' });
+        currentEditingImg.removeAttr('data-size');
+    }
+
+    window.closeImageAltModal();
+    if (typeof window.syncSummernoteVal === 'function') {
+        window.syncSummernoteVal();
+    } else if (window.jQuery && $('#articleContent').length) {
+        $('#articleContent').val($('#articleContent').summernote('code'));
+        if (typeof updateComposerMetrics === 'function') updateComposerMetrics();
+    }
+    showToast('✓ Image Alt text & formatting updated successfully!');
+};
 
 // ==========================================================================
 // 10. Global Media Library Modal & Computer File Upload System (Screenshots 2 & 3)

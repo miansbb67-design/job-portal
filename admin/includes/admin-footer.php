@@ -6,6 +6,9 @@
     <!-- Global Media Library Modal Component -->
     <?php require_once __DIR__ . '/media-modal.php'; ?>
 
+    <!-- Global Image Alt Text & Alignment Modal Component -->
+    <?php require_once __DIR__ . '/image-alt-modal.php'; ?>
+
     <!-- Vendor Libraries (jQuery, Dropify File Uploader & Summernote Editor) -->
     <script src="<?= BASE_URL ?>/assets/vendor/dropify/jquery.min.js"></script>
     <script src="<?= BASE_URL ?>/assets/vendor/dropify/dropify.min.js"></script>
