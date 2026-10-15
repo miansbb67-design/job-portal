@@ -87,7 +87,7 @@ try {
         function gtag() {
             dataLayer.push(arguments);
         }
-        
+
         gtag('js', new Date());
 
         gtag('config', 'G-XH87VZP3DS');
@@ -95,8 +95,10 @@ try {
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <!-- monetag -->
+    <!-- monetag -->
     <meta name="monetag" content="83343c17f22bb13eb87261dd7ce1dfdb">
+    <!-- google adesen -->
+    <meta name="google-adsense-account" content="ca-pub-5574872295517246">
     <title><?= $pageTitle ?></title>
     <meta name="description" content="<?= $metaDescription ?>">
     <meta name="keywords" content="<?= $metaKeywords ?>">
@@ -209,7 +211,7 @@ try {
                     <?php endif; ?>
 
                     <!-- Direct Categories Navigation Link (Replaced dropdown popup) -->
-                    <?php 
+                    <?php
                     $isCategoriesActive = ($currentScript === 'categories.php' || strpos($_SERVER['REQUEST_URI'] ?? '', '/categories') !== false);
                     ?>
                     <a href="<?= BASE_URL ?>/categories" class="pine-nav-link <?= $isCategoriesActive ? 'active' : '' ?>">
