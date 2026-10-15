@@ -208,23 +208,13 @@ try {
                         <a href="<?= BASE_URL ?>/trending" class="pine-nav-link <?= (!empty($_GET['trending'])) ? 'active' : '' ?>">Trending</a>
                     <?php endif; ?>
 
-                    <!-- Topics Dropdown Menu -->
-                    <div class="pine-dropdown-group">
-                        <button type="button" class="pine-nav-link pine-dropdown-btn" id="topicsMenuBtn" aria-expanded="false">
-                            Categories <span class="dropdown-arrow">▾</span>
-                        </button>
-                        <div class="pine-dropdown-card" id="topicsMenuDropdown">
-                            <?php foreach ($headerCategories as $cat): ?>
-                                <a href="<?= BASE_URL ?>/category/<?= h($cat['slug']) ?>" class="pine-dropdown-item">
-                                    <?= h($cat['name']) ?>
-                                </a>
-                            <?php endforeach; ?>
-                            <div class="pine-dropdown-divider"></div>
-                            <a href="<?= BASE_URL ?>/categories" class="pine-dropdown-item view-all">
-                                All Categories &rarr;
-                            </a>
-                        </div>
-                    </div>
+                    <!-- Direct Categories Navigation Link (Replaced dropdown popup) -->
+                    <?php 
+                    $isCategoriesActive = ($currentScript === 'categories.php' || strpos($_SERVER['REQUEST_URI'] ?? '', '/categories') !== false);
+                    ?>
+                    <a href="<?= BASE_URL ?>/categories" class="pine-nav-link <?= $isCategoriesActive ? 'active' : '' ?>">
+                        Categories
+                    </a>
                 </nav>
 
                 <!-- Search Form on Right & Mobile Controls -->
@@ -360,6 +350,7 @@ try {
                     <a href="<?= BASE_URL ?>/vlogs" class="mobile-nav-link <?= (!empty($_GET['vlogs']) || !empty($_GET['video'])) ? 'active' : '' ?>">Vlogs</a>
                     <a href="<?= BASE_URL ?>/articles" class="mobile-nav-link <?= ($currentScript == 'articles.php' && empty($_GET['trending']) && empty($_GET['vlogs']) && empty($_GET['video'])) ? 'active' : '' ?>">Articles</a>
                     <a href="<?= BASE_URL ?>/trending" class="mobile-nav-link <?= (!empty($_GET['trending'])) ? 'active' : '' ?>">Trending</a>
+                    <a href="<?= BASE_URL ?>/categories" class="mobile-nav-link <?= ($currentScript == 'categories.php' || strpos($_SERVER['REQUEST_URI'] ?? '', '/categories') !== false) ? 'active' : '' ?>">Categories</a>
 
                     <div class="mobile-topics-section">
                         <span class="mobile-topics-title">Topics</span>
