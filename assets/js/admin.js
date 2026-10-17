@@ -235,10 +235,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     const $img = getActiveSummernoteImage(context);
                     if ($img && $img.length) {
                         if (typeof window.openImageAltModal === 'function') {
-                            window.openImageAltModal($img);
+                            window.openImageAltModal($img, 'alt');
                         }
                     } else {
                         showToast('Please click an image to edit Alt text.');
+                    }
+                }
+            });
+            return button.render();
+        };
+
+        // 5. Custom Link Button for Image Popover ("link add krne ka option chiye")
+        const ImageLinkButton = function(context) {
+            const ui = $.summernote.ui;
+            const button = ui.button({
+                contents: '<span style="font-size:11px; font-weight:700; color:#0284c7; display:inline-flex; align-items:center; gap:3px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> Link</span>',
+                tooltip: 'Add / Edit Link to Image (Clickable)',
+                click: function() {
+                    const $img = getActiveSummernoteImage(context);
+                    if ($img && $img.length) {
+                        if (typeof window.openImageAltModal === 'function') {
+                            window.openImageAltModal($img, 'link');
+                        }
+                    } else {
+                        showToast('Please click an image to add a link.');
                     }
                 }
             });
@@ -254,7 +274,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 mediaLibrary: MediaLibraryButton,
                 imageCenter: ImageCenterButton,
                 imageSmallCenter: ImageSmallCenterButton,
-                imageAlt: ImageAltButton
+                imageAlt: ImageAltButton,
+                imageLink: ImageLinkButton
             },
             toolbar: [
                 ['style', ['style']],
@@ -271,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 image: [
                     ['image', ['resizeFull', 'resizeHalf', 'resizeQuarter', 'resizeNone']],
                     ['float', ['floatLeft', 'imageCenter', 'floatRight', 'floatNone']],
-                    ['custom', ['imageSmallCenter', 'imageAlt']],
+                    ['custom', ['imageSmallCenter', 'imageAlt', 'imageLink']],
                     ['remove', ['removeMedia']]
                 ],
                 link: [
@@ -784,18 +805,30 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // ==========================================================================
-// 9.5 Global Image Alt Text, Alignment & Size Modal Controller
+// 9.5 Global Image Link, Alt Text, Alignment & Size Modal Controller
 // ==========================================================================
 let currentEditingImg = null;
 let currentModalAlign = 'center';
 let currentModalSize = '100%';
 
-window.openImageAltModal = function($img) {
+window.openImageAltModal = function($img, focusField = 'alt') {
     if (!$img || !$img.length) return;
     currentEditingImg = $img;
 
     const src = $img.attr('src') || '';
     const alt = $img.attr('alt') || '';
+
+    // Check existing <a> tag wrapping this image
+    const $parentA = $img.closest('a');
+    let currentLink = '';
+    let currentTargetBlank = true;
+    let currentNofollow = false;
+    if ($parentA.length) {
+        currentLink = $parentA.attr('href') || '';
+        currentTargetBlank = ($parentA.attr('target') === '_blank');
+        const rel = ($parentA.attr('rel') || '').toLowerCase();
+        currentNofollow = rel.includes('nofollow');
+    }
 
     // Determine current alignment
     const styleFloat = ($img.css('float') || '').toLowerCase();
@@ -834,13 +867,25 @@ window.openImageAltModal = function($img) {
 
     const preview = document.getElementById('imgModalPreview');
     const altInput = document.getElementById('imgModalAltInput');
+    const linkInput = document.getElementById('imgModalLinkInput');
+    const linkTarget = document.getElementById('imgModalLinkTarget');
+    const linkNofollow = document.getElementById('imgModalLinkNofollow');
+    const linkStatus = document.getElementById('imgModalLinkStatus');
+    const linkedUrlDisplay = document.getElementById('imgModalLinkedUrlDisplay');
+
     if (preview) preview.src = src;
-    if (altInput) {
-        altInput.value = alt;
-        setTimeout(() => {
-            altInput.focus();
-            altInput.select();
-        }, 120);
+    if (altInput) altInput.value = alt;
+    if (linkInput) linkInput.value = currentLink;
+    if (linkTarget) linkTarget.checked = currentTargetBlank;
+    if (linkNofollow) linkNofollow.checked = currentNofollow;
+
+    if (linkStatus && linkedUrlDisplay) {
+        if (currentLink) {
+            linkStatus.style.display = 'inline-flex';
+            linkedUrlDisplay.textContent = currentLink;
+        } else {
+            linkStatus.style.display = 'none';
+        }
     }
 
     window.updateModalAlignUI(currentModalAlign);
@@ -848,6 +893,38 @@ window.openImageAltModal = function($img) {
 
     const modal = document.getElementById('imageAltModal');
     if (modal) modal.style.display = 'flex';
+
+    setTimeout(() => {
+        if (focusField === 'link' && linkInput) {
+            linkInput.focus();
+            linkInput.select();
+        } else if (altInput) {
+            altInput.focus();
+            altInput.select();
+        }
+    }, 120);
+};
+
+window.clearModalImgLink = function() {
+    const linkInput = document.getElementById('imgModalLinkInput');
+    const linkStatus = document.getElementById('imgModalLinkStatus');
+    if (linkInput) linkInput.value = '';
+    if (linkStatus) linkStatus.style.display = 'none';
+};
+
+window.updateModalLinkBadge = function() {
+    const linkInput = document.getElementById('imgModalLinkInput');
+    const linkStatus = document.getElementById('imgModalLinkStatus');
+    const linkedUrlDisplay = document.getElementById('imgModalLinkedUrlDisplay');
+    const val = linkInput ? linkInput.value.trim() : '';
+    if (linkStatus && linkedUrlDisplay) {
+        if (val) {
+            linkStatus.style.display = 'inline-flex';
+            linkedUrlDisplay.textContent = val;
+        } else {
+            linkStatus.style.display = 'none';
+        }
+    }
 };
 
 window.closeImageAltModal = function(e) {
@@ -888,13 +965,54 @@ window.saveImageAltModal = function() {
         return;
     }
     const altInput = document.getElementById('imgModalAltInput');
+    const linkInput = document.getElementById('imgModalLinkInput');
+    const linkTarget = document.getElementById('imgModalLinkTarget');
+    const linkNofollow = document.getElementById('imgModalLinkNofollow');
+
     const newAlt = altInput ? altInput.value.trim() : '';
+    let newLink = linkInput ? linkInput.value.trim() : '';
+    const isBlank = linkTarget ? linkTarget.checked : true;
+    const isNofollow = linkNofollow ? linkNofollow.checked : false;
 
     // 1. Update Alt attribute
     currentEditingImg.attr('alt', newAlt);
 
-    // 2. Update Alignment
+    // 2. Update or Remove Clickable Link (<a> tag)
+    const $existingLink = currentEditingImg.closest('a');
+    if (newLink) {
+        // Auto-fix protocol if missing (e.g. "example.com" or "www.example.com")
+        if (!newLink.startsWith('http://') && !newLink.startsWith('https://') && !newLink.startsWith('/') && !newLink.startsWith('#') && !newLink.startsWith('mailto:') && !newLink.startsWith('tel:')) {
+            newLink = 'https://' + newLink;
+        }
+
+        let relParts = ['noopener'];
+        if (isBlank) relParts.push('noreferrer');
+        if (isNofollow) relParts.push('nofollow');
+        const relAttr = relParts.join(' ');
+
+        if ($existingLink.length) {
+            $existingLink.attr('href', newLink);
+            if (isBlank) {
+                $existingLink.attr('target', '_blank');
+            } else {
+                $existingLink.removeAttr('target');
+            }
+            $existingLink.attr('rel', relAttr);
+        } else {
+            const targetAttr = isBlank ? ' target="_blank"' : '';
+            currentEditingImg.wrap('<a href="' + newLink + '"' + targetAttr + ' rel="' + relAttr + '"></a>');
+        }
+    } else {
+        // Link was cleared - unwrap if already linked
+        if ($existingLink.length) {
+            currentEditingImg.unwrap('a');
+        }
+    }
+
+    // 3. Update Alignment
     currentEditingImg.removeClass('note-float-left note-float-right note-float-none img-align-center');
+    const $parentLink = currentEditingImg.parent('a');
+
     if (currentModalAlign === 'center') {
         currentEditingImg.addClass('img-align-center');
         currentEditingImg.css({
@@ -905,7 +1023,15 @@ window.saveImageAltModal = function() {
             'clear': 'both'
         });
         currentEditingImg.attr('data-align', 'center');
-        const $parent = currentEditingImg.parent('p, div');
+        if ($parentLink.length) {
+            $parentLink.css({
+                'display': 'block',
+                'margin-left': 'auto',
+                'margin-right': 'auto',
+                'text-align': 'center'
+            });
+        }
+        const $parent = currentEditingImg.closest('p, div');
         if ($parent.length && $parent.text().trim() === '') {
             $parent.css('text-align', 'center');
         }
@@ -918,6 +1044,13 @@ window.saveImageAltModal = function() {
             'clear': 'none'
         });
         currentEditingImg.attr('data-align', 'left');
+        if ($parentLink.length) {
+            $parentLink.css({
+                'display': 'inline-block',
+                'float': 'left',
+                'margin': '0.5rem 1.5rem 1.25rem 0'
+            });
+        }
     } else if (currentModalAlign === 'right') {
         currentEditingImg.addClass('note-float-right');
         currentEditingImg.css({
@@ -927,6 +1060,13 @@ window.saveImageAltModal = function() {
             'clear': 'none'
         });
         currentEditingImg.attr('data-align', 'right');
+        if ($parentLink.length) {
+            $parentLink.css({
+                'display': 'inline-block',
+                'float': 'right',
+                'margin': '0.5rem 0 1.25rem 1.5rem'
+            });
+        }
     } else {
         currentEditingImg.css({
             'display': 'inline-block',
@@ -935,9 +1075,16 @@ window.saveImageAltModal = function() {
             'clear': 'both'
         });
         currentEditingImg.removeAttr('data-align');
+        if ($parentLink.length) {
+            $parentLink.css({
+                'display': 'inline-block',
+                'float': 'none',
+                'margin': '0'
+            });
+        }
     }
 
-    // 3. Update Size
+    // 4. Update Size
     if (currentModalSize === '100%') {
         currentEditingImg.css({ 'width': '100%', 'height': 'auto' });
         currentEditingImg.attr('data-size', '100%');
@@ -959,7 +1106,8 @@ window.saveImageAltModal = function() {
         $('#articleContent').val($('#articleContent').summernote('code'));
         if (typeof updateComposerMetrics === 'function') updateComposerMetrics();
     }
-    showToast('✓ Image Alt text & formatting updated successfully!');
+    const successMsg = newLink ? '✓ Image link, Alt text & formatting updated successfully!' : '✓ Image Alt text & formatting updated successfully!';
+    showToast(successMsg);
 };
 
 // ==========================================================================
