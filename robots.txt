@@ -15,5 +15,5 @@ Disallow: /includes/
 Disallow: /job-portal/search.php
 Disallow: /search.php
 
-# Sitemap location
-Sitemap: /sitemap.xml
+# Sitemap location (Canonical absolute URL as required by Google Search Console & Bing Webmaster)
+Sitemap: https://careernexaa.com/sitemap.xml

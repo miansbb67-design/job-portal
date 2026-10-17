@@ -99,6 +99,28 @@ try {
     <meta name="monetag" content="83343c17f22bb13eb87261dd7ce1dfdb">
     <!-- google adesen -->
     <meta name="google-adsense-account" content="ca-pub-5574872295517246">
+
+    <!-- Search Engine Webmaster Verification -->
+    <?php
+    $gscCode = get_setting('google_search_console_code', '');
+    if (!empty($gscCode)) {
+        if (strpos($gscCode, '<meta') !== false) {
+            echo "    " . $gscCode . "\n";
+        } else {
+            $gscContent = trim(str_replace('google-site-verification=', '', $gscCode), " \t\n\r\0\x0B\"'");
+            echo '    <meta name="google-site-verification" content="' . h($gscContent) . '">' . "\n";
+        }
+    }
+    $bingCode = get_setting('bing_webmaster_code', '');
+    if (!empty($bingCode)) {
+        if (strpos($bingCode, '<meta') !== false) {
+            echo "    " . $bingCode . "\n";
+        } else {
+            $bingContent = trim(str_replace('msvalidate.01=', '', $bingCode), " \t\n\r\0\x0B\"'");
+            echo '    <meta name="msvalidate.01" content="' . h($bingContent) . '">' . "\n";
+        }
+    }
+    ?>
     <title><?= $pageTitle ?></title>
     <meta name="description" content="<?= $metaDescription ?>">
     <meta name="keywords" content="<?= $metaKeywords ?>">

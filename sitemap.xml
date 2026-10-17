@@ -1,147 +1,160 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
     <url>
-        <loc>http://localhost/job-portal</loc>
-        <lastmod>2026-10-13</lastmod>
+        <loc>https://careernexaa.com/</loc>
+        <lastmod>2026-10-17</lastmod>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/articles</loc>
-        <lastmod>2026-10-13</lastmod>
+        <loc>https://careernexaa.com/articles</loc>
+        <lastmod>2026-10-17</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/vlogs</loc>
-        <lastmod>2026-10-13</lastmod>
+        <loc>https://careernexaa.com/vlogs</loc>
+        <lastmod>2026-10-17</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/trending</loc>
-        <lastmod>2026-10-13</lastmod>
+        <loc>https://careernexaa.com/trending</loc>
+        <lastmod>2026-10-17</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/jobs</loc>
-        <lastmod>2026-10-13</lastmod>
+        <loc>https://careernexaa.com/jobs</loc>
+        <lastmod>2026-10-17</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/categories</loc>
-        <lastmod>2026-10-13</lastmod>
+        <loc>https://careernexaa.com/categories</loc>
+        <lastmod>2026-10-17</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/about</loc>
-        <lastmod>2026-10-13</lastmod>
+        <loc>https://careernexaa.com/about</loc>
+        <lastmod>2026-10-17</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/contact</loc>
-        <lastmod>2026-10-13</lastmod>
+        <loc>https://careernexaa.com/contact</loc>
+        <lastmod>2026-10-17</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/privacy-policy</loc>
-        <lastmod>2026-10-13</lastmod>
+        <loc>https://careernexaa.com/privacy-policy</loc>
+        <lastmod>2026-10-17</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/terms</loc>
-        <lastmod>2026-10-13</lastmod>
+        <loc>https://careernexaa.com/terms</loc>
+        <lastmod>2026-10-17</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/cookie-policy</loc>
-        <lastmod>2026-10-13</lastmod>
+        <loc>https://careernexaa.com/cookie-policy</loc>
+        <lastmod>2026-10-17</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/disclaimer</loc>
-        <lastmod>2026-10-13</lastmod>
+        <loc>https://careernexaa.com/disclaimer</loc>
+        <lastmod>2026-10-17</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/category/government-jobs</loc>
+        <loc>https://careernexaa.com/category/government-jobs</loc>
         <lastmod>2026-10-02</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/category/private-tech-jobs</loc>
+        <loc>https://careernexaa.com/category/private-tech-jobs</loc>
         <lastmod>2026-10-02</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/category/remote-work-from-home</loc>
+        <loc>https://careernexaa.com/category/remote-work-from-home</loc>
         <lastmod>2026-10-02</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/category/career-advice-tips</loc>
+        <loc>https://careernexaa.com/category/career-advice-tips</loc>
         <lastmod>2026-10-02</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/category/resume-interview-prep</loc>
+        <loc>https://careernexaa.com/category/resume-interview-prep</loc>
         <lastmod>2026-10-02</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/category/internships-entry-level</loc>
+        <loc>https://careernexaa.com/category/internships-entry-level</loc>
         <lastmod>2026-10-02</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/category/trading</loc>
+        <loc>https://careernexaa.com/category/trading</loc>
         <lastmod>2026-10-04</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/category/travel</loc>
+        <loc>https://careernexaa.com/category/travel</loc>
         <lastmod>2026-10-04</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/category/finance</loc>
+        <loc>https://careernexaa.com/category/finance</loc>
         <lastmod>2026-10-04</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>http://localhost/job-portal/article/top-10-high-paying-remote-tech-careers-in-2026</loc>
+        <loc>https://careernexaa.com/article/algorithmic-trading-risk-management-essentials-2026</loc>
         <lastmod>2026-10-13</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
+        <image:image>
+            <image:loc>https://careernexaa.com/uploads/articles/crypto-trading-market.jpg</image:loc>
+            <image:title>Algorithmic Trading &amp; Risk Management Essentials for 2026</image:title>
+        </image:image>
     </url>
     <url>
-        <loc>http://localhost/job-portal/article/senior-frontend-developer-react-typescript-fintech</loc>
-        <lastmod>2026-10-13</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.8</priority>
+        <loc>https://careernexaa.com/article/senior-frontend-developer-react-typescript-fintech</loc>
+        <lastmod>2026-10-14</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+        <image:image>
+            <image:loc>https://careernexaa.com/uploads/articles/business-partnership-deal.jpg</image:loc>
+            <image:title>Senior Frontend Developer (React &amp; TypeScript) - FinTech Solutions</image:title>
+        </image:image>
     </url>
     <url>
-        <loc>http://localhost/job-portal/article/algorithmic-trading-risk-management-essentials-2026</loc>
-        <lastmod>2026-10-13</lastmod>
+        <loc>https://careernexaa.com/article/top-10-high-paying-remote-tech-careers-in-2026</loc>
+        <lastmod>2026-10-17</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
+        <image:image>
+            <image:loc>https://careernexaa.com/uploads/articles/career-advancement-ladder.jpg</image:loc>
+            <image:title>Top 10 High-Paying Remote Tech Careers in 2026</image:title>
+        </image:image>
     </url>
 </urlset>
