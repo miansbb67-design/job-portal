@@ -234,7 +234,122 @@ function sanitize_article_html($content) {
     // Remove javascript: pseudo-protocols in href and src
     $clean = preg_replace('/(href|src)\s*=\s*["\']\s*javascript:[^"\']*["\']/i', '$1="#"', $clean);
 
+    // Modern Performance: Ensure content images have lazy loading and async decoding
+    $clean = preg_replace_callback('/<img\b([^>]*)>/i', function($matches) {
+        $attrs = $matches[1];
+        if (stripos($attrs, 'loading=') === false) {
+            $attrs .= ' loading="lazy"';
+        }
+        if (stripos($attrs, 'decoding=') === false) {
+            $attrs .= ' decoding="async"';
+        }
+        return '<img' . $attrs . '>';
+    }, $clean);
+
     return $clean;
+}
+
+/**
+ * Optimize an image file in-place and generate high-efficiency companion .webp format
+ * Automatically resizes oversized dimensions, compresses, and generates WebP for instant loading.
+ *
+ * @param string $filePath Full filesystem path to image
+ * @param int $maxWidth Maximum allowable width in pixels (proportional resize)
+ * @param int $quality JPEG/WebP quality factor (0-100)
+ * @return bool True if processed or valid, false on critical failure
+ */
+function optimize_and_save_image($filePath, $maxWidth = 1366, $quality = 82) {
+    if (!file_exists($filePath) || !is_file($filePath)) {
+        return false;
+    }
+
+    $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+    if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+        return true; // Keep SVG, GIF etc. untouched
+    }
+
+    if (!extension_loaded('gd')) {
+        return true; // Fallback gracefully if GD not loaded
+    }
+
+    $imageInfo = @getimagesize($filePath);
+    if (!$imageInfo) {
+        return false;
+    }
+
+    $origWidth = $imageInfo[0];
+    $origHeight = $imageInfo[1];
+    $mime = $imageInfo['mime'] ?? '';
+
+    $srcImg = null;
+    if ($mime === 'image/jpeg' || $ext === 'jpg' || $ext === 'jpeg') {
+        $srcImg = @imagecreatefromjpeg($filePath);
+    } elseif ($mime === 'image/png' || $ext === 'png') {
+        $srcImg = @imagecreatefrompng($filePath);
+    } elseif ($mime === 'image/webp' || $ext === 'webp') {
+        if (function_exists('imagecreatefromwebp')) {
+            $srcImg = @imagecreatefromwebp($filePath);
+        }
+    }
+
+    if (!$srcImg) {
+        return true; // Cannot decode with GD, leave original file safe
+    }
+
+    // Determine new dimensions
+    $newWidth = $origWidth;
+    $newHeight = $origHeight;
+    if ($origWidth > $maxWidth && $origWidth > 0) {
+        $newWidth = $maxWidth;
+        $newHeight = (int)round(($origHeight / $origWidth) * $maxWidth);
+    }
+
+    $dstImg = imagecreatetruecolor($newWidth, $newHeight);
+
+    if ($ext === 'png' || $ext === 'webp') {
+        imagealphablending($dstImg, false);
+        imagesavealpha($dstImg, true);
+        $transparent = imagecolorallocatealpha($dstImg, 255, 255, 255, 127);
+        imagefilledrectangle($dstImg, 0, 0, $newWidth, $newHeight, $transparent);
+    }
+
+    imagecopyresampled($dstImg, $srcImg, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
+
+    // Save in-place optimized file
+    $tempFile = $filePath . '.opt.tmp';
+    if ($ext === 'png') {
+        imagepng($dstImg, $tempFile, 8);
+    } elseif ($ext === 'webp') {
+        if (function_exists('imagewebp')) {
+            imagewebp($dstImg, $tempFile, $quality);
+        }
+    } else {
+        imagejpeg($dstImg, $tempFile, $quality);
+    }
+
+    if (file_exists($tempFile)) {
+        $origSize = filesize($filePath);
+        $newSize = filesize($tempFile);
+        if ($newSize < $origSize || $origWidth > $maxWidth) {
+            @unlink($filePath);
+            rename($tempFile, $filePath);
+        } else {
+            @unlink($tempFile);
+        }
+    }
+
+    // Generate companion WebP if original is JPG or PNG
+    if (in_array($ext, ['jpg', 'jpeg', 'png']) && function_exists('imagewebp')) {
+        $webpPath = preg_replace('/\.(jpe?g|png)$/i', '.webp', $filePath);
+        imagepalettetotruecolor($dstImg);
+        imagealphablending($dstImg, true);
+        imagesavealpha($dstImg, true);
+        imagewebp($dstImg, $webpPath, 80);
+    }
+
+    imagedestroy($srcImg);
+    imagedestroy($dstImg);
+    return true;
 }
 
 /**
@@ -298,6 +413,9 @@ function upload_featured_image($file) {
     if (!move_uploaded_file($file['tmp_name'], $destination)) {
         return ['success' => false, 'path' => null, 'error' => 'Failed to save uploaded image. Check folder permissions.'];
     }
+
+    // Auto-optimize image and generate companion WebP
+    optimize_and_save_image($destination, 1366, 82);
 
     // Relative web path stored in DB
     $relativePath = 'uploads/articles/' . $uniqueName;
@@ -491,6 +609,9 @@ function upload_category_image($file) {
     if (!move_uploaded_file($file['tmp_name'], $destination)) {
         return ['success' => false, 'path' => null, 'error' => 'Failed to save category image. Check folder permissions.'];
     }
+
+    // Auto-optimize category image and generate companion WebP
+    optimize_and_save_image($destination, 600, 82);
 
     $relativePath = 'uploads/categories/' . $uniqueName;
     return ['success' => true, 'path' => $relativePath, 'error' => null];

@@ -252,7 +252,9 @@ include __DIR__ . '/includes/header.php';
                     <img src="<?= h($singleFeaturedImg) ?>" 
                          alt="<?= h(!empty($article['image_alt']) ? $article['image_alt'] : $article['title']) ?>" 
                          class="article-featured-img"
-                         loading="eager">
+                         loading="eager"
+                         fetchpriority="high"
+                         decoding="async">
                 </div>
             <?php endif; ?>
 
@@ -521,7 +523,7 @@ include __DIR__ . '/includes/header.php';
                     <?php foreach ($sidebarRelated as $rel): ?>
                     <?php $relThumb = get_article_thumbnail_url($rel); ?>
                     <a href="<?= get_article_url($rel['slug']) ?>" class="sidebar-related-card">
-                        <img src="<?= h($relThumb) ?>" alt="<?= h($rel['title']) ?>" class="sidebar-related-img" loading="lazy">
+                        <img src="<?= h($relThumb) ?>" alt="<?= h($rel['title']) ?>" class="sidebar-related-img" loading="lazy" decoding="async">
                         <div class="sidebar-related-details">
                             <h4 class="sidebar-related-head"><?= h($rel['title']) ?></h4>
                             <span class="sidebar-related-time"><?= date('M j, Y', strtotime($rel['published_at'])) ?></span>

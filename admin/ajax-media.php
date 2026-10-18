@@ -55,6 +55,9 @@ if ($action === 'upload') {
     $targetPath = $uploadDir . '/' . $newFilename;
 
     if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+        // Auto-optimize image and generate companion WebP for ultra-fast loading
+        optimize_and_save_image($targetPath, 1366, 82);
+
         $fileUrl = BASE_URL . '/uploads/articles/' . $newFilename;
         $relPath = 'uploads/articles/' . $newFilename;
 
@@ -90,6 +93,16 @@ if (is_dir($uploadDir)) {
         if (is_file($path)) {
             $ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
             if (in_array($ext, $validExts)) {
+                // Skip companion WebP files if their JPG/PNG source exists
+                if ($ext === 'webp') {
+                    $baseName = pathinfo($f, PATHINFO_FILENAME);
+                    if (file_exists($uploadDir . '/' . $baseName . '.jpg') ||
+                        file_exists($uploadDir . '/' . $baseName . '.jpeg') ||
+                        file_exists($uploadDir . '/' . $baseName . '.png')) {
+                        continue;
+                    }
+                }
+
                 $mediaFiles[] = [
                     'name' => $f,
                     'url' => BASE_URL . '/uploads/articles/' . $f,

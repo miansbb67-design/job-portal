@@ -152,7 +152,7 @@ include __DIR__ . '/includes/header.php';
                             <?php 
                             $thumbPath = get_article_thumbnail_url($article);
                             ?>
-                            <img src="<?= $thumbPath ?>" alt="<?= h($article['title']) ?>" class="article-thumb" loading="lazy">
+                            <img src="<?= $thumbPath ?>" alt="<?= h($article['title']) ?>" class="article-thumb" loading="lazy" decoding="async">
                             <span class="article-badge <?= $article['is_job_posting'] ? 'job-badge' : '' ?>">
                                 <?= $article['is_job_posting'] ? 'Job Opening' : h($article['category_name']) ?>
                             </span>

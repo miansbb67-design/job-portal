@@ -110,7 +110,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
             ?>
             <article class="editorial-spotlight-card">
                 <div class="spotlight-media-wrap">
-                    <img src="<?= $spotThumb ?>" alt="<?= h($spotlight['title']) ?>" class="spotlight-img" loading="eager">
+                    <img src="<?= $spotThumb ?>" alt="<?= h($spotlight['title']) ?>" class="spotlight-img" loading="eager" fetchpriority="high" decoding="async">
                     <div class="spotlight-badge-row">
                         <span class="badge-editorial">★ Featured Guide</span>
                         <a href="<?= get_category_url($spotlight['category_slug']) ?>" class="badge-cat-tag">
@@ -193,7 +193,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                             ?>
                             <div class="radar-article-row">
                                 <a href="<?= BASE_URL ?>/article/<?= h($rArt['slug']) ?>" class="radar-thumb-box">
-                                    <img src="<?= $rThumb ?>" alt="<?= h($rArt['title']) ?>" loading="lazy">
+                                    <img src="<?= $rThumb ?>" alt="<?= h($rArt['title']) ?>" loading="lazy" decoding="async">
                                 </a>
                                 <div class="radar-article-info">
                                     <a href="<?= BASE_URL ?>/category/<?= h($rArt['category_slug']) ?>" class="radar-cat-tag">
@@ -213,7 +213,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                                 <?php $rThumb = get_article_thumbnail_url($rArt); ?>
                                 <div class="radar-article-row" aria-hidden="true">
                                     <a href="<?= BASE_URL ?>/article/<?= h($rArt['slug']) ?>" class="radar-thumb-box" tabindex="-1">
-                                        <img src="<?= $rThumb ?>" alt="<?= h($rArt['title']) ?>" loading="lazy">
+                                        <img src="<?= $rThumb ?>" alt="<?= h($rArt['title']) ?>" loading="lazy" decoding="async">
                                     </a>
                                     <div class="radar-article-info">
                                         <a href="<?= BASE_URL ?>/category/<?= h($rArt['category_slug']) ?>" class="radar-cat-tag" tabindex="-1">
@@ -308,7 +308,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
             <article class="cp-article-card">
                 <div class="cp-card-thumb-wrap">
                     <a href="<?= get_article_url($article['slug']) ?>">
-                        <img src="<?= $thumbPath ?>" alt="<?= h($article['title']) ?>" class="cp-card-thumb" loading="lazy">
+                        <img src="<?= $thumbPath ?>" alt="<?= h($article['title']) ?>" class="cp-card-thumb" loading="lazy" decoding="async">
                     </a>
                     <span class="cp-badge-floating">
                         Trending
@@ -468,7 +468,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
             <article class="cp-article-card">
                 <div class="cp-card-thumb-wrap">
                     <a href="<?= get_article_url($article['slug']) ?>">
-                        <img src="<?= $thumbPath ?>" alt="<?= h($article['title']) ?>" class="cp-card-thumb" loading="lazy">
+                        <img src="<?= $thumbPath ?>" alt="<?= h($article['title']) ?>" class="cp-card-thumb" loading="lazy" decoding="async">
                     </a>
                     <span class="cp-badge-floating <?= $article['is_job_posting'] ? 'job-badge' : '' ?>">
                         <?= $article['is_job_posting'] ? 'Job Opening' : h($article['category_name']) ?>

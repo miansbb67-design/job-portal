@@ -85,7 +85,7 @@ if (!empty($slug)) {
                                 <?php 
                                 $thumbPath = get_article_thumbnail_url($article);
                                 ?>
-                                <img src="<?= $thumbPath ?>" alt="<?= h($article['title']) ?>" class="article-thumb" loading="lazy">
+                                <img src="<?= $thumbPath ?>" alt="<?= h($article['title']) ?>" class="article-thumb" loading="lazy" decoding="async">
                                 <span class="article-badge <?= $article['is_job_posting'] ? 'job-badge' : '' ?>">
                                     <?= $article['is_job_posting'] ? 'Job Opening' : h($article['category_name']) ?>
                                 </span>
@@ -234,6 +234,7 @@ if (!empty($slug)) {
                                     alt="<?= h($cat['name']) ?>" 
                                     class="cat-box-image" 
                                     loading="lazy" 
+                                    decoding="async" 
                                     onerror="this.src='<?= BASE_URL ?>/assets/images/category-placeholder.svg'"
                                 >
                                 <div class="cat-box-gradient-overlay"></div>

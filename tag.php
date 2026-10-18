@@ -155,7 +155,7 @@ include __DIR__ . '/includes/header.php';
             <article class="cp-article-card">
                 <div class="cp-card-thumb-wrap">
                     <a href="<?= get_article_url($art['slug']) ?>">
-                        <img src="<?= $thumbPath ?>" alt="<?= h($art['title']) ?>" class="cp-card-thumb" loading="lazy">
+                        <img src="<?= $thumbPath ?>" alt="<?= h($art['title']) ?>" class="cp-card-thumb" loading="lazy" decoding="async">
                     </a>
                     <span class="cp-badge-floating <?= $art['is_job_posting'] ? 'job-badge' : '' ?>">
                         <?= $art['is_job_posting'] ? 'Job Opening' : h($art['category_name']) ?>

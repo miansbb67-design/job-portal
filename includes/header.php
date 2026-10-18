@@ -190,7 +190,7 @@ try {
                 <!-- Brand Logo -->
                 <a href="<?= BASE_URL ?>/" class="pine-brand-title" aria-label="<?= h($siteName) ?> Homepage" style="display:inline-flex; align-items:center; text-decoration:none;">
                     <?php if (!empty($siteLogoUrl)): ?>
-                        <img src="<?= h($siteLogoUrl) ?>" alt="<?= h($siteName) ?>" class="site-header-logo" style="max-height:40px; width:auto; object-fit:contain; display:block;">
+                        <img src="<?= h($siteLogoUrl) ?>" alt="<?= h($siteName) ?>" class="site-header-logo" fetchpriority="high" decoding="async" style="max-height:40px; width:auto; object-fit:contain; display:block;">
                     <?php else: ?>
                         <?= format_brand_name($siteName) ?>
                     <?php endif; ?>

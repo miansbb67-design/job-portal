@@ -18,6 +18,15 @@
 </FilesMatch>
 <IfModule mod_rewrite.c>
 
+    # Modern Web Performance: Automatically deliver lightweight WebP format to supported browsers
+    <IfModule mod_headers.c>
+        Header append Vary Accept env=REDIRECT_accept
+    </IfModule>
+    RewriteCond %{HTTP_ACCEPT} image/webp
+    RewriteCond %{REQUEST_FILENAME} (?i)(.*)\.(jpe?g|png)$
+    RewriteCond %1.webp -s
+    RewriteRule (?i)(.*)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1,L]
+
     # Dynamic Real-Time XML Sitemap Engine (Googlebot / Bingbot)
     RewriteRule ^sitemap\.xml$ sitemap.php [L]
 
@@ -63,6 +72,11 @@ Options -Indexes
     Header set X-XSS-Protection "1; mode=block"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
     Header set X-Robots-Tag "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+
+    # Ultra-Fast Image Browser Caching (1 Year Immutable)
+    <FilesMatch "\.(ico|jpe?g|png|gif|webp|svg)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
 </IfModule>
 
 # Production Performance: Gzip Compression (Speed & Core Web Vitals)

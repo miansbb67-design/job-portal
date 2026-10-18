@@ -16,7 +16,7 @@ $footerCopyrightText = get_setting('site_copyright', '© ' . date('Y') . ' ' . $
                 <div class="footer-col brand-col">
                     <a href="<?= BASE_URL ?>/" class="site-brand footer-logo" style="display:inline-flex; align-items:center; text-decoration:none;">
                         <?php if (!empty($footerLogoUrl)): ?>
-                            <img src="<?= h($footerLogoUrl) ?>" alt="<?= h($footerSiteName) ?>" style="max-height:38px; width:auto; object-fit:contain; display:block;">
+                            <img src="<?= h($footerLogoUrl) ?>" alt="<?= h($footerSiteName) ?>" loading="lazy" decoding="async" style="max-height:38px; width:auto; object-fit:contain; display:block;">
                         <?php else: ?>
                             <div class="brand-icon">
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
