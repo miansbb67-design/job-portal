@@ -24,14 +24,14 @@ $metaKeywords = "jobs 2026, career guidance, government jobs, remote tech jobs, 
 
 $db = getDBConnection();
 
-// 1. Fetch Main Spotlight Guide (Editor's pick / trending guide)
+// 1. Fetch Main Spotlight Guide (Always the newest/latest published article for the big box)
 $spotlightStmt = $db->query("
     SELECT a.*, c.name as category_name, c.slug as category_slug, adm.username as author_name
     FROM articles a
     JOIN categories c ON a.category_id = c.id
     JOIN admins adm ON a.author_id = adm.id
-    WHERE a.status = 'published' AND a.is_job_posting = 0
-    ORDER BY a.views DESC, a.published_at DESC
+    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL)
+    ORDER BY a.published_at DESC, a.id DESC
     LIMIT 1
 ");
 $spotlight = $spotlightStmt->fetch();
@@ -43,21 +43,21 @@ $jobsStmt = $db->query("
     FROM articles a
     JOIN categories c ON a.category_id = c.id
     JOIN admins adm ON a.author_id = adm.id
-    WHERE a.status = 'published' AND a.is_job_posting = 1
-    ORDER BY a.published_at DESC
+    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) AND a.is_job_posting = 1
+    ORDER BY a.published_at DESC, a.id DESC
     LIMIT 3
 ");
 $activeJobs = $jobsStmt->fetchAll();
 
-// 3. Fetch Radar Fast Reads (Articles for the Hero right sidebar)
+// 3. Fetch Radar Fast Reads (Next latest articles for Hero right sidebar, excluding big box)
 $radarStmt = $db->prepare("
     SELECT a.*, c.name as category_name, c.slug as category_slug, adm.username as author_name
     FROM articles a
     JOIN categories c ON a.category_id = c.id
     JOIN admins adm ON a.author_id = adm.id
-    WHERE a.status = 'published' AND a.id != :spotlight_id AND a.is_job_posting = 0
-    ORDER BY a.published_at DESC
-    LIMIT 3
+    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) AND a.id != :spotlight_id
+    ORDER BY a.published_at DESC, a.id DESC
+    LIMIT 4
 ");
 $radarStmt->execute([':spotlight_id' => $spotlightId]);
 $radarArticles = $radarStmt->fetchAll();
@@ -68,23 +68,24 @@ $trendingStmt = $db->prepare("
     FROM articles a
     JOIN categories c ON a.category_id = c.id
     JOIN admins adm ON a.author_id = adm.id
-    WHERE a.status = 'published' AND a.id != :spotlight_id
+    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) AND a.id != :spotlight_id
     ORDER BY a.views DESC
     LIMIT 3
 ");
 $trendingStmt->execute([':spotlight_id' => $spotlightId]);
 $trendingGuides = $trendingStmt->fetchAll();
 
-// 5. Fetch Latest Articles (6 cards)
-$latestStmt = $db->query("
+// 5. Fetch Latest Articles (6 cards, excluding big box article)
+$latestStmt = $db->prepare("
     SELECT a.*, c.name as category_name, c.slug as category_slug, adm.username as author_name
     FROM articles a
     JOIN categories c ON a.category_id = c.id
     JOIN admins adm ON a.author_id = adm.id
-    WHERE a.status = 'published'
-    ORDER BY a.published_at DESC
+    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) AND a.id != :spotlight_id
+    ORDER BY a.published_at DESC, a.id DESC
     LIMIT 6
 ");
+$latestStmt->execute([':spotlight_id' => $spotlightId]);
 $latestArticles = $latestStmt->fetchAll();
 
 // 6. Fetch Categories with total article count
@@ -112,7 +113,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                 <div class="spotlight-media-wrap">
                     <img src="<?= $spotThumb ?>" alt="<?= h($spotlight['title']) ?>" class="spotlight-img" loading="eager" fetchpriority="high" decoding="async">
                     <div class="spotlight-badge-row">
-                        <span class="badge-editorial">★ Featured Guide</span>
+                        <span class="badge-editorial">★ <?= !empty($spotlight['is_featured']) ? 'Featured Guide' : (!empty($spotlight['is_job_posting']) ? 'Job Opening' : 'Latest Guide') ?></span>
                         <a href="<?= get_category_url($spotlight['category_slug']) ?>" class="badge-cat-tag">
                             <?= h($spotlight['category_name']) ?>
                         </a>
@@ -160,8 +161,18 @@ $showLiveRadar    = is_section_visible('live_job_radar');
 
                 <div class="radar-items-list">
                     <!-- Featured Active Job Role in Radar -->
-                    <?php if (!empty($activeJobs)): ?>
-                    <?php $radarJob = $activeJobs[0]; ?>
+                    <?php 
+                    $radarJob = null;
+                    if (!empty($activeJobs)) {
+                        foreach ($activeJobs as $aj) {
+                            if ((int)$aj['id'] !== $spotlightId) {
+                                $radarJob = $aj;
+                                break;
+                            }
+                        }
+                    }
+                    ?>
+                    <?php if ($radarJob): ?>
                     <div class="radar-job-item">
                         <div class="radar-job-top">
                             <span class="job-hiring-pill">Hiring Now</span>
@@ -184,10 +195,17 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                     <?php endif; ?>
 
                     <!-- Trending Quick Reads / Real-time Radar Articles -->
-                    <?php if (!empty($radarArticles)): ?>
+                    <?php 
+                    $filteredRadarArticles = array_values(array_filter($radarArticles, function($ra) use ($spotlightId, $radarJob) {
+                        if ((int)$ra['id'] === $spotlightId) return false;
+                        if ($radarJob && (int)$ra['id'] === (int)$radarJob['id']) return false;
+                        return true;
+                    }));
+                    ?>
+                    <?php if (!empty($filteredRadarArticles)): ?>
                     <div class="radar-articles-container" id="radarArticlesContainer">
-                        <div class="radar-articles-track <?= count($radarArticles) > 2 ? 'is-animated' : '' ?>" id="radarArticlesTrack">
-                            <?php foreach ($radarArticles as $rArt): ?>
+                        <div class="radar-articles-track <?= count($filteredRadarArticles) > 2 ? 'is-animated' : '' ?>" id="radarArticlesTrack">
+                            <?php foreach ($filteredRadarArticles as $rArt): ?>
                             <?php 
                                 $rThumb = get_article_thumbnail_url($rArt);
                             ?>
@@ -208,8 +226,8 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                                 </div>
                             </div>
                             <?php endforeach; ?>
-                            <?php if (count($radarArticles) > 2): ?>
-                                <?php foreach ($radarArticles as $rArt): ?>
+                            <?php if (count($filteredRadarArticles) > 2): ?>
+                                <?php foreach ($filteredRadarArticles as $rArt): ?>
                                 <?php $rThumb = get_article_thumbnail_url($rArt); ?>
                                 <div class="radar-article-row" aria-hidden="true">
                                     <a href="<?= BASE_URL ?>/article/<?= h($rArt['slug']) ?>" class="radar-thumb-box" tabindex="-1">
