@@ -16,7 +16,8 @@ $db = getDBConnection();
 $categorySlug = isset($_GET['category']) ? trim($_GET['category']) : '';
 $currentPage = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($currentPage < 1) $currentPage = 1;
-$perPage = ARTICLES_PER_PAGE;
+$perPageSetting = (int)get_setting('items_per_page', defined('ARTICLES_PER_PAGE') ? ARTICLES_PER_PAGE : 8);
+$perPage = ($perPageSetting >= 8) ? $perPageSetting : (defined('ARTICLES_PER_PAGE') && ARTICLES_PER_PAGE >= 8 ? ARTICLES_PER_PAGE : 8);
 $offset = ($currentPage - 1) * $perPage;
 
 $isVlogs = (isset($_GET['vlogs']) && $_GET['vlogs'] == '1') || (isset($_GET['video']) && $_GET['video'] == '1');

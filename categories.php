@@ -31,7 +31,8 @@ if (!empty($slug)) {
     // Pagination for Category
     $currentPage = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
     if ($currentPage < 1) $currentPage = 1;
-    $perPage = ARTICLES_PER_PAGE;
+    $perPageSetting = (int)get_setting('items_per_page', defined('ARTICLES_PER_PAGE') ? ARTICLES_PER_PAGE : 8);
+    $perPage = ($perPageSetting >= 8) ? $perPageSetting : (defined('ARTICLES_PER_PAGE') && ARTICLES_PER_PAGE >= 8 ? ARTICLES_PER_PAGE : 8);
     $offset = ($currentPage - 1) * $perPage;
 
     $countStmt = $db->prepare("SELECT COUNT(*) FROM articles WHERE category_id = ? AND status = 'published' AND (is_trash = 0 OR is_trash IS NULL)");

@@ -107,5 +107,5 @@ define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'webp', 'svg', 'gif']);
 define('ALLOWED_MIME_TYPES', ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif']);
 
 // Step 9: Default Pagination & Ads
-define('ARTICLES_PER_PAGE', 6);
+define('ARTICLES_PER_PAGE', 8);
 define('ENABLE_ADS', false);
