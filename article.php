@@ -196,16 +196,6 @@ if (count($sidebarRelated) < 4) {
 // Fetch Topics (all active categories)
 $sidebarTopics = get_all_categories();
 
-// Multi-Theme Engine Delegation
-$activeTheme = function_exists('get_active_theme') ? get_active_theme() : 'classic';
-if ($activeTheme !== 'classic') {
-    $themeArticlePath = __DIR__ . '/themes/' . $activeTheme . '/article.php';
-    if (file_exists($themeArticlePath)) {
-        include $themeArticlePath;
-        exit;
-    }
-}
-
 include __DIR__ . '/includes/header.php';
 ?>
 

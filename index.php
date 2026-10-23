@@ -91,16 +91,6 @@ $latestArticles = $latestStmt->fetchAll();
 // 6. Fetch Categories with total article count
 $categories = get_all_categories(true);
 
-// Multi-Theme Engine Delegation
-$activeTheme = function_exists('get_active_theme') ? get_active_theme() : 'classic';
-if ($activeTheme !== 'classic') {
-    $themeIndexPath = __DIR__ . '/themes/' . $activeTheme . '/index.php';
-    if (file_exists($themeIndexPath)) {
-        include $themeIndexPath;
-        exit;
-    }
-}
-
 include __DIR__ . '/includes/header.php';
 ?>
 
