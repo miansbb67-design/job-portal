@@ -16,6 +16,219 @@
 }
 
 /* ==========================================================================
+   Full Website Design System Overrides for Theme 2: Tech Magazine
+   Transforms Header, Navbar, Footer, Banners, Cards, Buttons, and Typography across ALL pages
+   ========================================================================== */
+body.theme-magazine {
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-light: #eff6ff;
+  --primary-glow: rgba(37, 99, 235, 0.22);
+  --accent-blue: #06b6d4;
+  --bg-page: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --border-color: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* --- FULL SITE HEADER & NAVBAR --- */
+body.theme-magazine .site-header {
+  background: rgba(15, 23, 42, 0.98) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid #1e293b !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25) !important;
+}
+body.theme-magazine .pine-brand-title {
+  color: #ffffff !important;
+}
+body.theme-magazine .pine-brand-title .brand-green {
+  color: #38bdf8 !important;
+}
+body.theme-magazine .pine-nav-link {
+  color: #cbd5e1 !important;
+  font-weight: 700 !important;
+}
+body.theme-magazine .pine-nav-link:hover {
+  background: #1e293b !important;
+  color: #38bdf8 !important;
+}
+body.theme-magazine .pine-nav-link.active {
+  background: #1e293b !important;
+  color: #38bdf8 !important;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25) !important;
+}
+body.theme-magazine .dropdown-arrow {
+  color: #94a3b8 !important;
+}
+body.theme-magazine .pine-dropdown-card {
+  background: #0f172a !important;
+  border: 1px solid #1e293b !important;
+  box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.6) !important;
+  color: #ffffff !important;
+}
+body.theme-magazine .pine-dropdown-item {
+  color: #cbd5e1 !important;
+}
+body.theme-magazine .pine-dropdown-item:hover {
+  background: #1e293b !important;
+  color: #38bdf8 !important;
+}
+body.theme-magazine .header-search-input {
+  background: #1e293b !important;
+  color: #ffffff !important;
+  border: 1px solid #334155 !important;
+}
+body.theme-magazine .header-search-input::placeholder {
+  color: #94a3b8 !important;
+}
+body.theme-magazine .header-search-btn {
+  color: #38bdf8 !important;
+}
+body.theme-magazine .admin-bell-btn {
+  color: #cbd5e1 !important;
+}
+body.theme-magazine .admin-notifications-dropdown {
+  background: #0f172a !important;
+  border: 1px solid #1e293b !important;
+  color: #ffffff !important;
+}
+
+/* --- FULL SITE FOOTER --- */
+body.theme-magazine .site-footer {
+  background: #090d16 !important;
+  border-top: 1px solid #1e293b !important;
+  color: #94a3b8 !important;
+}
+body.theme-magazine .footer-col .footer-heading {
+  color: #38bdf8 !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+body.theme-magazine .footer-col .brand-name {
+  color: #ffffff !important;
+}
+body.theme-magazine .footer-text {
+  color: #94a3b8 !important;
+}
+body.theme-magazine .footer-links a {
+  color: #94a3b8 !important;
+}
+body.theme-magazine .footer-links a:hover {
+  color: #38bdf8 !important;
+  transform: translateX(3px);
+}
+body.theme-magazine .trust-badge {
+  background: #1e293b !important;
+  color: #38bdf8 !important;
+  border: 1px solid #334155 !important;
+}
+body.theme-magazine .footer-bottom {
+  border-top: 1px solid #1e293b !important;
+  color: #64748b !important;
+}
+
+/* --- PAGE BANNERS (Articles, Categories, Search, About, Contact) --- */
+body.theme-magazine .page-banner {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #1e3a8a 100%) !important;
+  color: #ffffff !important;
+  border-bottom: 3px solid #2563eb !important;
+  padding: 3.5rem 0 3rem !important;
+}
+body.theme-magazine .page-banner h1 {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  font-size: 2.6rem !important;
+  letter-spacing: -0.02em !important;
+}
+body.theme-magazine .page-banner p {
+  color: #93c5fd !important;
+  font-size: 1.1rem !important;
+}
+
+/* --- ARTICLES LIST & GRID CARDS ACROSS SITE --- */
+body.theme-magazine .article-card {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 15px -3px rgba(15, 23, 42, 0.05) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+body.theme-magazine .article-card:hover {
+  transform: translateY(-5px) !important;
+  border-color: #93c5fd !important;
+  box-shadow: 0 15px 30px -8px rgba(37, 99, 235, 0.18) !important;
+}
+body.theme-magazine .article-badge {
+  background: #0f172a !important;
+  color: #38bdf8 !important;
+  font-weight: 800 !important;
+  border-radius: 6px !important;
+  letter-spacing: 0.04em !important;
+}
+body.theme-magazine .article-title a {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+body.theme-magazine .article-title a:hover {
+  color: #2563eb !important;
+}
+body.theme-magazine .read-more-link {
+  color: #2563eb !important;
+  font-weight: 700 !important;
+}
+
+/* --- BUTTONS & FILTER PILLS --- */
+body.theme-magazine .btn-primary {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+  color: #ffffff !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3) !important;
+  font-weight: 700 !important;
+  border: none !important;
+}
+body.theme-magazine .btn-secondary {
+  background: #ffffff !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+}
+body.theme-magazine .btn-secondary:hover {
+  border-color: #2563eb !important;
+  color: #2563eb !important;
+}
+
+/* --- CATEGORY TRACKS & EXPLORER CARDS --- */
+body.theme-magazine .category-card,
+body.theme-magazine .sector-track-card {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  transition: all 0.25s ease !important;
+}
+body.theme-magazine .category-card:hover,
+body.theme-magazine .sector-track-card:hover {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.15) !important;
+}
+
+/* --- PAGINATION --- */
+body.theme-magazine .page-link.active {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  border-radius: 8px !important;
+}
+
+/* ==========================================================================
    Top Reading Progress Bar
    ========================================================================== */
 .mag-reading-progress-bar {

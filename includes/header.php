@@ -188,7 +188,7 @@ try {
     <?php if (function_exists('render_monetization_head_scripts')) render_monetization_head_scripts(); ?>
 </head>
 
-<body>
+<body class="theme-<?= $headerActiveTheme ?>" data-theme="<?= $headerActiveTheme ?>">
     <!-- Skip to Content for Accessibility -->
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
 

@@ -17,12 +17,235 @@
 }
 
 /* ==========================================================================
-   Minimalist Typography & Resets
+   Full Website Design System Overrides for Theme 3: Clean Minimalist
+   Transforms Header, Navbar, Footer, Banners, Cards, Buttons, and Typography across ALL pages
    ========================================================================== */
-body {
-  background-color: var(--min-bg) !important;
-  color: var(--min-text) !important;
+body.theme-minimalist {
+  --primary: #1a8917;
+  --primary-hover: #156d12;
+  --primary-light: #f0fdf4;
+  --primary-glow: rgba(26, 137, 23, 0.18);
+  --accent-blue: #111111;
+  --bg-page: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --border-color: #eeeeee;
+  --text-primary: #111111;
+  --text-secondary: #333333;
+  --text-muted: #6b6b6b;
+  --font-heading: var(--min-font-serif);
+  --font-body: var(--min-font-sans);
+  background-color: #ffffff !important;
+  color: #242424 !important;
   font-family: var(--min-font-sans) !important;
+}
+
+/* --- FULL SITE HEADER & NAVBAR --- */
+body.theme-minimalist .site-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid #eeeeee !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+body.theme-minimalist .pine-brand-title {
+  color: #111111 !important;
+  font-family: var(--min-font-serif) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+body.theme-minimalist .pine-brand-title .brand-green {
+  color: #1a8917 !important;
+}
+body.theme-minimalist .pine-nav-link {
+  color: #555555 !important;
+  font-family: var(--min-font-sans) !important;
+  font-weight: 500 !important;
+  font-size: 0.9rem !important;
+  border-radius: 999px !important;
+}
+body.theme-minimalist .pine-nav-link:hover {
+  background: #f5f5f5 !important;
+  color: #111111 !important;
+}
+body.theme-minimalist .pine-nav-link.active {
+  background: #f0fdf4 !important;
+  color: #1a8917 !important;
+  font-weight: 600 !important;
+}
+body.theme-minimalist .dropdown-arrow {
+  color: #888888 !important;
+}
+body.theme-minimalist .pine-dropdown-card {
+  background: #ffffff !important;
+  border: 1px solid #eeeeee !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06) !important;
+  border-radius: 8px !important;
+}
+body.theme-minimalist .pine-dropdown-item {
+  color: #444444 !important;
+  font-size: 0.875rem !important;
+}
+body.theme-minimalist .pine-dropdown-item:hover {
+  background: #f7f7f7 !important;
+  color: #111111 !important;
+}
+body.theme-minimalist .header-search-input {
+  background: #f7f7f7 !important;
+  border: 1px solid transparent !important;
+  color: #111111 !important;
+  border-radius: 999px !important;
+}
+body.theme-minimalist .header-search-input:focus {
+  background: #ffffff !important;
+  border-color: #1a8917 !important;
+}
+body.theme-minimalist .header-search-btn {
+  color: #666666 !important;
+}
+
+/* --- FULL SITE FOOTER --- */
+body.theme-minimalist .site-footer {
+  background: #fafafa !important;
+  border-top: 1px solid #eeeeee !important;
+  color: #666666 !important;
+}
+body.theme-minimalist .footer-col .footer-heading {
+  color: #111111 !important;
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+body.theme-minimalist .footer-col .brand-name {
+  color: #111111 !important;
+  font-family: var(--min-font-serif) !important;
+}
+body.theme-minimalist .footer-text {
+  color: #666666 !important;
+  font-size: 0.875rem !important;
+}
+body.theme-minimalist .footer-links a {
+  color: #666666 !important;
+}
+body.theme-minimalist .footer-links a:hover {
+  color: #111111 !important;
+}
+body.theme-minimalist .trust-badge {
+  background: #ffffff !important;
+  color: #1a8917 !important;
+  border: 1px solid #e0e0e0 !important;
+}
+body.theme-minimalist .footer-bottom {
+  border-top: 1px solid #eeeeee !important;
+  color: #888888 !important;
+}
+
+/* --- PAGE BANNERS (Articles, Categories, Search, About, Contact) --- */
+body.theme-minimalist .page-banner {
+  background: #ffffff !important;
+  border-bottom: 1px solid #eeeeee !important;
+  color: #111111 !important;
+  padding: 3rem 0 2.5rem !important;
+}
+body.theme-minimalist .page-banner h1 {
+  font-family: var(--min-font-serif) !important;
+  color: #111111 !important;
+  font-size: 2.4rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+body.theme-minimalist .page-banner p {
+  color: #666666 !important;
+  font-size: 1.05rem !important;
+}
+
+/* --- ARTICLES LIST & GRID CARDS ACROSS SITE --- */
+body.theme-minimalist .article-card {
+  border: 1px solid #f0f0f0 !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+body.theme-minimalist .article-card:hover {
+  border-color: #d1d5db !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04) !important;
+  transform: none !important;
+}
+body.theme-minimalist .article-thumb-wrap {
+  border-radius: 4px !important;
+}
+body.theme-minimalist .article-badge {
+  background: #f5f5f5 !important;
+  color: #1a8917 !important;
+  font-weight: 600 !important;
+  font-size: 0.72rem !important;
+  border-radius: 4px !important;
+}
+body.theme-minimalist .article-title a {
+  font-family: var(--min-font-serif) !important;
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+  color: #111111 !important;
+  line-height: 1.35 !important;
+}
+body.theme-minimalist .article-title a:hover {
+  color: #666666 !important;
+}
+body.theme-minimalist .article-excerpt {
+  font-size: 0.88rem !important;
+  color: #666666 !important;
+  line-height: 1.6 !important;
+}
+body.theme-minimalist .read-more-link {
+  color: #1a8917 !important;
+  font-weight: 600 !important;
+}
+
+/* --- BUTTONS & FILTER PILLS --- */
+body.theme-minimalist .btn-primary {
+  background: #111111 !important;
+  color: #ffffff !important;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+body.theme-minimalist .btn-secondary {
+  background: #f7f7f7 !important;
+  color: #555555 !important;
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
+  font-weight: 500 !important;
+}
+body.theme-minimalist .btn-secondary:hover {
+  background: #e6e6e6 !important;
+  color: #111111 !important;
+}
+
+/* --- CATEGORY TRACKS & EXPLORER CARDS --- */
+body.theme-minimalist .category-card,
+body.theme-minimalist .sector-track-card {
+  border: 1px solid #eeeeee !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  transition: border-color 0.2s ease !important;
+}
+body.theme-minimalist .category-card:hover,
+body.theme-minimalist .sector-track-card:hover {
+  border-color: #111111 !important;
+  transform: none !important;
+}
+
+/* --- PAGINATION --- */
+body.theme-minimalist .page-link.active {
+  background: #111111 !important;
+  border-color: #111111 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border-radius: 999px !important;
 }
 
 /* Make headers and articles feel breathable */
