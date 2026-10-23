@@ -70,12 +70,16 @@ if (!empty($slug)) {
 
     <section class="page-section">
         <div class="site-container">
-            <div class="section-header">
+            <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
                 <div class="section-title-wrap">
-                    <h2>Articles in this Sector</h2>
-                    <p class="section-subtitle">Showing <?= count($articles) ?> of <?= $totalArticles ?> published articles</p>
+                    <h2 style="font-size:1.65rem; font-weight:800; margin:0 0 0.35rem 0;"><?= h($category['name']) ?> Publications</h2>
+                    <p class="section-subtitle" style="color:var(--text-muted); font-size:0.9rem; margin:0;">
+                        <?= count($articles) > 0 ? "Showing " . count($articles) . " of " . $totalArticles . " published guides" : "0 publications currently &bull; Updates coming soon" ?>
+                    </p>
                 </div>
-                <a href="<?= BASE_URL ?>/categories" class="view-all-link">&larr; All Categories</a>
+                <a href="<?= BASE_URL ?>/categories" class="view-all-link" style="font-weight:700; color:var(--primary); text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem;">
+                    &larr; All Categories
+                </a>
             </div>
 
             <?php if (!empty($articles)): ?>
@@ -141,11 +145,50 @@ if (!empty($slug)) {
                 <?php endif; ?>
 
             <?php else: ?>
-                <div class="empty-state-card">
-                    <h3>No Articles Found in this Category</h3>
-                    <p style="color:var(--text-muted); margin:0.75rem 0 1.5rem;">New career guides are being added to this sector shortly.</p>
-                    <a href="<?= BASE_URL ?>/articles" class="btn btn-primary">Browse All Articles</a>
+                <div class="empty-state-card" style="padding: 3rem 2rem; text-align: center; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); margin-top: 1rem;">
+                    <div style="font-size: 2.75rem; margin-bottom: 0.75rem;">📁</div>
+                    <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">No Published Articles in this Sector Yet</h3>
+                    <p style="color: var(--text-muted); max-width: 520px; margin: 0 auto 1.5rem; font-size: 0.95rem; line-height: 1.55;">New career guides and hiring circulars are currently being verified for <?= h($category['name']) ?>. In the meantime, explore our active publications across other sectors:</p>
+                    <a href="<?= BASE_URL ?>/articles" class="btn btn-primary" style="padding: 0.65rem 1.75rem;">Browse All Active Articles</a>
                 </div>
+
+                <?php
+                // Helpful fallback grid so page is never barren
+                $fallbackStmt = $db->query("
+                    SELECT a.*, c.name as category_name, c.slug as category_slug
+                    FROM articles a
+                    JOIN categories c ON a.category_id = c.id
+                    WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL)
+                    ORDER BY a.published_at DESC
+                    LIMIT 4
+                ");
+                $fallbackArticles = $fallbackStmt->fetchAll();
+                ?>
+                <?php if (!empty($fallbackArticles)): ?>
+                    <div style="margin-top: 3.5rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                        <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1.25rem;">Trending Guides in Other Sectors</h3>
+                        <div class="articles-grid">
+                            <?php foreach ($fallbackArticles as $fArticle): ?>
+                                <article class="article-card">
+                                    <div class="article-thumb-wrap">
+                                        <img src="<?= get_article_thumbnail_url($fArticle) ?>" alt="<?= h($fArticle['title']) ?>" class="article-thumb" loading="lazy">
+                                        <span class="article-badge"><?= h($fArticle['category_name']) ?></span>
+                                    </div>
+                                    <div class="article-content">
+                                        <h4 class="article-title" style="font-size:1.05rem; font-weight:700;">
+                                            <a href="<?= get_article_url($fArticle['slug']) ?>"><?= h($fArticle['title']) ?></a>
+                                        </h4>
+                                        <p class="article-excerpt"><?= h($fArticle['excerpt']) ?></p>
+                                        <div class="article-footer">
+                                            <a href="<?= get_article_url($fArticle['slug']) ?>" class="read-more-link">Read Guide &rarr;</a>
+                                        </div>
+                                    </div>
+                                </article>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
             <?php endif; ?>
         </div>
     </section>
