@@ -452,6 +452,12 @@ $currentAdminTab = $_GET['tab'] ?? 'overview';
                         <span class="nav-label">Home Sections (Enable/Disable)</span>
                     </a>
                 </li>
+                <li>
+                    <a href="<?= ADMIN_URL ?>/themes.php" class="admin-nav-item <?= ($currentAdminScript === 'themes.php') ? 'active' : '' ?>">
+                        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                        <span class="nav-label">Themes (3 Templates)</span>
+                    </a>
+                </li>
                 <?php endif; ?>
             </ul>
 

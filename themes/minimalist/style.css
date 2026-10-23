@@ -1,0 +1,408 @@
+/**
+ * CareerNexaa - Theme 3: Clean Minimalist (Medium / Substack Style)
+ * Distraction-free, typography-first editorial design with serene reading rhythm.
+ */
+
+:root {
+  --min-font-serif: "Merriweather", "Lora", Georgia, Cambria, serif;
+  --min-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --min-bg: #ffffff;
+  --min-text: #242424;
+  --min-muted: #6b6b6b;
+  --min-border: #f2f2f2;
+  --min-border-dark: #e6e6e6;
+  --min-accent: #1a8917; /* Medium green */
+  --min-accent-hover: #156d12;
+  --min-max-read-width: 740px;
+}
+
+/* ==========================================================================
+   Minimalist Typography & Resets
+   ========================================================================== */
+body {
+  background-color: var(--min-bg) !important;
+  color: var(--min-text) !important;
+  font-family: var(--min-font-sans) !important;
+}
+
+/* Make headers and articles feel breathable */
+.min-page-wrap {
+  padding: 3rem 0 5rem 0;
+  min-height: 80vh;
+}
+
+.min-container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.min-reading-container {
+  max-width: var(--min-max-read-width);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* ==========================================================================
+   Homepage Minimalist Stream
+   ========================================================================== */
+.min-home-header {
+  text-align: center;
+  padding: 3rem 0 2.5rem 0;
+  border-bottom: 1px solid var(--min-border-dark);
+  margin-bottom: 3rem;
+}
+.min-home-title {
+  font-family: var(--min-font-serif);
+  font-size: 2.75rem;
+  font-weight: 700;
+  color: #111111;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.75rem;
+}
+.min-home-tagline {
+  font-size: 1.15rem;
+  color: var(--min-muted);
+  max-width: 600px;
+  margin: 0 auto 1.5rem auto;
+  line-height: 1.5;
+}
+.min-category-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.min-cat-chip {
+  color: var(--min-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  text-decoration: none;
+  background: #f7f7f7;
+  transition: all 0.2s ease;
+}
+.min-cat-chip:hover {
+  background: #e6e6e6;
+  color: #111111;
+}
+
+/* Two-column layout: Stream on left, Curated sidebar on right */
+.min-stream-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 4rem;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .min-stream-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+}
+
+/* Minimalist Feed Post Item */
+.min-feed-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: 2rem;
+  padding-bottom: 2.5rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--min-border);
+  align-items: center;
+}
+@media (max-width: 600px) {
+  .min-feed-item {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+.min-feed-author-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.825rem;
+  color: var(--min-text);
+  margin-bottom: 0.65rem;
+}
+.min-avatar-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #242424;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+.min-feed-title {
+  font-family: var(--min-font-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #111111;
+  margin-bottom: 0.45rem;
+  letter-spacing: -0.015em;
+}
+.min-feed-title a {
+  color: inherit;
+  text-decoration: none;
+}
+.min-feed-title a:hover {
+  color: var(--min-muted);
+}
+.min-feed-snippet {
+  font-size: 0.925rem;
+  color: var(--min-muted);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 0.85rem;
+}
+.min-feed-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--min-muted);
+}
+.min-feed-pill {
+  background: #f7f7f7;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  color: #555555;
+  font-size: 0.75rem;
+  text-decoration: none;
+}
+.min-feed-thumb-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 11;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #f7f7f7;
+}
+.min-feed-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.2s ease;
+}
+.min-feed-thumb:hover {
+  opacity: 0.9;
+}
+
+/* Minimalist Sidebar */
+.min-sidebar-section {
+  position: sticky;
+  top: 2rem;
+}
+.min-sidebar-heading {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #111111;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--min-border-dark);
+}
+.min-sidebar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+.min-sidebar-num-item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  text-decoration: none;
+}
+.min-sidebar-num {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #d1d5db;
+  line-height: 1;
+}
+.min-sidebar-item-title {
+  font-family: var(--min-font-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111111;
+  line-height: 1.35;
+}
+.min-sidebar-num-item:hover .min-sidebar-item-title {
+  color: var(--min-muted);
+}
+
+/* ==========================================================================
+   Article Detail Page - Serene Medium Style
+   ========================================================================== */
+.min-article-header {
+  margin-bottom: 2.5rem;
+  padding-top: 1rem;
+}
+.min-article-cat {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--min-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 0.75rem;
+}
+.min-article-title {
+  font-family: var(--min-font-serif);
+  font-size: 2.75rem;
+  font-weight: 800;
+  color: #111111;
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+}
+@media (max-width: 768px) {
+  .min-article-title {
+    font-size: 2rem;
+  }
+}
+.min-article-subhead {
+  font-size: 1.3rem;
+  color: var(--min-muted);
+  line-height: 1.5;
+  margin-bottom: 1.75rem;
+  font-weight: 400;
+}
+.min-author-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--min-border);
+  border-bottom: 1px solid var(--min-border);
+  margin-bottom: 2.5rem;
+}
+.min-author-avatar-big {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #242424;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.min-author-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111111;
+}
+.min-author-details {
+  font-size: 0.85rem;
+  color: var(--min-muted);
+  margin-top: 0.15rem;
+}
+.min-article-hero-wrap {
+  margin: 0 auto 3rem auto;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.min-article-hero-img {
+  width: 100%;
+  max-height: 520px;
+  object-fit: cover;
+  display: block;
+}
+.min-hero-caption {
+  font-size: 0.8rem;
+  color: var(--min-muted);
+  text-align: center;
+  padding: 0.5rem 0 0 0;
+  font-style: italic;
+}
+
+/* Medium-Style Article Prose Typography */
+.min-prose {
+  font-family: var(--min-font-serif);
+  font-size: 1.2rem;
+  line-height: 1.85;
+  color: #242424;
+  word-break: break-word;
+}
+.min-prose p {
+  margin-bottom: 1.85rem;
+}
+.min-prose h2 {
+  font-family: var(--min-font-sans);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #111111;
+  margin: 3rem 0 1rem 0;
+  letter-spacing: -0.02em;
+}
+.min-prose h3 {
+  font-family: var(--min-font-sans);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #111111;
+  margin: 2.25rem 0 0.85rem 0;
+}
+.min-prose blockquote {
+  font-family: var(--min-font-serif);
+  font-style: italic;
+  font-size: 1.35rem;
+  line-height: 1.6;
+  border-left: 3px solid #111111;
+  padding-left: 1.5rem;
+  margin: 2.5rem 0;
+  color: #444444;
+}
+.min-prose ul, .min-prose ol {
+  margin-bottom: 1.85rem;
+  padding-left: 2rem;
+}
+.min-prose li {
+  margin-bottom: 0.65rem;
+}
+.min-prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 2rem 0;
+}
+
+/* Serene Bottom Action Bar */
+.min-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--min-border);
+  border-bottom: 1px solid var(--min-border);
+  margin: 3.5rem 0;
+}
+.min-clap-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: 1px solid var(--min-border-dark);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111111;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.min-clap-btn:hover {
+  border-color: #111111;
+}

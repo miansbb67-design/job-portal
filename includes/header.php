@@ -170,6 +170,15 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=<?= filemtime(__DIR__ . '/../assets/css/style.css') ?>">
+    <?php 
+    $headerActiveTheme = function_exists('get_active_theme') ? get_active_theme() : 'classic';
+    if ($headerActiveTheme !== 'classic') {
+        $themeCssFile = __DIR__ . '/../themes/' . $headerActiveTheme . '/style.css';
+        if (file_exists($themeCssFile)) {
+            echo '    <link rel="stylesheet" href="' . BASE_URL . '/themes/' . $headerActiveTheme . '/style.css?v=' . filemtime($themeCssFile) . '">' . "\n";
+        }
+    }
+    ?>
 
     <script>
         window.BASE_URL = '<?= BASE_URL ?>';

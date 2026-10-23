@@ -1,0 +1,17 @@
+{
+  "id": "magazine",
+  "name": "Tech Magazine",
+  "tagline": "High-Impact Editorial & Visual Storytelling",
+  "version": "2.0.0",
+  "description": "Inspired by The Verge & TechCrunch. Designed for modern tech news and fast-paced hiring markets. Features an asymmetric 4-card hero showcase, interactive category filter chips, ranked popular leaderboard, and glassmorphism cards.",
+  "badge": "High Impact",
+  "author": "CareerNexaa Team",
+  "features": [
+    "Asymmetric 4-Card Hero Grid",
+    "Ranked Popular Leaderboard (#1-#5)",
+    "Interactive Topic Filter Pills",
+    "Glassmorphism Elevated Cards",
+    "Article Reading Progress Indicator",
+    "Sleek Micro-Animations"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "minimalist",
+  "name": "Clean Minimalist",
+  "tagline": "Distraction-Free Medium & Substack Style",
+  "version": "2.0.0",
+  "description": "Inspired by Medium and Substack. Focuses strictly on content, beautiful typography, generous whitespace, and lightning-fast readability. Ideal for in-depth career guides, interview blueprints, and essays.",
+  "badge": "Clean Reader",
+  "author": "CareerNexaa Team",
+  "features": [
+    "Distraction-Free Centered Hero",
+    "Ultra-Clean Editorial Card Stream",
+    "Premium Serif & Sans Typography Mix",
+    "Reading Time & Author Badges",
+    "Fast Mobile-First Layout",
+    "Zero Clutter Focus Mode"
+  ]
+}

@@ -1866,3 +1866,179 @@ if (!function_exists('redirect')) {
         }
     }
 }
+
+/**
+ * ============================================================================
+ * MULTI-THEME ENGINE FUNCTIONS
+ * ============================================================================
+ */
+
+/**
+ * Get active theme identifier with preview override support
+ *
+ * @return string (e.g. 'classic', 'magazine', 'minimalist')
+ */
+function get_active_theme($refresh = false) {
+    static $themeCache = null;
+    if ($refresh) {
+        $themeCache = null;
+    }
+    if ($themeCache !== null) {
+        return $themeCache;
+    }
+
+    $validThemes = ['classic', 'magazine', 'minimalist'];
+
+    // 1. Check live preview query string (e.g. ?preview_theme=magazine)
+    if (isset($_GET['preview_theme'])) {
+        $reqPreview = strtolower(trim($_GET['preview_theme']));
+        if ($reqPreview === 'reset' || $reqPreview === 'exit') {
+            if (session_status() === PHP_SESSION_ACTIVE && isset($_SESSION['site_preview_theme'])) {
+                unset($_SESSION['site_preview_theme']);
+            }
+        } elseif (in_array($reqPreview, $validThemes)) {
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                $_SESSION['site_preview_theme'] = $reqPreview;
+            }
+            $themeCache = $reqPreview;
+            return $themeCache;
+        }
+    }
+
+    // 2. Check preview session if active
+    if (session_status() === PHP_SESSION_ACTIVE && !empty($_SESSION['site_preview_theme']) && in_array($_SESSION['site_preview_theme'], $validThemes)) {
+        $themeCache = $_SESSION['site_preview_theme'];
+        return $themeCache;
+    }
+
+    // 3. Check persistent database setting
+    $dbTheme = strtolower(trim((string)get_setting('active_theme', 'classic', $refresh)));
+    if (in_array($dbTheme, $validThemes)) {
+        $themeCache = $dbTheme;
+        return $themeCache;
+    }
+
+    $themeCache = 'classic';
+    return $themeCache;
+}
+
+/**
+ * Check if the given theme is active
+ *
+ * @param string $themeId
+ * @return bool
+ */
+function is_theme_active($themeId) {
+    return get_active_theme() === strtolower(trim($themeId));
+}
+
+/**
+ * List all available frontend themes with metadata
+ *
+ * @return array
+ */
+function get_available_themes() {
+    $activeTheme = get_active_theme();
+    $themes = [
+        'classic' => [
+            'id' => 'classic',
+            'name' => 'Classic Nexaa',
+            'tagline' => 'Editorial Spotlight & Sector Radar',
+            'version' => '1.2.0',
+            'description' => 'The original CareerNexaa layout featuring a dual-column hero spotlight, real-time live job radar ticker, dynamic career sector tracks, and structured article cards.',
+            'badge' => 'Default Portal',
+            'screenshot' => BASE_URL . '/themes/classic/screenshot.svg',
+            'accent' => '#059669',
+            'features' => [
+                'Editorial Hero Spotlight Guide',
+                'Live Job Radar Ticker Widget',
+                'Career Sector Interactive Tracks',
+                'Trending Career Strategies Grid',
+                'Verified Job Openings Strip'
+            ],
+            'is_active' => ($activeTheme === 'classic')
+        ],
+        'magazine' => [
+            'id' => 'magazine',
+            'name' => 'Tech Magazine',
+            'tagline' => 'High-Impact Editorial & Visual Storytelling',
+            'version' => '2.0.0',
+            'description' => 'Inspired by The Verge & TechCrunch. Designed for modern tech news and fast-paced hiring markets. Features an asymmetric 4-card hero showcase, interactive category filter chips, ranked popular leaderboard, and glassmorphism cards.',
+            'badge' => 'High Impact',
+            'screenshot' => BASE_URL . '/themes/magazine/screenshot.svg',
+            'accent' => '#2563eb',
+            'features' => [
+                'Asymmetric 4-Card Hero Grid',
+                'Ranked Popular Leaderboard (#1-#5)',
+                'Interactive Topic Filter Pills',
+                'Glassmorphism Elevated Cards',
+                'Article Reading Progress Indicator',
+                'Sleek Micro-Animations'
+            ],
+            'is_active' => ($activeTheme === 'magazine')
+        ],
+        'minimalist' => [
+            'id' => 'minimalist',
+            'name' => 'Clean Minimalist',
+            'tagline' => 'Distraction-Free Medium & Substack Style',
+            'version' => '2.0.0',
+            'description' => 'Inspired by Medium and Substack. Focuses strictly on content, beautiful typography, generous whitespace, and lightning-fast readability. Ideal for in-depth career guides, interview blueprints, and essays.',
+            'badge' => 'Clean Reader',
+            'screenshot' => BASE_URL . '/themes/minimalist/screenshot.svg',
+            'accent' => '#0f172a',
+            'features' => [
+                'Distraction-Free Centered Hero',
+                'Ultra-Clean Editorial Card Stream',
+                'Premium Serif & Sans Typography Mix',
+                'Reading Time & Author Badges',
+                'Fast Mobile-First Layout',
+                'Zero Clutter Focus Mode'
+            ],
+            'is_active' => ($activeTheme === 'minimalist')
+        ]
+    ];
+    return $themes;
+}
+
+/**
+ * Set active frontend theme in database settings
+ *
+ * @param string $themeId
+ * @return bool
+ */
+function set_active_theme($themeId) {
+    $validThemes = ['classic', 'magazine', 'minimalist'];
+    $themeId = strtolower(trim($themeId));
+    if (!in_array($themeId, $validThemes)) {
+        return false;
+    }
+
+    try {
+        $db = getDBConnection();
+        // Check if setting exists
+        $check = $db->prepare("SELECT id FROM settings WHERE setting_key = 'active_theme'");
+        $check->execute();
+        if ($check->fetch()) {
+            $stmt = $db->prepare("UPDATE settings SET setting_value = ?, updated_at = NOW() WHERE setting_key = 'active_theme'");
+            $stmt->execute([$themeId]);
+        } else {
+            $stmt = $db->prepare("INSERT INTO settings (setting_key, setting_value, setting_group, updated_at) VALUES ('active_theme', ?, 'appearance', NOW())");
+            $stmt->execute([$themeId]);
+        }
+
+        // Clear preview session if set
+        if (session_status() === PHP_SESSION_ACTIVE && isset($_SESSION['site_preview_theme'])) {
+            unset($_SESSION['site_preview_theme']);
+        }
+
+        // Refresh in-memory settings cache
+        get_setting('active_theme', $themeId, true);
+        get_active_theme(true);
+
+        log_activity('update', 'settings', "Changed frontend active theme to '{$themeId}'");
+        return true;
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
