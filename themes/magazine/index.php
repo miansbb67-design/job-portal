@@ -22,12 +22,14 @@ include __DIR__ . '/../../includes/header.php';
 <?php if (!empty($radarArticles)): ?>
 <div class="mag-ticker-wrap">
     <div class="site-container mag-ticker-inner">
-        <span class="mag-ticker-badge">TRENDING NOW</span>
-        <?php foreach (array_slice($radarArticles, 0, 2) as $tArt): ?>
-            <a href="<?= get_article_url($tArt['slug']) ?>" class="mag-ticker-text">
-                &bull; <?= h($tArt['title']) ?>
-            </a>
-        <?php endforeach; ?>
+        <span class="mag-ticker-badge">LIVE RADAR</span>
+        <div class="mag-ticker-scroll">
+            <?php foreach (array_slice($radarArticles, 0, 4) as $tArt): ?>
+                <a href="<?= get_article_url($tArt['slug']) ?>" class="mag-ticker-text">
+                    <span style="color:#38bdf8;">⚡</span> <?= h($tArt['title']) ?>
+                </a>
+            <?php endforeach; ?>
+        </div>
     </div>
 </div>
 <?php endif; ?>
@@ -66,8 +68,8 @@ include __DIR__ . '/../../includes/header.php';
 
             <!-- Right: Secondary Stacked Stories (40%) -->
             <div class="mag-sub-stack">
-                <?php if (!empty($filteredRadarArticles)): ?>
-                    <?php foreach (array_slice($filteredRadarArticles, 0, 3) as $sArt): ?>
+                <?php if (!empty($radarArticles)): ?>
+                    <?php foreach (array_slice($radarArticles, 0, 3) as $sArt): ?>
                     <?php $subThumb = get_article_thumbnail_url($sArt); ?>
                     <a href="<?= get_article_url($sArt['slug']) ?>" class="mag-sub-card">
                         <img src="<?= $subThumb ?>" alt="<?= h($sArt['title']) ?>" class="mag-sub-thumb" loading="lazy" decoding="async">
@@ -127,6 +129,40 @@ include __DIR__ . '/../../includes/header.php';
         </div>
     </div>
 </div>
+<?php endif; ?>
+
+<!-- VERIFIED HIRING & TECH VACANCIES DESK -->
+<?php if (!empty($activeJobs)): ?>
+<section class="site-container" style="margin-bottom:3.5rem;">
+    <div class="mag-hiring-wrap">
+        <div class="mag-hiring-header">
+            <div>
+                <span class="mag-hiring-badge">VERIFIED HIRING DESK</span>
+                <h2 class="mag-hiring-heading">Active Career Vacancies &amp; Tech Openings</h2>
+            </div>
+            <a href="<?= BASE_URL ?>/jobs" class="mag-hiring-link">Browse All Vacancies &rarr;</a>
+        </div>
+        <div class="mag-hiring-grid">
+            <?php foreach ($activeJobs as $job): ?>
+            <a href="<?= get_article_url($job['slug']) ?>" class="mag-hiring-item">
+                <div class="mag-hiring-top">
+                    <span class="mag-hiring-company"><?= h($job['job_company']) ?></span>
+                    <span class="mag-hiring-pill">ACTIVE</span>
+                </div>
+                <h3 class="mag-hiring-title"><?= h($job['title']) ?></h3>
+                <div class="mag-hiring-meta">
+                    <?php if (!empty($job['job_location'])): ?>
+                        <span>📍 <?= h($job['job_location']) ?></span>
+                    <?php endif; ?>
+                    <?php if (!empty($job['job_salary'])): ?>
+                        <span style="color:#38bdf8;">💰 <?= h($job['job_salary']) ?></span>
+                    <?php endif; ?>
+                </div>
+            </a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
 <?php endif; ?>
 
 <!-- MAIN FEED: 4-Column Modern Magazine Cards Grid -->

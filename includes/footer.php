@@ -119,6 +119,9 @@ $footerCopyrightText = get_setting('site_copyright', '© ' . date('Y') . ' ' . $
     <!-- Cookie Consent & Privacy Conditions Banner -->
     <?php include __DIR__ . '/cookie-consent.php'; ?>
 
+    <!-- Floating Live Quick Theme Switcher (Instant 1-Click Preview) -->
+    <?php include __DIR__ . '/floating-theme-switcher.php'; ?>
+
     <!-- Main JavaScript File -->
     <script src="<?= BASE_URL ?>/assets/js/main.js?v=<?= filemtime(__DIR__ . '/../assets/js/main.js') ?>"></script>
 </body>

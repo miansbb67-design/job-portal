@@ -49,8 +49,8 @@ include __DIR__ . '/../../includes/header.php';
                 if (!empty($spotlight)) {
                     $allStream[] = $spotlight;
                 }
-                if (!empty($featuredGridArticles)) {
-                    foreach ($featuredGridArticles as $fArt) {
+                if (!empty($latestArticles)) {
+                    foreach ($latestArticles as $fArt) {
                         if (empty($spotlight) || $fArt['id'] != $spotlight['id']) {
                             $allStream[] = $fArt;
                         }
