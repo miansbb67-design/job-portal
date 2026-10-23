@@ -1939,6 +1939,15 @@ function is_theme_active($themeId) {
  */
 function get_available_themes() {
     $activeTheme = get_active_theme();
+
+    $getScreenshot = function($themeId) {
+        $base = __DIR__ . '/../themes/' . $themeId;
+        if (file_exists($base . '/screenshot.jpg')) return BASE_URL . '/themes/' . $themeId . '/screenshot.jpg';
+        if (file_exists($base . '/screenshot.png')) return BASE_URL . '/themes/' . $themeId . '/screenshot.png';
+        if (file_exists($base . '/screenshot.svg')) return BASE_URL . '/themes/' . $themeId . '/screenshot.svg';
+        return BASE_URL . '/assets/images/default-article.jpg';
+    };
+
     $themes = [
         'classic' => [
             'id' => 'classic',
@@ -1947,7 +1956,7 @@ function get_available_themes() {
             'version' => '1.2.0',
             'description' => 'The original CareerNexaa layout featuring a dual-column hero spotlight, real-time live job radar ticker, dynamic career sector tracks, and structured article cards.',
             'badge' => 'Default Portal',
-            'screenshot' => BASE_URL . '/themes/classic/screenshot.svg',
+            'screenshot' => $getScreenshot('classic'),
             'accent' => '#059669',
             'features' => [
                 'Editorial Hero Spotlight Guide',
@@ -1965,7 +1974,7 @@ function get_available_themes() {
             'version' => '2.0.0',
             'description' => 'Inspired by The Verge & TechCrunch. Designed for modern tech news and fast-paced hiring markets. Features an asymmetric 4-card hero showcase, interactive category filter chips, ranked popular leaderboard, and glassmorphism cards.',
             'badge' => 'High Impact',
-            'screenshot' => BASE_URL . '/themes/magazine/screenshot.svg',
+            'screenshot' => $getScreenshot('magazine'),
             'accent' => '#2563eb',
             'features' => [
                 'Asymmetric 4-Card Hero Grid',
@@ -1984,7 +1993,7 @@ function get_available_themes() {
             'version' => '2.0.0',
             'description' => 'Inspired by Medium and Substack. Focuses strictly on content, beautiful typography, generous whitespace, and lightning-fast readability. Ideal for in-depth career guides, interview blueprints, and essays.',
             'badge' => 'Clean Reader',
-            'screenshot' => BASE_URL . '/themes/minimalist/screenshot.svg',
+            'screenshot' => $getScreenshot('minimalist'),
             'accent' => '#0f172a',
             'features' => [
                 'Distraction-Free Centered Hero',

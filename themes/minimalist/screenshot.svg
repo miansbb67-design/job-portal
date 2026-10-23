@@ -1,72 +1,162 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
   <defs>
-    <filter id="subtleShad" x="-3%" y="-3%" width="106%" height="108%">
-      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.04"/>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,400&amp;family=Inter:wght@400;500;600;700&amp;display=swap');
+      .serif { font-family: 'Lora', Georgia, serif; }
+      .sans { font-family: 'Inter', -apple-system, sans-serif; }
+    </style>
+    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.04" />
     </filter>
   </defs>
 
-  <!-- Clean Pure White Background -->
-  <rect width="800" height="500" fill="#ffffff"/>
+  <!-- Background Canvas -->
+  <rect width="1200" height="675" fill="#ffffff" />
 
-  <!-- Centered Minimalist Header -->
-  <line x1="0" y1="55" x2="800" y2="55" stroke="#f1f5f9" stroke-width="1.5"/>
-  <!-- Centered Brand -->
-  <text x="350" y="34" font-family="Georgia, serif" font-size="18" font-weight="700" fill="#0f172a" letter-spacing="1">CareerNexaa</text>
-  <!-- Nav Links -->
-  <rect x="40" y="24" width="45" height="7" rx="3.5" fill="#94a3b8"/>
-  <rect x="95" y="24" width="45" height="7" rx="3.5" fill="#94a3b8"/>
-  <rect x="150" y="24" width="45" height="7" rx="3.5" fill="#0f172a"/>
+  <!-- Minimalist Navbar -->
+  <rect x="0" y="0" width="1200" height="72" fill="#ffffff" />
+  <line x1="0" y1="72" x2="1200" y2="72" stroke="#eeeeee" stroke-width="1" />
   
-  <rect x="680" y="18" width="80" height="20" rx="10" fill="#0f172a"/>
-  <text x="704" y="31" font-family="sans-serif" font-size="8" font-weight="700" fill="#ffffff">Subscribe</text>
+  <text x="80" y="45" class="serif" font-size="22" font-weight="700" fill="#111111">Career<tspan fill="#1a8917">Nexaa</tspan></text>
+  <text x="80" y="58" class="sans" font-size="9" font-weight="500" fill="#888888" letter-spacing="1">MINIMALIST ESSAYS &amp; INSIGHTS</text>
 
-  <!-- Centered Focal Hero Story -->
-  <g filter="url(#subtleShad)">
-    <!-- Container -->
-    <rect x="120" y="75" width="560" height="195" rx="8" fill="#fafafa" stroke="#e2e8f0"/>
-    <!-- Topic Pill -->
-    <text x="145" y="102" font-family="sans-serif" font-size="9" font-weight="800" fill="#0f172a" letter-spacing="1">CAREER ESSAY &bull; 6 MIN READ</text>
-    <!-- Big Headline -->
-    <text x="145" y="128" font-family="Georgia, serif" font-size="17" font-weight="700" fill="#0f172a">How to Build a High-Growth Remote Career in 2026</text>
-    <rect x="145" y="142" width="320" height="8" rx="2" fill="#64748b"/>
-    <rect x="145" y="156" width="280" height="8" rx="2" fill="#64748b"/>
-    <rect x="145" y="170" width="200" height="8" rx="2" fill="#94a3b8"/>
+  <!-- Nav links -->
+  <text x="750" y="44" class="sans" font-size="13" font-weight="500" fill="#666666">Our Story</text>
+  <text x="840" y="44" class="sans" font-size="13" font-weight="500" fill="#666666">Membership</text>
+  <text x="950" y="44" class="sans" font-size="13" font-weight="600" fill="#1a8917">Explore Topics</text>
+  
+  <rect x="1070" y="24" width="70" height="28" rx="14" fill="#111111" />
+  <text x="1105" y="42" class="sans" font-size="11" font-weight="600" fill="#ffffff" text-anchor="middle">Write</text>
 
-    <!-- Right Image Thumbnail -->
-    <rect x="520" y="92" width="135" height="95" rx="6" fill="#334155"/>
-    <circle cx="587" cy="140" r="18" fill="#ffffff" opacity="0.2"/>
+  <!-- Hero Header -->
+  <text x="600" y="145" class="serif" font-size="36" font-weight="700" fill="#111111" text-anchor="middle" letter-spacing="-0.5">Stay Curious, Grow Your Career.</text>
+  <text x="600" y="175" class="sans" font-size="14" font-weight="400" fill="#666666" text-anchor="middle">Discover stories, verified avenues, and expert guidance from genuine practitioners.</text>
 
-    <!-- Author & Date -->
-    <circle cx="155" cy="225" r="9" fill="#0f172a"/>
-    <text x="172" y="228" font-family="sans-serif" font-size="9" font-weight="700" fill="#0f172a">Emma Vance</text>
-    <text x="240" y="228" font-family="sans-serif" font-size="8" fill="#94a3b8">&bull; Oct 18, 2026</text>
+  <!-- Category Pills Bar -->
+  <g transform="translate(300, 195)">
+    <rect x="0" y="0" width="75" height="26" rx="13" fill="#f2f2f2" />
+    <text x="37" y="17" class="sans" font-size="11" font-weight="500" fill="#111111" text-anchor="middle">Career</text>
 
-    <text x="615" y="228" font-family="sans-serif" font-size="9" font-weight="700" fill="#0f172a">Read Story &rarr;</text>
+    <rect x="85" y="0" width="80" height="26" rx="13" fill="#f2f2f2" />
+    <text x="125" y="17" class="sans" font-size="11" font-weight="500" fill="#555555" text-anchor="middle">Technology</text>
+
+    <rect x="175" y="0" width="80" height="26" rx="13" fill="#f2f2f2" />
+    <text x="215" y="17" class="sans" font-size="11" font-weight="500" fill="#555555" text-anchor="middle">Interviews</text>
+
+    <rect x="265" y="0" width="70" height="26" rx="13" fill="#f2f2f2" />
+    <text x="300" y="17" class="sans" font-size="11" font-weight="500" fill="#555555" text-anchor="middle">Remote</text>
+
+    <rect x="345" y="0" width="70" height="26" rx="13" fill="#f2f2f2" />
+    <text x="380" y="17" class="sans" font-size="11" font-weight="500" fill="#555555" text-anchor="middle">Leadership</text>
+
+    <rect x="425" y="0" width="70" height="26" rx="13" fill="#f2f2f2" />
+    <text x="460" y="17" class="sans" font-size="11" font-weight="500" fill="#555555" text-anchor="middle">Salary</text>
   </g>
 
-  <!-- TWO-COLUMN EDITORIAL STREAM -->
-  <line x1="120" y1="290" x2="680" y2="290" stroke="#f1f5f9" stroke-width="1.5"/>
-  <text x="120" y="315" font-family="Georgia, serif" font-size="13" font-weight="700" fill="#0f172a">Recent Publications</text>
+  <line x1="120" y1="240" x2="1080" y2="240" stroke="#eeeeee" stroke-width="1" />
 
-  <!-- Column 1 -->
-  <g>
-    <rect x="120" y="330" width="255" height="145" rx="6" fill="#ffffff" stroke="#f1f5f9"/>
-    <text x="135" y="352" font-family="sans-serif" font-size="8" font-weight="800" fill="#64748b">INTERVIEW PREP</text>
-    <text x="135" y="375" font-family="Georgia, serif" font-size="12" font-weight="700" fill="#0f172a">Mastering Behavioral Frameworks</text>
-    <rect x="135" y="388" width="220" height="6" rx="2" fill="#94a3b8"/>
-    <rect x="135" y="398" width="160" height="6" rx="2" fill="#cbd5e1"/>
-    <circle cx="145" cy="435" r="7" fill="#64748b"/>
-    <text x="160" y="438" font-family="sans-serif" font-size="8" fill="#64748b">Oct 17 &bull; 4 min read</text>
+  <!-- Two Column Layout: Left Stream (700px), Right Sidebar (260px) -->
+  
+  <!-- STORY 1 -->
+  <g transform="translate(120, 265)">
+    <!-- Author row -->
+    <circle cx="12" cy="12" r="10" fill="#111111" />
+    <text x="12" y="15" class="sans" font-size="9" font-weight="700" fill="#ffffff" text-anchor="middle">E</text>
+    <text x="30" y="15" class="sans" font-size="12" font-weight="600" fill="#111111">Emma Sullivan</text>
+    <text x="125" y="15" class="sans" font-size="11" fill="#888888">in Career Leadership</text>
+    
+    <!-- Title & Snippet -->
+    <text x="0" y="44" class="serif" font-size="19" font-weight="700" fill="#111111">The Art of the 15-Minute Interview: What Executive Hiring Desks Look For</text>
+    <text x="0" y="68" class="sans" font-size="12" fill="#666666" width="460">Why modern technical organizations are moving away from traditional puzzles towards situational clarity...</text>
+    
+    <!-- Meta row -->
+    <text x="0" y="96" class="sans" font-size="11" fill="#888888">Oct 14 &bull; 6 min read</text>
+    <rect x="95" y="85" width="65" height="16" rx="8" fill="#f2f2f2" />
+    <text x="127" y="97" class="sans" font-size="9" font-weight="600" fill="#555555" text-anchor="middle">Staff Pick</text>
+
+    <!-- Thumbnail -->
+    <rect x="520" y="10" width="130" height="88" rx="4" fill="#f5f5f5" />
+    <path d="M545,45 L570,30 L600,55 L630,25" stroke="#1a8917" stroke-width="2.5" fill="none" stroke-linecap="round" />
+    <circle cx="630" cy="25" r="4" fill="#1a8917" />
   </g>
 
-  <!-- Column 2 -->
-  <g>
-    <rect x="425" y="330" width="255" height="145" rx="6" fill="#ffffff" stroke="#f1f5f9"/>
-    <text x="440" y="352" font-family="sans-serif" font-size="8" font-weight="800" fill="#64748b">RESUME BLUEPRINT</text>
-    <text x="440" y="375" font-family="Georgia, serif" font-size="12" font-weight="700" fill="#0f172a">Writing Clean ATS-Proof Resumes</text>
-    <rect x="440" y="388" width="220" height="6" rx="2" fill="#94a3b8"/>
-    <rect x="440" y="398" width="160" height="6" rx="2" fill="#cbd5e1"/>
-    <circle cx="450" cy="435" r="7" fill="#64748b"/>
-    <text x="465" y="438" font-family="sans-serif" font-size="8" fill="#64748b">Oct 16 &bull; 5 min read</text>
+  <line x1="120" y1="385" x2="770" y2="385" stroke="#f2f2f2" stroke-width="1" />
+
+  <!-- STORY 2 -->
+  <g transform="translate(120, 405)">
+    <!-- Author row -->
+    <circle cx="12" cy="12" r="10" fill="#242424" />
+    <text x="12" y="15" class="sans" font-size="9" font-weight="700" fill="#ffffff" text-anchor="middle">M</text>
+    <text x="30" y="15" class="sans" font-size="12" font-weight="600" fill="#111111">Marcus Vance</text>
+    <text x="125" y="15" class="sans" font-size="11" fill="#888888">in Technology Systems</text>
+    
+    <!-- Title & Snippet -->
+    <text x="0" y="44" class="serif" font-size="19" font-weight="700" fill="#111111">Deep Work for Remote Engineers: Architecting an Uninterrupted Schedule</text>
+    <text x="0" y="68" class="sans" font-size="12" fill="#666666">How asynchronous communication principles enable 4x faster feature delivery without burnout...</text>
+    
+    <!-- Meta row -->
+    <text x="0" y="96" class="sans" font-size="11" fill="#888888">Oct 12 &bull; 8 min read</text>
+    <rect x="95" y="85" width="70" height="16" rx="8" fill="#f2f2f2" />
+    <text x="130" y="97" class="sans" font-size="9" font-weight="600" fill="#555555" text-anchor="middle">Tech Guide</text>
+
+    <!-- Thumbnail -->
+    <rect x="520" y="10" width="130" height="88" rx="4" fill="#f5f5f5" />
+    <rect x="545" y="30" width="80" height="48" rx="3" fill="#e5e5e5" />
+    <rect x="555" y="40" width="40" height="6" rx="2" fill="#111111" />
+    <rect x="555" y="52" width="60" height="4" rx="1" fill="#aaaaaa" />
+  </g>
+
+  <line x1="120" y1="525" x2="770" y2="525" stroke="#f2f2f2" stroke-width="1" />
+
+  <!-- STORY 3 -->
+  <g transform="translate(120, 545)">
+    <circle cx="12" cy="12" r="10" fill="#111111" />
+    <text x="12" y="15" class="sans" font-size="9" font-weight="700" fill="#ffffff" text-anchor="middle">A</text>
+    <text x="30" y="15" class="sans" font-size="12" font-weight="600" fill="#111111">Aria Chen</text>
+    <text x="100" y="15" class="sans" font-size="11" fill="#888888">in Career Advice</text>
+    
+    <text x="0" y="44" class="serif" font-size="19" font-weight="700" fill="#111111">The 2026 Resume Format That Passes Every Single Enterprise ATS Filter</text>
+    <text x="0" y="68" class="sans" font-size="12" fill="#666666">Action verb taxonomies, semantic hierarchy, and clean plain-text styling that lands recruiter calls...</text>
+    
+    <text x="0" y="96" class="sans" font-size="11" fill="#888888">Oct 10 &bull; 5 min read</text>
+
+    <rect x="520" y="10" width="130" height="88" rx="4" fill="#f5f5f5" />
+    <rect x="550" y="25" width="70" height="58" rx="2" fill="#e8f5e9" stroke="#c8e6c9" />
+    <text x="585" y="58" class="sans" font-size="16" font-weight="700" fill="#1a8917" text-anchor="middle">ATS</text>
+  </g>
+
+  <!-- Vertical Divider -->
+  <line x1="820" y1="265" x2="820" y2="640" stroke="#eeeeee" stroke-width="1" />
+
+  <!-- Right Sidebar -->
+  <g transform="translate(850, 265)">
+    <text x="0" y="14" class="sans" font-size="11" font-weight="700" fill="#111111" letter-spacing="1">TRENDING ESSAYS</text>
+    
+    <!-- Item 1 -->
+    <text x="0" y="48" class="sans" font-size="20" font-weight="700" fill="#d1d5db">01</text>
+    <text x="36" y="40" class="sans" font-size="11" font-weight="600" fill="#111111">Sophia Martinez</text>
+    <text x="36" y="56" class="serif" font-size="13" font-weight="700" fill="#242424">Salary Negotiation Rules</text>
+
+    <!-- Item 2 -->
+    <text x="0" y="98" class="sans" font-size="20" font-weight="700" fill="#d1d5db">02</text>
+    <text x="36" y="90" class="sans" font-size="11" font-weight="600" fill="#111111">David Ross</text>
+    <text x="36" y="106" class="serif" font-size="13" font-weight="700" fill="#242424">Portfolio vs GitHub Stars</text>
+
+    <!-- Item 3 -->
+    <text x="0" y="148" class="sans" font-size="20" font-weight="700" fill="#d1d5db">03</text>
+    <text x="36" y="140" class="sans" font-size="11" font-weight="600" fill="#111111">Elena Rostova</text>
+    <text x="36" y="156" class="serif" font-size="13" font-weight="700" fill="#242424">The Solopreneur Career</text>
+
+    <!-- Verified Job Box -->
+    <rect x="0" y="195" width="230" height="145" rx="6" fill="#fafafa" stroke="#eeeeee" />
+    <text x="15" y="222" class="sans" font-size="10" font-weight="700" fill="#1a8917" letter-spacing="0.5">VERIFIED HIRING</text>
+    
+    <text x="15" y="246" class="sans" font-size="12" font-weight="600" fill="#111111">Lead Cloud Architect</text>
+    <text x="15" y="262" class="sans" font-size="11" fill="#777777">Amazon AWS &bull; Remote</text>
+
+    <line x1="15" y1="274" x2="215" y2="274" stroke="#eeeeee" />
+
+    <text x="15" y="296" class="sans" font-size="12" font-weight="600" fill="#111111">Product Design Lead</text>
+    <text x="15" y="312" class="sans" font-size="11" fill="#777777">Stripe &bull; Global</text>
   </g>
 </svg>

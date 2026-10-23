@@ -104,10 +104,7 @@ require_once __DIR__ . '/includes/admin-header.php';
             <?php 
                 $isActive = ($themeId === $activeThemeId);
                 $previewUrl = BASE_URL . '/?preview_theme=' . urlencode($themeId);
-                $screenshotPath = __DIR__ . '/../themes/' . $themeId . '/screenshot.svg';
-                $screenshotUrl = file_exists($screenshotPath) 
-                    ? BASE_URL . '/themes/' . $themeId . '/screenshot.svg' 
-                    : BASE_URL . '/assets/images/default-article.jpg';
+                $screenshotUrl = !empty($tData['screenshot']) ? $tData['screenshot'] : BASE_URL . '/assets/images/default-article.jpg';
             ?>
             <div style="background:#ffffff; border:2px solid <?= $isActive ? '#2563eb' : '#e2e8f0' ?>; border-radius:14px; overflow:hidden; box-shadow:<?= $isActive ? '0 10px 25px -5px rgba(37,99,235,0.15)' : '0 2px 8px rgba(0,0,0,0.04)' ?>; display:flex; flex-direction:column; position:relative; transition:all 0.2s ease;">
                 
@@ -119,9 +116,13 @@ require_once __DIR__ . '/includes/admin-header.php';
                     </div>
                 <?php endif; ?>
 
-                <!-- Theme Visual Thumbnail -->
-                <div style="width:100%; aspect-ratio:16/10; background:#0f172a; position:relative; overflow:hidden; border-bottom:1px solid #e2e8f0;">
-                    <img src="<?= $screenshotUrl ?>" alt="<?= h($tData['name']) ?>" style="width:100%; height:100%; object-fit:cover; display:block;">
+                <!-- Theme Visual Thumbnail with Click to Zoom Modal -->
+                <div style="width:100%; aspect-ratio:16/10; background:#0f172a; position:relative; overflow:hidden; border-bottom:1px solid #e2e8f0; cursor:pointer;" onclick="openThemePreviewModal('<?= h($tData['name']) ?>', '<?= h($screenshotUrl) ?>', '<?= h($themeId) ?>', <?= $isActive ? 'true' : 'false' ?>)" title="Click to View Full Size Preview">
+                    <img src="<?= $screenshotUrl ?>" alt="<?= h($tData['name']) ?>" style="width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.4s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <div style="position:absolute; bottom:0.75rem; right:0.75rem; background:rgba(15,23,42,0.85); backdrop-filter:blur(6px); color:#ffffff; font-size:0.725rem; font-weight:700; padding:0.3rem 0.65rem; border-radius:6px; display:flex; align-items:center; gap:0.35rem; pointer-events:none;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                        <span>View Preview Pic</span>
+                    </div>
                 </div>
 
                 <!-- Card Body -->
@@ -238,6 +239,81 @@ require_once __DIR__ . '/includes/admin-header.php';
         </div>
     </div>
 </div>
+
+<!-- ================= High-Res Theme Screenshot Lightbox Modal ================= -->
+<div id="themePreviewModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); z-index:99999; align-items:center; justify-content:center; padding:1.5rem;" onclick="if(event.target === this) closeThemePreviewModal()">
+    <div style="background:#ffffff; border-radius:16px; max-width:960px; width:100%; max-height:92vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); animation:modalSlideUp 0.25s ease-out;">
+        <div style="padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; background:#f8fafc;">
+            <div style="display:flex; align-items:center; gap:0.65rem;">
+                <span style="font-size:1.2rem;">🎨</span>
+                <h3 id="modalThemeTitle" style="margin:0; font-size:1.15rem; font-weight:800; color:#0f172a;">Theme Preview</h3>
+            </div>
+            <button type="button" onclick="closeThemePreviewModal()" style="background:none; border:none; font-size:1.5rem; color:#64748b; cursor:pointer; line-height:1;" aria-label="Close">&times;</button>
+        </div>
+        <div style="padding:1rem; overflow-y:auto; background:#0f172a; display:flex; justify-content:center; align-items:center;">
+            <img id="modalThemeImg" src="" alt="Theme Screenshot" style="max-width:100%; height:auto; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.5);">
+        </div>
+        <div style="padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #e2e8f0; background:#f8fafc; flex-wrap:wrap; gap:1rem;">
+            <a id="modalNewTabBtn" href="#" target="_blank" style="color:#2563eb; font-weight:700; text-decoration:none; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.4rem;">
+                <span>Open Screenshot in Full Window</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </a>
+            <div style="display:flex; gap:0.75rem; align-items:center;">
+                <a id="modalLiveTestBtn" href="#" target="_blank" style="background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:700; padding:0.5rem 1rem; border-radius:8px; text-decoration:none; font-size:0.85rem;">
+                    Test Live
+                </a>
+                <form id="modalActivateForm" action="" method="POST" style="margin:0;">
+                    <?= csrf_field(); ?>
+                    <input type="hidden" name="activate_theme" value="1">
+                    <input type="hidden" name="theme_id" id="modalThemeIdInput" value="">
+                    <button type="submit" id="modalActivateBtn" style="background:#2563eb; color:#ffffff; font-weight:700; border:none; padding:0.5rem 1.25rem; border-radius:8px; cursor:pointer; font-size:0.85rem;">
+                        Activate This Theme
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes modalSlideUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+</style>
+
+<script>
+function openThemePreviewModal(name, imgUrl, themeId, isActive) {
+    document.getElementById('modalThemeTitle').innerText = name + ' — Full Interface Preview';
+    document.getElementById('modalThemeImg').src = imgUrl;
+    document.getElementById('modalNewTabBtn').href = imgUrl;
+    document.getElementById('modalLiveTestBtn').href = '<?= BASE_URL ?>/?preview_theme=' + encodeURIComponent(themeId);
+    document.getElementById('modalThemeIdInput').value = themeId;
+    
+    var actBtn = document.getElementById('modalActivateBtn');
+    if (isActive) {
+        actBtn.innerText = '● Already Active';
+        actBtn.style.background = '#16a34a';
+        actBtn.disabled = true;
+    } else {
+        actBtn.innerText = 'Activate This Theme';
+        actBtn.style.background = '#2563eb';
+        actBtn.disabled = false;
+    }
+
+    var modal = document.getElementById('themePreviewModal');
+    modal.style.display = 'flex';
+}
+
+function closeThemePreviewModal() {
+    var modal = document.getElementById('themePreviewModal');
+    if (modal) modal.style.display = 'none';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeThemePreviewModal();
+});
+</script>
 
 <?php
 require_once __DIR__ . '/includes/admin-footer.php';
