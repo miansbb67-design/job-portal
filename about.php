@@ -10,6 +10,7 @@ require_once __DIR__ . '/includes/functions.php';
 
 $pageTitle = "About CareerNexaa | Our Mission & Editorial Standards";
 $metaDescription = "Learn about CareerNexaa, an independent career and jobs guidance platform helping job seekers navigate modern hiring, interviews, and civil exams.";
+$canonicalUrl = BASE_URL . '/about';
 
 include __DIR__ . '/includes/header.php';
 ?>
@@ -56,7 +57,7 @@ include __DIR__ . '/includes/header.php';
 
             <h2>Get in Touch</h2>
             <p>
-                Have feedback, questions about a job listing, or a suggestion for a guide? We'd love to hear from you. Visit our <a href="<?= BASE_URL ?>/contact.php">Contact Us page</a> or email our editorial desk directly at <a href="mailto:<?= SITE_EMAIL ?>"><?= SITE_EMAIL ?></a>.
+                Have feedback, questions about a job listing, or a suggestion for a guide? We'd love to hear from you. Visit our <a href="<?= BASE_URL ?>/contact">Contact Us page</a> or email our editorial desk directly at <a href="mailto:<?= SITE_EMAIL ?>"><?= SITE_EMAIL ?></a>.
             </p>
         </div>
     </div>

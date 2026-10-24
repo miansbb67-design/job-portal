@@ -11,6 +11,7 @@ require_once __DIR__ . '/includes/functions.php';
 $pageTitle = "Cookie Policy";
 $metaDescription = "Learn how " . SITE_NAME . " uses cookies, local storage, and tracking technologies to ensure website security, analytics, and relevant advertising.";
 $metaKeywords = "cookie policy, cookies, privacy, tracking, Google AdSense cookies, analytics, data protection, " . SITE_NAME;
+$canonicalUrl = BASE_URL . '/cookie-policy';
 
 include __DIR__ . '/includes/header.php';
 ?>
@@ -26,7 +27,7 @@ include __DIR__ . '/includes/header.php';
     <div class="site-container" style="max-width: 1360px;">
         <div class="legal-content">
             <p class="article-lead" style="font-size:1.1rem; line-height:1.75; color:var(--text-secondary); margin-bottom:2rem;">
-                This Cookie Policy explains how <strong><?= SITE_NAME ?></strong> ("we", "us", or "our") uses cookies, web beacons, tracking pixels, and similar browser storage technologies when you visit our website at <a href="<?= BASE_URL ?>"><?= BASE_URL ?></a>. This policy should be read alongside our <a href="<?= BASE_URL ?>/privacy-policy.php">Privacy Policy</a> and <a href="<?= BASE_URL ?>/terms.php">Terms and Conditions</a>.
+                This Cookie Policy explains how <strong><?= SITE_NAME ?></strong> ("we", "us", or "our") uses cookies, web beacons, tracking pixels, and similar browser storage technologies when you visit our website at <a href="<?= BASE_URL ?>"><?= BASE_URL ?></a>. This policy should be read alongside our <a href="<?= BASE_URL ?>/privacy-policy">Privacy Policy</a> and <a href="<?= BASE_URL ?>/terms">Terms and Conditions</a>.
             </p>
 
             <h2>1. What Are Cookies?</h2>
@@ -115,7 +116,7 @@ include __DIR__ . '/includes/header.php';
                 If you have questions, feedback, or concerns regarding our use of cookies or your digital privacy rights, please contact our editorial and compliance team:
             </p>
             <ul>
-                <li><strong>Website Contact Page:</strong> <a href="<?= BASE_URL ?>/contact.php"><?= BASE_URL ?>/contact.php</a></li>
+                <li><strong>Website Contact Page:</strong> <a href="<?= BASE_URL ?>/contact"><?= BASE_URL ?>/contact</a></li>
                 <li><strong>Direct Privacy Inquiries:</strong> <a href="mailto:<?= SITE_EMAIL ?>"><?= SITE_EMAIL ?></a></li>
                 <li><strong>Operating Organization:</strong> <?= SITE_NAME ?> Digital Editorial Desk</li>
             </ul>

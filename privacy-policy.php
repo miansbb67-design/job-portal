@@ -11,6 +11,7 @@ require_once __DIR__ . '/includes/functions.php';
 $pageTitle = "Privacy Policy";
 $metaDescription = "Privacy Policy for CareerNexaa explaining cookies, Google AdSense third-party vendor advertising, log files, and user data rights.";
 $metaKeywords = "privacy policy, data protection, GDPR, CCPA, cookies, Google AdSense, " . SITE_NAME;
+$canonicalUrl = BASE_URL . '/privacy-policy';
 
 include __DIR__ . '/includes/header.php';
 ?>

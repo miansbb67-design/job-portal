@@ -31,6 +31,34 @@ $stmt->execute([$slug]);
 $article = $stmt->fetch();
 
 if (!$article) {
+    // 301 Permanent Redirect for known old slugs / aliases
+    $slugAliases = [
+        'best-remote-work-from-home-jobs-in-2026'                              => 'top-10-high-paying-remote-tech-careers-in-2026',
+        'top-10-high-paying-remote-jobs-2026'                                 => 'top-10-high-paying-remote-tech-careers-in-2026',
+        'top-10-high-paying-remote-jobs-in-2026-real-salaries-how-to-get-hired'=> 'top-10-high-paying-remote-tech-careers-in-2026',
+        'how-to-write-an-ats-friendly-resume'                                  => '2026-ats-resume-blueprint-formatting-rules',
+        'mastering-behavioral-interview-star-method'                          => 'top-25-behavioral-interview-questions-star-method',
+    ];
+
+    $cleanSlugKey = strtolower(trim($slug));
+    if (isset($slugAliases[$cleanSlugKey])) {
+        header('Location: ' . BASE_URL . '/article/' . $slugAliases[$cleanSlugKey], true, 301);
+        exit;
+    }
+
+    // Check custom redirects in database table
+    try {
+        $rStmt = $db->prepare("SELECT target_url, status_code FROM redirects WHERE (source_url = ? OR source_url = ?) AND status = 'active' LIMIT 1");
+        $rStmt->execute(['/article/' . $slug, $slug]);
+        $redir = $rStmt->fetch();
+        if ($redir) {
+            $sc = !empty($redir['status_code']) ? (int)$redir['status_code'] : 301;
+            $target = (strpos($redir['target_url'], 'http') === 0) ? $redir['target_url'] : BASE_URL . '/' . ltrim($redir['target_url'], '/');
+            header('Location: ' . $target, true, $sc);
+            exit;
+        }
+    } catch (Throwable $e) {}
+
     http_response_code(404);
     include __DIR__ . '/404.php';
     exit;

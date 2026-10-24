@@ -21,8 +21,8 @@
             <h4 class="cookie-heading">Cookie Policy & Conditions of Use</h4>
             <p class="cookie-desc">
                 We use strictly necessary cookies to ensure site security, plus optional analytical and advertising cookies to deliver verified job alerts and relevant career recommendations. By clicking <strong>"Accept All"</strong>, you consent to our tracking conditions in accordance with our 
-                <a href="<?= BASE_URL ?>/cookie-policy.php" class="cookie-link">Cookie Policy</a> and 
-                <a href="<?= BASE_URL ?>/terms.php" class="cookie-link">Terms & Conditions</a>.
+                <a href="<?= BASE_URL ?>/cookie-policy" class="cookie-link">Cookie Policy</a> and 
+                <a href="<?= BASE_URL ?>/terms" class="cookie-link">Terms & Conditions</a>.
             </p>
         </div>
 
@@ -33,7 +33,7 @@
             <button type="button" class="cookie-btn cookie-btn-reject" onclick="handleCookieConsent('essential')">
                 Essential Only
             </button>
-            <a href="<?= BASE_URL ?>/cookie-policy.php" class="cookie-link-details">
+            <a href="<?= BASE_URL ?>/cookie-policy" class="cookie-link-details">
                 Preferences &rarr;
             </a>
         </div>

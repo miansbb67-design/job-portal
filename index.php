@@ -21,6 +21,7 @@ require_once __DIR__ . '/includes/ads-placeholder.php';
 $pageTitle = "Jobs & Career Guidance Hub | Verified Openings, Resume Tips & Exam Guides";
 $metaDescription = "Discover verified government jobs, tech careers, remote positions, ATS resume guides, and interview frameworks on CareerNexaa.";
 $metaKeywords = "jobs 2026, career guidance, government jobs, remote tech jobs, ATS resume format, interview questions, job portal, CareerNexaa";
+$canonicalUrl = BASE_URL . '/';
 
 $db = getDBConnection();
 
@@ -439,7 +440,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                     </div>
                     <h3 class="toolkit-box-title">ATS Resume Blueprint</h3>
                     <p class="toolkit-box-desc">Proven formatting tips and keywords to pass ATS automated filters easily.</p>
-                    <a href="<?= get_article_url('how-to-write-an-ats-friendly-resume') ?>" class="toolkit-box-link">Read Blueprint &rarr;</a>
+                    <a href="<?= get_article_url('2026-ats-resume-blueprint-formatting-rules') ?>" class="toolkit-box-link">Read Blueprint &rarr;</a>
                 </div>
 
                 <div class="toolkit-box">
@@ -448,7 +449,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                     </div>
                     <h3 class="toolkit-box-title">STAR Interview Method</h3>
                     <p class="toolkit-box-desc">Master behavioral interview questions with structured and confident answers.</p>
-                    <a href="<?= get_article_url('mastering-behavioral-interview-star-method') ?>" class="toolkit-box-link">View Method &rarr;</a>
+                    <a href="<?= get_article_url('top-25-behavioral-interview-questions-star-method') ?>" class="toolkit-box-link">View Method &rarr;</a>
                 </div>
 
                 <div class="toolkit-box">
@@ -457,7 +458,7 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                     </div>
                     <h3 class="toolkit-box-title">Remote Job Guide 2026</h3>
                     <p class="toolkit-box-desc">Find high-paying international remote positions and freelance opportunities.</p>
-                    <a href="<?= get_article_url('top-10-high-paying-remote-jobs-2026') ?>" class="toolkit-box-link">Explore Jobs &rarr;</a>
+                    <a href="<?= get_article_url('top-10-high-paying-remote-tech-careers-in-2026') ?>" class="toolkit-box-link">Explore Jobs &rarr;</a>
                 </div>
             </div>
         </div>

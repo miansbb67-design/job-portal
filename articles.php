@@ -68,37 +68,57 @@ $articlesStmt = $db->prepare($sql);
 $articlesStmt->execute($params);
 $articles = $articlesStmt->fetchAll();
 
+// If category filter is accessed directly via ?category=slug, 301 redirect to clean category route
+if (!empty($categorySlug) && $activeCategory) {
+    $cleanCatUrl = BASE_URL . '/category/' . urlencode($activeCategory['slug']);
+    if ($currentPage > 1) {
+        $cleanCatUrl .= '?page=' . $currentPage;
+    }
+    header('Location: ' . $cleanCatUrl, true, 301);
+    exit;
+}
+
+// Redirect redundant ?page=1 to base clean URL
+if (isset($_GET['page']) && (int)$_GET['page'] === 1) {
+    $cleanBase = BASE_URL . '/articles';
+    if ($isVlogs) $cleanBase = BASE_URL . '/vlogs';
+    elseif ($isTrending) $cleanBase = BASE_URL . '/trending';
+    elseif ($isJobs) $cleanBase = BASE_URL . '/jobs';
+    header('Location: ' . $cleanBase, true, 301);
+    exit;
+}
+
 // Dynamic Titles, Descriptions & SEO
 if ($isVlogs) {
     $pageHeading = "Career Vlogs & Video Guides";
     $pageDesc = "Watch verified career vlogs, interview video guides, and multimedia walkthroughs.";
     $pageTitle = "Career Vlogs & Video Guides";
     $metaDescription = "Watch top career vlogs, video blueprints, and technical walkthroughs on CareerNexaa.";
-    $canonicalUrl = BASE_URL . '/vlogs';
+    $canonicalUrl = BASE_URL . '/vlogs' . ($currentPage > 1 ? '?page=' . $currentPage : '');
 } elseif ($isTrending) {
     $pageHeading = "Trending Career Guides & Articles";
     $pageDesc = "Most read and trending articles, hiring updates, and job vacancies.";
     $pageTitle = "Trending Articles & Guides";
     $metaDescription = "Discover the most popular and trending job opportunities, ATS guides, and employment circulars.";
-    $canonicalUrl = BASE_URL . '/trending';
+    $canonicalUrl = BASE_URL . '/trending' . ($currentPage > 1 ? '?page=' . $currentPage : '');
 } elseif ($isJobs) {
     $pageHeading = "Latest Job Circulars & Openings";
     $pageDesc = "Browse verified employment opportunities, public examinations, and corporate recruitment.";
     $pageTitle = "Job Openings & Circulars";
     $metaDescription = "Explore the newest verified job listings, tech careers, and competitive hiring circulars.";
-    $canonicalUrl = BASE_URL . '/jobs';
+    $canonicalUrl = BASE_URL . '/jobs' . ($currentPage > 1 ? '?page=' . $currentPage : '');
 } elseif ($activeCategory) {
     $pageHeading = h($activeCategory['name']) . " Articles & Guides";
     $pageDesc = !empty($activeCategory['description']) ? h($activeCategory['description']) : "Browse verified articles and jobs in " . h($activeCategory['name']) . ".";
     $pageTitle = "{$activeCategory['name']} Articles & Guides";
     $metaDescription = "Browse articles, job updates, and career roadmaps in {$activeCategory['name']}.";
-    $canonicalUrl = BASE_URL . '/category/' . urlencode($activeCategory['slug']);
+    $canonicalUrl = BASE_URL . '/category/' . urlencode($activeCategory['slug']) . ($currentPage > 1 ? '?page=' . $currentPage : '');
 } else {
     $pageHeading = "Jobs & Career Guides";
     $pageDesc = "Browse verified job listings, interview strategies, resume blueprints, and career guides.";
-    $pageTitle = "All Articles & Guides (Page {$currentPage})";
+    $pageTitle = ($currentPage > 1) ? "All Articles & Guides (Page {$currentPage})" : "Jobs & Career Guides";
     $metaDescription = "Comprehensive catalog of employment advice, ATS resume tips, exam preparation, and hiring updates.";
-    $canonicalUrl = BASE_URL . '/articles';
+    $canonicalUrl = BASE_URL . '/articles' . ($currentPage > 1 ? '?page=' . $currentPage : '');
 }
 
 $metaKeywords = "career vlogs, job vacancies, ATS resume guides, behavioral interviews, tech hiring, CareerNexaa";

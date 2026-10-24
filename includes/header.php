@@ -10,8 +10,9 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 // Send X-Robots-Tag HTTP header for search engine crawlers and SEO audit tools
+$metaRobots = isset($metaRobots) ? $metaRobots : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 if (!headers_sent()) {
-    header('X-Robots-Tag: index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
+    header('X-Robots-Tag: ' . $metaRobots);
 }
 
 // Dynamic branding and site configuration
@@ -26,7 +27,12 @@ $metaDescription = isset($metaDescription) ? h(clean_seo_description($metaDescri
 $metaKeywords = isset($metaKeywords) && !empty($metaKeywords) ? h($metaKeywords) : 'career advice, verified job listings, ATS resume tips, interview preparation, government exams, private tech hiring, employment guides, ' . $siteName;
 $metaAuthor = isset($metaAuthor) && !empty($metaAuthor) ? h($metaAuthor) : $siteName . ' Editorial Team';
 $metaPublisher = $siteName;
-$canonicalUrl = isset($canonicalUrl) ? h($canonicalUrl) : BASE_URL . ($_SERVER['REQUEST_URI'] ?? '/');
+if (!isset($canonicalUrl)) {
+    $reqUri = $_SERVER['REQUEST_URI'] ?? '/';
+    $cleanUri = preg_replace('/(\/|\b)index\.php/i', '', $reqUri);
+    $canonicalUrl = BASE_URL . ($cleanUri ?: '/');
+}
+$canonicalUrl = h($canonicalUrl);
 $ogImage = isset($ogImage) ? h($ogImage) : BASE_URL . '/assets/images/og-default.jpg';
 $ogType = isset($ogType) ? h($ogType) : 'website';
 
@@ -126,10 +132,10 @@ try {
     <meta name="keywords" content="<?= $metaKeywords ?>">
     <meta name="author" content="<?= $metaAuthor ?>">
     <meta name="publisher" content="<?= $metaPublisher ?>">
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="robots" content="<?= $metaRobots ?>">
     <link rel="canonical" href="<?= $canonicalUrl ?>">
     <link rel="publisher" href="<?= BASE_URL ?>/">
-    <link rel="author" href="<?= BASE_URL ?>/about.php">
+    <link rel="author" href="<?= BASE_URL ?>/about">
 
     <!-- Website Favicon -->
     <link rel="icon" type="image/svg+xml" href="<?= BASE_URL ?>/favicon.svg">
@@ -342,7 +348,7 @@ try {
 
                             <!-- Dropdown Footer -->
                             <div class="site-notif-footer">
-                                <a href="<?= BASE_URL ?>/articles.php" class="site-notif-view-all">
+                                <a href="<?= BASE_URL ?>/articles" class="site-notif-view-all">
                                     View all jobs & career updates &rarr;
                                 </a>
                             </div>
@@ -361,7 +367,7 @@ try {
             <!-- Mobile Expandable Search Bar -->
             <div class="mobile-search-bar" id="mobileSearchBar" hidden>
                 <div class="site-container">
-                    <form action="<?= BASE_URL ?>/search.php" method="GET" role="search">
+                    <form action="<?= BASE_URL ?>/search" method="GET" role="search">
                         <input type="search" name="q" maxlength="100" placeholder="Search jobs, guides, articles…" autocomplete="off" class="mobile-search-input" value="<?= isset($_GET['q']) ? h($_GET['q']) : '' ?>" oninput="this.value = this.value.replace(/[<>]/g, '')">
                     </form>
                 </div>

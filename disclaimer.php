@@ -10,6 +10,7 @@ require_once __DIR__ . '/includes/functions.php';
 
 $pageTitle = "Disclaimer | " . SITE_NAME;
 $metaDescription = "Important disclaimer regarding job opportunities, career guidance, and third-party recruitment links on CareerNexaa.";
+$canonicalUrl = BASE_URL . '/disclaimer';
 
 include __DIR__ . '/includes/header.php';
 ?>

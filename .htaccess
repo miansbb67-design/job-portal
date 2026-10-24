@@ -4,6 +4,64 @@
 
     # Security: Block sensitive files (.sql, .git, .env, .env.example)
     RewriteRule ^(\.git|\.env|\.env\.example|.*\.sql|config/database\.php) - [F,L]
+
+    # 1. Enforce HTTPS & Canonical Domain on Production
+    RewriteCond %{HTTP_HOST} ^(www\.)?careernexaa\.com$ [NC]
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://careernexaa.com/$1 [L,R=301]
+
+    RewriteCond %{HTTP_HOST} ^www\.careernexaa\.com$ [NC]
+    RewriteRule ^(.*)$ https://careernexaa.com/$1 [L,R=301]
+
+
+    # 3. Permanent 301 Redirects for direct .php requests (Production only to preserve local test compatibility)
+    RewriteCond %{HTTP_HOST} ^(www\.)?careernexaa\.com$ [NC]
+    RewriteCond %{THE_REQUEST} \s/+contact\.php[?\s] [NC]
+    RewriteRule ^ /contact [R=301,L]
+
+    RewriteCond %{HTTP_HOST} ^(www\.)?careernexaa\.com$ [NC]
+    RewriteCond %{THE_REQUEST} \s/+about\.php[?\s] [NC]
+    RewriteRule ^ /about [R=301,L]
+
+    RewriteCond %{HTTP_HOST} ^(www\.)?careernexaa\.com$ [NC]
+    RewriteCond %{THE_REQUEST} \s/+terms\.php[?\s] [NC]
+    RewriteRule ^ /terms [R=301,L]
+
+    RewriteCond %{HTTP_HOST} ^(www\.)?careernexaa\.com$ [NC]
+    RewriteCond %{THE_REQUEST} \s/+privacy-policy\.php[?\s] [NC]
+    RewriteRule ^ /privacy-policy [R=301,L]
+
+    RewriteCond %{HTTP_HOST} ^(www\.)?careernexaa\.com$ [NC]
+    RewriteCond %{THE_REQUEST} \s/+cookie-policy\.php[?\s] [NC]
+    RewriteRule ^ /cookie-policy [R=301,L]
+
+    RewriteCond %{HTTP_HOST} ^(www\.)?careernexaa\.com$ [NC]
+    RewriteCond %{THE_REQUEST} \s/+disclaimer\.php[?\s] [NC]
+    RewriteRule ^ /disclaimer [R=301,L]
+
+    RewriteCond %{HTTP_HOST} ^(www\.)?careernexaa\.com$ [NC]
+    RewriteCond %{THE_REQUEST} \s/+categories\.php\?slug=([a-zA-Z0-9_-]+) [NC]
+    RewriteRule ^ /category/%1? [R=301,L]
+
+    RewriteCond %{HTTP_HOST} ^(www\.)?careernexaa\.com$ [NC]
+    RewriteCond %{THE_REQUEST} \s/+categories\.php[?\s] [NC]
+    RewriteRule ^ /categories? [R=301,L]
+
+    RewriteCond %{HTTP_HOST} ^(www\.)?careernexaa\.com$ [NC]
+    RewriteCond %{THE_REQUEST} \s/+articles\.php\?category=([a-zA-Z0-9_-]+) [NC]
+    RewriteRule ^ /category/%1? [R=301,L]
+
+    RewriteCond %{HTTP_HOST} ^(www\.)?careernexaa\.com$ [NC]
+    RewriteCond %{THE_REQUEST} \s/+articles\.php\?page=1([&\s]|$) [NC]
+    RewriteRule ^ /articles? [R=301,L]
+
+    RewriteCond %{HTTP_HOST} ^(www\.)?careernexaa\.com$ [NC]
+    RewriteCond %{THE_REQUEST} \s/+articles\.php[?\s] [NC]
+    RewriteRule ^ /articles? [R=301,L]
+
+    RewriteCond %{HTTP_HOST} ^(www\.)?careernexaa\.com$ [NC]
+    RewriteCond %{THE_REQUEST} \s/+article\.php\?slug=([a-zA-Z0-9_-]+) [NC]
+    RewriteRule ^ /article/%1? [R=301,L]
 </IfModule>
 
 # Block access to hidden files and database dumps even if mod_rewrite is disabled

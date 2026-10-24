@@ -11,6 +11,7 @@ require_once __DIR__ . '/includes/functions.php';
 $pageTitle = "Terms and Conditions";
 $metaDescription = "Terms and Conditions for accessing and using the CareerNexaa website and career guidance resources.";
 $metaKeywords = "terms and conditions, user agreement, terms of service, cookie conditions, acceptable use, " . SITE_NAME;
+$canonicalUrl = BASE_URL . '/terms';
 
 include __DIR__ . '/includes/header.php';
 ?>
@@ -66,7 +67,7 @@ include __DIR__ . '/includes/header.php';
 
             <h2>6. Cookie Policy & Privacy Consent Conditions</h2>
             <p>
-                By using <?= SITE_NAME ?>, you explicitly consent to the placement of essential and analytical cookies on your device in accordance with our <a href="<?= BASE_URL ?>/cookie-policy.php">Cookie Policy</a> and <a href="<?= BASE_URL ?>/privacy-policy.php">Privacy Policy</a>. If you reject non-essential cookies via our consent controls or browser settings, certain interactive features, custom bookmarks, and personalized recommendations may be limited.
+                By using <?= SITE_NAME ?>, you explicitly consent to the placement of essential and analytical cookies on your device in accordance with our <a href="<?= BASE_URL ?>/cookie-policy">Cookie Policy</a> and <a href="<?= BASE_URL ?>/privacy-policy">Privacy Policy</a>. If you reject non-essential cookies via our consent controls or browser settings, certain interactive features, custom bookmarks, and personalized recommendations may be limited.
             </p>
 
             <h2>7. Conditions of Access & User Conduct</h2>
@@ -81,7 +82,7 @@ include __DIR__ . '/includes/header.php';
 
             <h2>8. Governing Conditions & Contact</h2>
             <p>
-                These terms are governed by and construed in accordance with applicable digital laws. If any provision is deemed unenforceable, the remaining provisions shall remain in full force and effect. For any inquiries regarding these conditions, please visit our <a href="<?= BASE_URL ?>/contact.php">Contact Page</a>.
+                These terms are governed by and construed in accordance with applicable digital laws. If any provision is deemed unenforceable, the remaining provisions shall remain in full force and effect. For any inquiries regarding these conditions, please visit our <a href="<?= BASE_URL ?>/contact">Contact Page</a>.
             </p>
         </div>
     </div>

@@ -14,6 +14,8 @@ require_once __DIR__ . '/includes/functions.php';
 
 $pageTitle = "Page Not Found (404) | " . SITE_NAME;
 $metaDescription = "The page or job guide you were looking for could not be found. Use our search tool to find relevant career articles.";
+$metaRobots = 'noindex, nofollow';
+$canonicalUrl = BASE_URL . '/404';
 
 include __DIR__ . '/includes/header.php';
 ?>
@@ -32,7 +34,7 @@ include __DIR__ . '/includes/header.php';
 
         <!-- Search Form -->
         <div style="margin-bottom: 2.5rem;">
-            <form action="<?= BASE_URL ?>/search.php" method="GET" style="display:flex; gap:0.5rem; max-width:500px; margin:0 auto;">
+            <form action="<?= BASE_URL ?>/search" method="GET" style="display:flex; gap:0.5rem; max-width:500px; margin:0 auto;" role="search">
                 <input type="text" name="q" placeholder="Search by job title or keyword..." required class="form-control" style="padding:0.85rem 1.25rem;">
                 <button type="submit" class="btn btn-primary">
                     Search
@@ -42,8 +44,8 @@ include __DIR__ . '/includes/header.php';
 
         <div style="display:flex; justify-content:center; gap:1rem; flex-wrap:wrap;">
             <a href="<?= BASE_URL ?>/" class="btn btn-primary">Go to Homepage</a>
-            <a href="<?= BASE_URL ?>/articles.php" class="btn btn-secondary">Browse All Articles</a>
-            <a href="<?= BASE_URL ?>/contact.php" class="btn btn-secondary">Contact Support</a>
+            <a href="<?= BASE_URL ?>/articles" class="btn btn-secondary">Browse All Articles</a>
+            <a href="<?= BASE_URL ?>/contact" class="btn btn-secondary">Contact Support</a>
         </div>
     </div>
 </section>

@@ -76,6 +76,8 @@ if (!empty($query)) {
 $siteBrand = get_site_name();
 $pageTitle = !empty($query) ? "Search: " . $query : "Search Articles & Job Guides";
 $metaDescription = "Search verified job openings, career exam frameworks, and interview guides on " . $siteBrand . ".";
+$metaRobots = 'noindex, follow';
+$canonicalUrl = BASE_URL . '/search';
 
 include __DIR__ . '/includes/header.php';
 ?>

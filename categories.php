@@ -27,10 +27,14 @@ if (!empty($slug)) {
     $pageTitle = "{$category['name']} - Career Articles & Job Guides";
     $metaDescription = !empty($category['description']) ? $category['description'] : "Explore all guides and employment opportunities in {$category['name']}.";
     $metaKeywords = "{$category['name']}, {$category['name']} jobs, {$category['name']} career advice, exam schedules, CareerNexaa";
+    $canonicalUrl = BASE_URL . '/category/' . $category['slug'];
 
     // Pagination for Category
     $currentPage = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
     if ($currentPage < 1) $currentPage = 1;
+    if ($currentPage > 1) {
+        $canonicalUrl .= '?page=' . $currentPage;
+    }
     $perPageSetting = (int)get_setting('items_per_page', defined('ARTICLES_PER_PAGE') ? ARTICLES_PER_PAGE : 8);
     $perPage = ($perPageSetting >= 8) ? $perPageSetting : (defined('ARTICLES_PER_PAGE') && ARTICLES_PER_PAGE >= 8 ? ARTICLES_PER_PAGE : 8);
     $offset = ($currentPage - 1) * $perPage;
@@ -198,6 +202,7 @@ if (!empty($slug)) {
     // 2. All Categories Overview Page (Rich Category Boxes with Photos & Descriptions)
     $pageTitle = "All Categories & Career Tracks | " . SITE_NAME;
     $metaDescription = "Browse all career and industry categories on CareerNexaa. Explore curated guides, interview frameworks, exam roadmaps, and latest vacancies.";
+    $canonicalUrl = BASE_URL . '/categories';
 
     $categories = get_all_categories(true);
     $totalCategories = count($categories);

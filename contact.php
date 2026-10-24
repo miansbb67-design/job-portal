@@ -14,6 +14,7 @@ $contactEmail = get_setting('contact_email', defined('SITE_EMAIL') ? SITE_EMAIL 
 
 $pageTitle = "Contact " . $siteName . " | Inquiries & Editorial Support";
 $metaDescription = "Get in touch with the " . $siteName . " editorial desk for career inquiries, feedback, or corrections.";
+$canonicalUrl = BASE_URL . '/contact';
 
 $errors = [];
 $successMessage = '';
@@ -215,7 +216,7 @@ include __DIR__ . '/includes/header.php';
                     </div>
                 <?php endif; ?>
 
-                <form action="<?= BASE_URL ?>/contact.php" method="POST" id="contactForm" autocomplete="on">
+                <form action="<?= BASE_URL ?>/contact" method="POST" id="contactForm" autocomplete="on">
                     <?= csrf_field(); ?>
 
                     <!-- Anti-Bot Timestamp -->

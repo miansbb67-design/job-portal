@@ -12,8 +12,15 @@ Disallow: /job-portal/includes/
 Disallow: /includes/
 
 # Internal Search Queries (Google Guidelines: Prevent thin search results indexation)
+Disallow: /job-portal/search
 Disallow: /job-portal/search.php
+Disallow: /search
 Disallow: /search.php
+Disallow: /*?*q=
+Disallow: /*?*search=
+Disallow: /*categories.php?slug=
+Disallow: /*articles.php?category=
+Disallow: /*articles.php?page=1$
 
 # Sitemap location (Canonical absolute URL as required by Google Search Console & Bing Webmaster)
 Sitemap: https://careernexaa.com/sitemap.xml
