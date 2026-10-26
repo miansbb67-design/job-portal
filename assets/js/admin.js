@@ -265,6 +265,26 @@ document.addEventListener('DOMContentLoaded', () => {
             return button.render();
         };
 
+        // 6. Custom Size Button for Image Popover ("100 to 0 tak ka sixe number chiye")
+        const ImageResizeCustomButton = function(context) {
+            const ui = $.summernote.ui;
+            const button = ui.button({
+                contents: '<span style="font-size:11px; font-weight:700; color:#059669; display:inline-flex; align-items:center; gap:3px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><path d="M9 3v18"></path><path d="M15 3v18"></path><path d="M3 9h18"></path><path d="M3 15h18"></path></svg> Size % (0-100)</span>',
+                tooltip: 'Set Custom Image Size (100% to 0%)',
+                click: function() {
+                    const $img = getActiveSummernoteImage(context);
+                    if ($img && $img.length) {
+                        if (typeof window.openImageAltModal === 'function') {
+                            window.openImageAltModal($img, 'size');
+                        }
+                    } else {
+                        showToast('Please click an image to adjust size.');
+                    }
+                }
+            });
+            return button.render();
+        };
+
         $('#articleContent').summernote({
             placeholder: 'Compose high quality, original content here...',
             height: 480,
@@ -274,6 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 mediaLibrary: MediaLibraryButton,
                 imageCenter: ImageCenterButton,
                 imageSmallCenter: ImageSmallCenterButton,
+                imageResizeCustom: ImageResizeCustomButton,
                 imageAlt: ImageAltButton,
                 imageLink: ImageLinkButton
             },
@@ -292,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 image: [
                     ['image', ['resizeFull', 'resizeHalf', 'resizeQuarter', 'resizeNone']],
                     ['float', ['floatLeft', 'imageCenter', 'floatRight', 'floatNone']],
-                    ['custom', ['imageSmallCenter', 'imageAlt', 'imageLink']],
+                    ['custom', ['imageSmallCenter', 'imageResizeCustom', 'imageAlt', 'imageLink']],
                     ['remove', ['removeMedia']]
                 ],
                 link: [
@@ -852,17 +873,33 @@ window.openImageAltModal = function($img, focusField = 'alt') {
 
     // Determine current size
     const widthStyle = ($img[0].style.width || '').trim();
-    const dataSize = $img.attr('data-size') || '';
-    if (widthStyle === '100%' || dataSize === '100%') {
-        currentModalSize = '100%';
-    } else if (widthStyle === '50%' || dataSize === '50%') {
-        currentModalSize = '50%';
-    } else if (widthStyle === '25%' || dataSize === '25%') {
-        currentModalSize = '25%';
+    const dataSize = ($img.attr('data-size') || '').trim();
+    let numericSize = 100;
+
+    if (dataSize && dataSize.endsWith('%')) {
+        const parsed = parseInt(dataSize, 10);
+        if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) {
+            numericSize = parsed;
+            currentModalSize = numericSize + '%';
+        }
+    } else if (widthStyle && widthStyle.endsWith('%')) {
+        const parsed = parseInt(widthStyle, 10);
+        if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) {
+            numericSize = parsed;
+            currentModalSize = numericSize + '%';
+        }
     } else if (widthStyle === '' || widthStyle === 'auto') {
         currentModalSize = 'auto';
+        numericSize = 100;
+    } else if (widthStyle.endsWith('px')) {
+        const parentW = $img.parent().width() || 800;
+        const pxVal = parseFloat(widthStyle);
+        const approxPct = Math.min(100, Math.max(0, Math.round((pxVal / parentW) * 100)));
+        numericSize = approxPct;
+        currentModalSize = numericSize + '%';
     } else {
         currentModalSize = 'auto';
+        numericSize = 100;
     }
 
     const preview = document.getElementById('imgModalPreview');
@@ -872,12 +909,22 @@ window.openImageAltModal = function($img, focusField = 'alt') {
     const linkNofollow = document.getElementById('imgModalLinkNofollow');
     const linkStatus = document.getElementById('imgModalLinkStatus');
     const linkedUrlDisplay = document.getElementById('imgModalLinkedUrlDisplay');
+    const sizeNumberInput = document.getElementById('imgModalSizeNumberInput');
+    const sizeRangeSlider = document.getElementById('imgModalSizeRangeSlider');
+    const sizeBadge = document.getElementById('imgModalSizeValueBadge');
 
-    if (preview) preview.src = src;
+    if (preview) {
+        preview.src = src;
+        preview.style.width = (currentModalSize === 'auto') ? 'auto' : (numericSize + '%');
+    }
     if (altInput) altInput.value = alt;
     if (linkInput) linkInput.value = currentLink;
     if (linkTarget) linkTarget.checked = currentTargetBlank;
     if (linkNofollow) linkNofollow.checked = currentNofollow;
+
+    if (sizeNumberInput) sizeNumberInput.value = (currentModalSize === 'auto') ? 100 : numericSize;
+    if (sizeRangeSlider) sizeRangeSlider.value = (currentModalSize === 'auto') ? 100 : numericSize;
+    if (sizeBadge) sizeBadge.textContent = (currentModalSize === 'auto') ? 'Auto' : numericSize + '%';
 
     if (linkStatus && linkedUrlDisplay) {
         if (currentLink) {
@@ -895,7 +942,10 @@ window.openImageAltModal = function($img, focusField = 'alt') {
     if (modal) modal.style.display = 'flex';
 
     setTimeout(() => {
-        if (focusField === 'link' && linkInput) {
+        if (focusField === 'size' && sizeNumberInput) {
+            sizeNumberInput.focus();
+            sizeNumberInput.select();
+        } else if (focusField === 'link' && linkInput) {
             linkInput.focus();
             linkInput.select();
         } else if (altInput) {
@@ -947,8 +997,52 @@ window.updateModalAlignUI = function(align) {
     }
 };
 
+window.handleModalImgRangeChange = function(val) {
+    let num = parseInt(val, 10);
+    if (isNaN(num)) num = 100;
+    if (num < 0) num = 0;
+    if (num > 100) num = 100;
+
+    const sizeNumberInput = document.getElementById('imgModalSizeNumberInput');
+    if (sizeNumberInput) sizeNumberInput.value = num;
+
+    window.setModalImgSize(num + '%');
+};
+
+window.handleModalImgNumberChange = function(val) {
+    if (val === '') return;
+    let num = parseInt(val, 10);
+    if (isNaN(num)) num = 100;
+    if (num < 0) num = 0;
+    if (num > 100) num = 100;
+
+    const sizeRangeSlider = document.getElementById('imgModalSizeRangeSlider');
+    if (sizeRangeSlider) sizeRangeSlider.value = num;
+
+    window.setModalImgSize(num + '%');
+};
+
 window.setModalImgSize = function(size) {
     currentModalSize = size;
+    const preview = document.getElementById('imgModalPreview');
+    const sizeNumberInput = document.getElementById('imgModalSizeNumberInput');
+    const sizeRangeSlider = document.getElementById('imgModalSizeRangeSlider');
+    const sizeBadge = document.getElementById('imgModalSizeValueBadge');
+
+    if (size === 'auto') {
+        if (sizeBadge) sizeBadge.textContent = 'Auto';
+        if (preview) preview.style.width = 'auto';
+        if (sizeNumberInput) sizeNumberInput.value = 100;
+        if (sizeRangeSlider) sizeRangeSlider.value = 100;
+    } else {
+        const num = parseInt(size, 10);
+        if (!isNaN(num)) {
+            if (sizeBadge) sizeBadge.textContent = num + '%';
+            if (preview) preview.style.width = Math.max(10, num) + '%';
+            if (sizeNumberInput && parseInt(sizeNumberInput.value, 10) !== num) sizeNumberInput.value = num;
+            if (sizeRangeSlider && parseInt(sizeRangeSlider.value, 10) !== num) sizeRangeSlider.value = num;
+        }
+    }
     window.updateModalSizeUI(size);
 };
 
@@ -1084,19 +1178,15 @@ window.saveImageAltModal = function() {
         }
     }
 
-    // 4. Update Size
-    if (currentModalSize === '100%') {
-        currentEditingImg.css({ 'width': '100%', 'height': 'auto' });
-        currentEditingImg.attr('data-size', '100%');
-    } else if (currentModalSize === '50%') {
-        currentEditingImg.css({ 'width': '50%', 'max-width': '100%', 'height': 'auto' });
-        currentEditingImg.attr('data-size', '50%');
-    } else if (currentModalSize === '25%') {
-        currentEditingImg.css({ 'width': '25%', 'max-width': '100%', 'height': 'auto' });
-        currentEditingImg.attr('data-size', '25%');
-    } else if (currentModalSize === 'auto') {
-        currentEditingImg.css({ 'width': '', 'height': 'auto' });
+    // 4. Update Size (0% to 100% or auto)
+    if (currentModalSize === 'auto') {
+        currentEditingImg.css({ 'width': '', 'max-width': '100%', 'height': 'auto' });
         currentEditingImg.removeAttr('data-size');
+    } else {
+        const parsed = parseInt(currentModalSize, 10);
+        const validPct = (!isNaN(parsed) && parsed >= 0 && parsed <= 100) ? parsed : 100;
+        currentEditingImg.css({ 'width': validPct + '%', 'max-width': '100%', 'height': 'auto' });
+        currentEditingImg.attr('data-size', validPct + '%');
     }
 
     window.closeImageAltModal();

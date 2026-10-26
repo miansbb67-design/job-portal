@@ -166,27 +166,82 @@
                 </div>
             </div>
 
-            <!-- 4. Size / Scale Option (Make picture smaller / center) -->
+            <!-- 4. Size / Scale Option (Custom 100% to 0% Number & Slider) -->
             <div>
-                <label style="display:block; font-size:0.85rem; font-weight:700; color:#1e293b; margin-bottom:0.4rem;">
-                    Size (Make Picture Smaller / Full)
-                </label>
-                <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.5rem;" id="imgModalSizeGroup">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem;">
+                    <label style="font-size:0.85rem; font-weight:700; color:#1e293b; margin:0;">
+                        Picture Size (100 to 0) / Width %
+                    </label>
+                    <span id="imgModalSizeValueBadge" style="background:#ecfdf5; color:#059669; font-weight:800; padding:2px 8px; border-radius:6px; font-size:0.85rem; border:1px solid #a7f3d0;">
+                        100%
+                    </span>
+                </div>
+
+                <!-- Custom Size Box: Number input (0-100) + Interactive Range Slider -->
+                <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:0.85rem 1rem; margin-bottom:0.75rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; margin-bottom:0.65rem;">
+                        <span style="font-size:0.8rem; font-weight:700; color:#475569;">
+                            Size Number (100 to 0):
+                        </span>
+                        <div style="display:inline-flex; align-items:center; gap:5px;">
+                            <input 
+                                type="number" 
+                                id="imgModalSizeNumberInput" 
+                                min="0" 
+                                max="100" 
+                                step="1"
+                                value="100"
+                                style="width:72px; padding:0.35rem 0.5rem; text-align:center; font-weight:800; font-size:1rem; color:#0f172a; border:2px solid #059669; border-radius:6px; outline:none; background:#ffffff; box-shadow:0 1px 2px rgba(0,0,0,0.05);"
+                                oninput="handleModalImgNumberChange(this.value)"
+                                onkeydown="if(event.key==='Enter'){event.preventDefault(); saveImageAltModal();}"
+                            >
+                            <span style="font-weight:800; color:#059669; font-size:1rem;">%</span>
+                        </div>
+                    </div>
+
+                    <!-- Range Slider from 0 to 100 -->
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                        <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; width:26px;">0%</span>
+                        <input 
+                            type="range" 
+                            id="imgModalSizeRangeSlider" 
+                            min="0" 
+                            max="100" 
+                            step="1" 
+                            value="100"
+                            style="flex:1; accent-color:#059669; cursor:pointer; height:6px;"
+                            oninput="handleModalImgRangeChange(this.value)"
+                        >
+                        <span style="font-size:0.75rem; font-weight:700; color:#059669; width:38px; text-align:right;">100%</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#94a3b8; margin-top:3px; padding:0 34px;">
+                        <span>25%</span>
+                        <span>50%</span>
+                        <span>75%</span>
+                    </div>
+                </div>
+
+                <!-- Quick Preset Buttons -->
+                <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:0.4rem;" id="imgModalSizeGroup">
                     <button type="button" class="btn-img-choice" data-size="100%" onclick="setModalImgSize('100%')">
                         <span style="font-weight:700; display:block;">100%</span>
-                        <span style="font-size:0.7rem; color:#64748b;">Full Width</span>
+                        <span style="font-size:0.65rem; color:#64748b;">Full</span>
+                    </button>
+                    <button type="button" class="btn-img-choice" data-size="75%" onclick="setModalImgSize('75%')">
+                        <span style="font-weight:700; display:block;">75%</span>
+                        <span style="font-size:0.65rem; color:#64748b;">Large</span>
                     </button>
                     <button type="button" class="btn-img-choice" data-size="50%" onclick="setModalImgSize('50%')">
                         <span style="font-weight:700; display:block;">50%</span>
-                        <span style="font-size:0.7rem; color:#64748b;">Medium</span>
+                        <span style="font-size:0.65rem; color:#64748b;">Medium</span>
                     </button>
                     <button type="button" class="btn-img-choice" data-size="25%" onclick="setModalImgSize('25%')">
                         <span style="font-weight:700; display:block;">25%</span>
-                        <span style="font-size:0.7rem; color:#64748b;">Small</span>
+                        <span style="font-size:0.65rem; color:#64748b;">Small</span>
                     </button>
                     <button type="button" class="btn-img-choice" data-size="auto" onclick="setModalImgSize('auto')">
                         <span style="font-weight:700; display:block;">Auto</span>
-                        <span style="font-size:0.7rem; color:#64748b;">Original</span>
+                        <span style="font-size:0.65rem; color:#64748b;">Reset</span>
                     </button>
                 </div>
             </div>
