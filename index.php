@@ -58,7 +58,7 @@ $radarStmt = $db->prepare("
     JOIN admins adm ON a.author_id = adm.id
     WHERE a.status = 'published' AND (a.is_trash = 0 OR a.is_trash IS NULL) AND a.id != :spotlight_id
     ORDER BY a.published_at DESC, a.id DESC
-    LIMIT 4
+    LIMIT 5
 ");
 $radarStmt->execute([':spotlight_id' => $spotlightId]);
 $radarArticles = $radarStmt->fetchAll();
@@ -205,52 +205,34 @@ $showLiveRadar    = is_section_visible('live_job_radar');
                     ?>
                     <?php if (!empty($filteredRadarArticles)): ?>
                     <div class="radar-articles-container" id="radarArticlesContainer">
-                        <div class="radar-articles-track <?= count($filteredRadarArticles) > 2 ? 'is-animated' : '' ?>" id="radarArticlesTrack">
-                            <?php foreach ($filteredRadarArticles as $rArt): ?>
-                            <?php 
-                                $rThumb = get_article_thumbnail_url($rArt);
-                            ?>
-                            <div class="radar-article-row">
-                                <a href="<?= BASE_URL ?>/article/<?= h($rArt['slug']) ?>" class="radar-thumb-box">
-                                    <img src="<?= $rThumb ?>" alt="<?= h($rArt['title']) ?>" loading="lazy" decoding="async">
+                        <?php foreach ($filteredRadarArticles as $rArt): ?>
+                        <?php 
+                            $rThumb = get_article_thumbnail_url($rArt);
+                        ?>
+                        <div class="radar-article-row">
+                            <a href="<?= BASE_URL ?>/article/<?= h($rArt['slug']) ?>" class="radar-thumb-box">
+                                <img src="<?= $rThumb ?>" alt="<?= h($rArt['title']) ?>" loading="lazy" decoding="async">
+                            </a>
+                            <div class="radar-article-info">
+                                <a href="<?= BASE_URL ?>/category/<?= h($rArt['category_slug']) ?>" class="radar-cat-tag">
+                                    <?= h($rArt['category_name']) ?>
                                 </a>
-                                <div class="radar-article-info">
-                                    <a href="<?= BASE_URL ?>/category/<?= h($rArt['category_slug']) ?>" class="radar-cat-tag">
-                                        <?= h($rArt['category_name']) ?>
+                                <h4 class="radar-row-title">
+                                    <a href="<?= BASE_URL ?>/article/<?= h($rArt['slug']) ?>">
+                                        <?= h($rArt['title']) ?>
                                     </a>
-                                    <h4 class="radar-row-title">
-                                        <a href="<?= BASE_URL ?>/article/<?= h($rArt['slug']) ?>">
-                                            <?= h($rArt['title']) ?>
-                                        </a>
-                                    </h4>
-                                    <span class="radar-meta-text"><?= format_date($rArt['published_at']) ?> &bull; <?= (int)$rArt['views'] ?> views</span>
-                                </div>
+                                </h4>
+                                <span class="radar-meta-text"><?= format_date($rArt['published_at']) ?> &bull; <?= (int)$rArt['views'] ?> views</span>
                             </div>
-                            <?php endforeach; ?>
-                            <?php if (count($filteredRadarArticles) > 2): ?>
-                                <?php foreach ($filteredRadarArticles as $rArt): ?>
-                                <?php $rThumb = get_article_thumbnail_url($rArt); ?>
-                                <div class="radar-article-row" aria-hidden="true">
-                                    <a href="<?= BASE_URL ?>/article/<?= h($rArt['slug']) ?>" class="radar-thumb-box" tabindex="-1">
-                                        <img src="<?= $rThumb ?>" alt="<?= h($rArt['title']) ?>" loading="lazy" decoding="async">
-                                    </a>
-                                    <div class="radar-article-info">
-                                        <a href="<?= BASE_URL ?>/category/<?= h($rArt['category_slug']) ?>" class="radar-cat-tag" tabindex="-1">
-                                            <?= h($rArt['category_name']) ?>
-                                        </a>
-                                        <h4 class="radar-row-title">
-                                            <a href="<?= BASE_URL ?>/article/<?= h($rArt['slug']) ?>" tabindex="-1">
-                                                <?= h($rArt['title']) ?>
-                                            </a>
-                                        </h4>
-                                        <span class="radar-meta-text"><?= format_date($rArt['published_at']) ?> &bull; <?= (int)$rArt['views'] ?> views</span>
-                                    </div>
-                                </div>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
                         </div>
+                        <?php endforeach; ?>
                     </div>
                     <?php endif; ?>
+
+                    <div class="radar-widget-footer">
+                        <span class="radar-footer-pill"><span class="radar-pulse-mini"></span> Real-Time Radar</span>
+                        <a href="<?= BASE_URL ?>/articles" class="radar-footer-link">Explore All Guides &rarr;</a>
+                    </div>
                 </div>
             </div>
             <?php endif; ?>
