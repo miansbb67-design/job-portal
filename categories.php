@@ -56,6 +56,49 @@ if (!empty($slug)) {
     $articlesStmt->execute([$category['id']]);
     $articles = $articlesStmt->fetchAll();
 
+    // High-Priority SEO Structured Data (Breadcrumbs & CollectionPage)
+    $catSchema = [
+        "@context" => "https://schema.org",
+        "@graph" => [
+            [
+                "@type" => "BreadcrumbList",
+                "itemListElement" => [
+                    [
+                        "@type" => "ListItem",
+                        "position" => 1,
+                        "name" => "Home",
+                        "item" => BASE_URL . "/"
+                    ],
+                    [
+                        "@type" => "ListItem",
+                        "position" => 2,
+                        "name" => "Categories",
+                        "item" => BASE_URL . "/categories"
+                    ],
+                    [
+                        "@type" => "ListItem",
+                        "position" => 3,
+                        "name" => $category['name'],
+                        "item" => $canonicalUrl
+                    ]
+                ]
+            ],
+            [
+                "@type" => "CollectionPage",
+                "@id" => $canonicalUrl,
+                "url" => $canonicalUrl,
+                "name" => $pageTitle,
+                "description" => $metaDescription,
+                "isPartOf" => [
+                    "@type" => "WebSite",
+                    "name" => "CareerNexaa",
+                    "url" => BASE_URL . "/"
+                ]
+            ]
+        ]
+    ];
+    $extraHead = '<script type="application/ld+json">' . json_encode($catSchema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . '</script>';
+
     include __DIR__ . '/includes/header.php';
     ?>
     <section class="page-banner">

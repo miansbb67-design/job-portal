@@ -92,6 +92,40 @@ $latestArticles = $latestStmt->fetchAll();
 // 6. Fetch Categories with total article count
 $categories = get_all_categories(true);
 
+// High-Priority Google SEO Schema.org Structured Data
+$websiteSchema = [
+    "@context" => "https://schema.org",
+    "@graph" => [
+        [
+            "@type" => "Organization",
+            "@id" => BASE_URL . "/#organization",
+            "name" => "CareerNexaa",
+            "url" => BASE_URL . "/",
+            "logo" => [
+                "@type" => "ImageObject",
+                "url" => BASE_URL . "/favicon.svg"
+            ],
+            "description" => "CareerNexaa is a premier career guidance and job portal providing verified job opportunities, ATS resume formats, and career roadmaps."
+        ],
+        [
+            "@type" => "WebSite",
+            "@id" => BASE_URL . "/#website",
+            "url" => BASE_URL . "/",
+            "name" => "CareerNexaa",
+            "description" => "Jobs & Career Guidance Hub",
+            "publisher" => [
+                "@id" => BASE_URL . "/#organization"
+            ],
+            "potentialAction" => [
+                "@type" => "SearchAction",
+                "target" => BASE_URL . "/search?q={search_term_string}",
+                "query-input" => "required name=search_term_string"
+            ]
+        ]
+    ]
+];
+$extraHead = '<script type="application/ld+json">' . json_encode($websiteSchema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . '</script>';
+
 include __DIR__ . '/includes/header.php';
 ?>
 

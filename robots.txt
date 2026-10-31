@@ -1,26 +1,20 @@
 User-agent: *
 Allow: /
 
-# Admin Panel Disallowed from Indexing
-Disallow: /job-portal/admin/
+# Disallow Admin & Backend System Paths
 Disallow: /admin/
-
-# Configuration, Core and Helper Includes
-Disallow: /job-portal/config/
 Disallow: /config/
-Disallow: /job-portal/includes/
 Disallow: /includes/
 
-# Internal Search Queries (Google Guidelines: Prevent thin search results indexation)
-Disallow: /job-portal/search
-Disallow: /job-portal/search.php
+# Internal Search Queries (Prevent crawling thin/dynamic search result pages)
 Disallow: /search
 Disallow: /search.php
 Disallow: /*?*q=
 Disallow: /*?*search=
-Disallow: /*categories.php?slug=
-Disallow: /*articles.php?category=
-Disallow: /*articles.php?page=1$
 
-# Sitemap location (Canonical absolute URL as required by Google Search Console & Bing Webmaster)
+# Explicitly Allow Assets & Uploads for Googlebot Rendering
+Allow: /assets/
+Allow: /uploads/
+
+# Sitemap Location (Canonical absolute URL for Google Search Console & Bing Webmaster)
 Sitemap: https://careernexaa.com/sitemap.xml
