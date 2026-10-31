@@ -263,24 +263,25 @@ $showLiveRadar    = is_section_visible('live_job_radar');
 
         <div class="sector-tracks-grid">
             <?php foreach ($categories as $cat): ?>
+            <?php 
+                $catImg = get_category_image_url($cat);
+            ?>
                 <a href="<?= get_category_url($cat['slug']) ?>" class="sector-card">
-                    <div class="sector-icon-box">
-                        <?php if (strpos($cat['slug'], 'govt') !== false || strpos($cat['slug'], 'government') !== false): ?>
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 2L2 7h20L12 2z"></path></svg>
-                        <?php elseif (strpos($cat['slug'], 'tech') !== false || strpos($cat['slug'], 'private') !== false): ?>
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-                        <?php elseif (strpos($cat['slug'], 'remote') !== false): ?>
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                        <?php elseif (strpos($cat['slug'], 'resume') !== false || strpos($cat['slug'], 'interview') !== false): ?>
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                        <?php elseif (strpos($cat['slug'], 'intern') !== false): ?>
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                        <?php else: ?>
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-                        <?php endif; ?>
+                    <div class="sector-card-media">
+                        <img 
+                            src="<?= htmlspecialchars($catImg) ?>" 
+                            alt="<?= h($cat['name']) ?>" 
+                            class="sector-card-img" 
+                            loading="lazy" 
+                            decoding="async"
+                            onerror="this.src='<?= BASE_URL ?>/assets/images/category-placeholder.svg'"
+                        >
+                        <div class="sector-card-overlay"></div>
                     </div>
-                    <span class="sector-card-name"><?= h($cat['name']) ?></span>
-                    <span class="sector-card-count"><?= (int)$cat['total_articles'] ?> Guides &rarr;</span>
+                    <div class="sector-card-body">
+                        <span class="sector-card-name"><?= h($cat['name']) ?></span>
+                        <span class="sector-card-count"><?= (int)$cat['total_articles'] ?> Guides &rarr;</span>
+                    </div>
                 </a>
             <?php endforeach; ?>
         </div>
