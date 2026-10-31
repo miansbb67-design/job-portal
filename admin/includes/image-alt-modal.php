@@ -77,6 +77,14 @@
                     <strong id="imgModalLinkedUrlDisplay" style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block;"></strong>
                     <button type="button" onclick="clearModalImgLink()" style="background:#fee2e2; border:1px solid #fecaca; color:#b91c1c; font-size:0.7rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:4px; cursor:pointer; margin-left:4px;">Unlink</button>
                 </div>
+
+                <!-- 1-Click Set as Article Thumbnail Button -->
+                <div style="margin-top:0.65rem; display:flex; justify-content:center;">
+                    <button type="button" onclick="setModalImgAsArticleThumbnail()" style="background:#fffbeb; border:1.5px solid #fde68a; color:#b45309; font-size:0.8rem; font-weight:700; padding:0.4rem 0.95rem; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:all 0.15s ease;" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background='#fffbeb'">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="#f59e0b" stroke="#d97706" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        ⭐ Set as Article Thumbnail (Featured Image)
+                    </button>
+                </div>
             </div>
 
             <!-- 1. Image Link Input (Clickable Hyperlink Box) -->

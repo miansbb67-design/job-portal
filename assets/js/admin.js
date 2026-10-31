@@ -285,6 +285,30 @@ document.addEventListener('DOMContentLoaded', () => {
             return button.render();
         };
 
+        // 7. 1-Click Set as Article Thumbnail Button in Summernote Popover
+        const ImageSetThumbButton = function(context) {
+            const ui = $.summernote.ui;
+            const button = ui.button({
+                contents: '<span style="font-size:11px; font-weight:700; color:#b45309; display:inline-flex; align-items:center; gap:3px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b" stroke="#d97706" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Set as Thumbnail</span>',
+                tooltip: 'Set this picture as Article Featured Image & Thumbnail',
+                click: function() {
+                    const $img = getActiveSummernoteImage(context);
+                    if ($img && $img.length) {
+                        const src = $img.attr('src') || '';
+                        const alt = $img.attr('alt') || '';
+                        if (src && typeof window.setAsArticleThumbnail === 'function') {
+                            window.setAsArticleThumbnail(src, alt, 'both');
+                        } else {
+                            showToast('Please click a valid image.');
+                        }
+                    } else {
+                        showToast('Please click an image first.');
+                    }
+                }
+            });
+            return button.render();
+        };
+
         $('#articleContent').summernote({
             placeholder: 'Compose high quality, original content here...',
             height: 480,
@@ -296,7 +320,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 imageSmallCenter: ImageSmallCenterButton,
                 imageResizeCustom: ImageResizeCustomButton,
                 imageAlt: ImageAltButton,
-                imageLink: ImageLinkButton
+                imageLink: ImageLinkButton,
+                imageSetThumb: ImageSetThumbButton
             },
             toolbar: [
                 ['style', ['style']],
@@ -313,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 image: [
                     ['image', ['resizeFull', 'resizeHalf', 'resizeQuarter', 'resizeNone']],
                     ['float', ['floatLeft', 'imageCenter', 'floatRight', 'floatNone']],
-                    ['custom', ['imageSmallCenter', 'imageResizeCustom', 'imageAlt', 'imageLink']],
+                    ['custom', ['imageSmallCenter', 'imageResizeCustom', 'imageAlt', 'imageLink', 'imageSetThumb']],
                     ['remove', ['removeMedia']]
                 ],
                 link: [
@@ -1473,6 +1498,159 @@ function selectThumbnailFromMedia() {
         }
     });
 }
+
+// ==========================================================================
+// 10.1 Helper: Set any image as Article Thumbnail & Featured Image
+// ==========================================================================
+window.setAsArticleThumbnail = function(imgUrl, imgAlt = '', target = 'both') {
+    if (!imgUrl) return;
+
+    // Normalize relative path if it points to local uploads
+    let relPath = imgUrl;
+    try {
+        const urlObj = new URL(imgUrl, window.location.origin);
+        const match = urlObj.pathname.match(/\/uploads\/.*$/i);
+        if (match) {
+            relPath = match[0].replace(/^\//, ''); // e.g. uploads/articles/xyz.webp
+        }
+    } catch(e) {}
+
+    // 1. Featured Image Dropify & Hidden field
+    if (target === 'both' || target === 'featured') {
+        const hiddenFeatured = document.getElementById('existingFeaturedImage');
+        if (hiddenFeatured) hiddenFeatured.value = relPath;
+        updateDropifyInstance('#featuredImageInput', imgUrl);
+
+        const altInput = document.getElementById('imageAlt');
+        if (altInput && !altInput.value.trim() && imgAlt) {
+            altInput.value = imgAlt;
+        }
+
+        const preview = document.getElementById('featuredImagePreview');
+        const placeholder = document.getElementById('imagePlaceholder');
+        if (preview) { preview.src = imgUrl; preview.style.display = 'block'; }
+        if (placeholder) placeholder.style.display = 'none';
+    }
+
+    // 2. Thumbnail Image Dropify & Hidden field
+    if (target === 'both' || target === 'thumbnail') {
+        const hiddenThumb = document.getElementById('existingThumbnailImage');
+        if (hiddenThumb) hiddenThumb.value = relPath;
+        updateDropifyInstance('#thumbImageInput', imgUrl);
+
+        const previewThumb = document.getElementById('thumbMiniPreview');
+        if (previewThumb) { previewThumb.src = imgUrl; previewThumb.style.display = 'block'; }
+    }
+
+    // Pulse animation on sidebar composer card
+    if (window.jQuery) {
+        const $card = $('#featuredImageInput').closest('.composer-card');
+        if ($card.length) {
+            $card.css({ 'transition': 'all 0.3s ease', 'box-shadow': '0 0 0 3px rgba(16, 185, 129, 0.45)' });
+            setTimeout(() => $card.css('box-shadow', ''), 1200);
+        }
+    }
+
+    const label = target === 'featured' ? 'Featured Image' : (target === 'thumbnail' ? 'Thumbnail' : 'Thumbnail & Featured Image');
+    showToast(`⭐ Set as Article ${label} successfully!`);
+};
+
+window.setModalImgAsArticleThumbnail = function() {
+    if (!currentEditingImg || !currentEditingImg.length) {
+        showToast('Please select an image first.');
+        return;
+    }
+    const src = currentEditingImg.attr('src') || '';
+    const alt = (document.getElementById('imgModalAltInput') ? document.getElementById('imgModalAltInput').value : '') || currentEditingImg.attr('alt') || '';
+    if (!src) {
+        showToast('Image source not found.');
+        return;
+    }
+    window.setAsArticleThumbnail(src, alt, 'both');
+};
+
+// Open a picker to choose any image that is already inserted into the article editor
+window.pickThumbnailFromArticleContent = function(target = 'both') {
+    let images = [];
+    if (window.jQuery && $('#articleContent').length) {
+        const contentHtml = $('#articleContent').summernote('code') || '';
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = contentHtml;
+        const imgs = tempDiv.getElementsByTagName('img');
+        for (let i = 0; i < imgs.length; i++) {
+            const src = imgs[i].getAttribute('src');
+            const alt = imgs[i].getAttribute('alt') || '';
+            if (src && !images.some(item => item.src === src)) {
+                images.push({ src: src, alt: alt });
+            }
+        }
+    }
+
+    if (images.length === 0) {
+        showToast('No images found inside article content yet. Insert an image in the editor first!');
+        return;
+    }
+
+    let modal = document.getElementById('articleImagesPickerModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'articleImagesPickerModal';
+        modal.className = 'modal-backdrop-custom';
+        modal.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.65); z-index:999999; display:flex; align-items:center; justify-content:center; padding:1.25rem; backdrop-filter:blur(3px);';
+        document.body.appendChild(modal);
+    }
+
+    const itemsHtml = images.map((item, idx) => {
+        const safeSrc = item.src.replace(/"/g, '&quot;');
+        const safeAlt = (item.alt || 'Article Image ' + (idx + 1)).replace(/"/g, '&quot;');
+        return `
+            <div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:10px; overflow:hidden; display:flex; flex-direction:column; transition:all 0.2s ease; box-shadow:0 1px 3px rgba(0,0,0,0.05);" onmouseover="this.style.borderColor='#10b981'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
+                <div style="width:100%; height:130px; background:#0f172a; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                    <img src="${safeSrc}" alt="${safeAlt}" style="max-width:100%; max-height:100%; object-fit:contain;">
+                </div>
+                <div style="padding:0.75rem; flex:1; display:flex; flex-direction:column; justify-content:space-between; gap:0.5rem;">
+                    <div style="font-size:0.78rem; font-weight:600; color:#334155; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${safeAlt}">
+                        ${safeAlt}
+                    </div>
+                    <button type="button" class="btn-set-article-thumb-choice" data-src="${safeSrc}" data-alt="${safeAlt}" style="background:#059669; color:#fff; border:none; border-radius:6px; font-size:0.75rem; font-weight:700; padding:0.45rem 0.65rem; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:5px; transition:background 0.15s ease;" onmouseover="this.style.background='#047857'" onmouseout="this.style.background='#059669'">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="#fbbf24" stroke="#d97706" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        Set as Thumbnail
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    modal.innerHTML = `
+        <div style="background:#ffffff; border-radius:14px; max-width:680px; width:100%; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 20px 40px rgba(0,0,0,0.25); overflow:hidden;">
+            <div style="padding:1rem 1.25rem; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; background:#f8fafc;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.2rem;">🖼️</span>
+                    <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:#0f172a;">Select Thumbnail from Article Content</h3>
+                </div>
+                <button type="button" onclick="document.getElementById('articleImagesPickerModal').style.display='none'" style="background:none; border:none; font-size:1.4rem; line-height:1; color:#94a3b8; cursor:pointer; padding:0.25rem 0.5rem; border-radius:6px;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+            </div>
+            <div style="padding:1.25rem; overflow-y:auto; flex:1;">
+                <p style="margin:0 0 1rem 0; font-size:0.85rem; color:#64748b;">Click on any image from your article body below to set it as this article's thumbnail & featured banner:</p>
+                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:1rem;">
+                    ${itemsHtml}
+                </div>
+            </div>
+            <div style="padding:0.75rem 1.25rem; border-top:1px solid #e2e8f0; background:#f8fafc; display:flex; justify-content:flex-end;">
+                <button type="button" onclick="document.getElementById('articleImagesPickerModal').style.display='none'" style="background:#e2e8f0; color:#334155; border:none; border-radius:6px; font-size:0.825rem; font-weight:600; padding:0.45rem 1rem; cursor:pointer;">Close</button>
+            </div>
+        </div>
+    `;
+
+    $(modal).find('.btn-set-article-thumb-choice').on('click', function() {
+        const choiceSrc = $(this).attr('data-src');
+        const choiceAlt = $(this).attr('data-alt');
+        window.setAsArticleThumbnail(choiceSrc, choiceAlt, target);
+        modal.style.display = 'none';
+    });
+
+    modal.style.display = 'flex';
+};
 
 // Global Dropify Initialization
 document.addEventListener('DOMContentLoaded', function() {

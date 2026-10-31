@@ -566,11 +566,15 @@ require_once __DIR__ . '/includes/admin-header.php';
                     <input type="hidden" name="existing_featured_image" id="existingFeaturedImage" value="<?= h($featured_image ?? '') ?>">
                 </div>
 
-                <!-- Choose from Media Library Button -->
-                <div style="margin-top:0.65rem;">
+                <!-- Choose from Media Library / Article Content Buttons -->
+                <div style="margin-top:0.65rem; display:flex; flex-direction:column; gap:0.45rem;">
                     <button type="button" class="btn-choose-upload" style="width:100%; color:#059669; border-color:#a7f3d0; background:#ecfdf5; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.4rem; padding:0.55rem;" onclick="selectFeaturedFromMedia()">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                         Choose from Media Library
+                    </button>
+                    <button type="button" class="btn-choose-upload" style="width:100%; color:#b45309; border-color:#fde68a; background:#fffbeb; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.4rem; padding:0.5rem; font-size:0.8rem;" onclick="pickThumbnailFromArticleContent('featured')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="#d97706" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        Pick from Article Content Images
                     </button>
                 </div>
 
@@ -597,10 +601,14 @@ require_once __DIR__ . '/includes/admin-header.php';
                     <input type="hidden" name="existing_thumbnail_image" id="existingThumbnailImage" value="<?= h($thumbnail_image ?? '') ?>">
                 </div>
 
-                <div style="margin-top:0.65rem;">
+                <div style="margin-top:0.65rem; display:flex; flex-direction:column; gap:0.45rem;">
                     <button type="button" class="btn-choose-mini" style="width:100%; color:#059669; border-color:#a7f3d0; background:#ecfdf5; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.35rem; padding:0.45rem;" onclick="selectThumbnailFromMedia()">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                         Choose from Media Library
+                    </button>
+                    <button type="button" class="btn-choose-mini" style="width:100%; color:#b45309; border-color:#fde68a; background:#fffbeb; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.35rem; padding:0.45rem; font-size:0.78rem;" onclick="pickThumbnailFromArticleContent('thumbnail')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b" stroke="#d97706" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        Pick from Article Content Images
                     </button>
                 </div>
 
