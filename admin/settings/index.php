@@ -181,6 +181,10 @@ if (!empty($currentFavicon)) {
         </p>
     </div>
     <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+        <a href="<?= ADMIN_URL ?>/backup.php" class="admin-btn" style="padding:0.6rem 1.15rem; font-size:0.88rem; display:inline-flex; align-items:center; gap:0.45rem; text-decoration:none; background:#059669; color:#fff; border-radius:8px; font-weight:700; box-shadow:0 2px 6px rgba(5,150,105,0.25);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Backup &amp; Export
+        </a>
         <a href="<?= ADMIN_URL ?>/section-visibility.php" class="admin-btn" style="padding:0.6rem 1.15rem; font-size:0.88rem; display:inline-flex; align-items:center; gap:0.45rem; text-decoration:none; background:#2563eb; color:#fff; border-radius:8px; font-weight:700; box-shadow:0 2px 6px rgba(37,99,235,0.25);">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
             Home Sections (Enable / Disable)
