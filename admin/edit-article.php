@@ -263,7 +263,10 @@ require_once __DIR__ . '/includes/admin-header.php';
             <!-- CARD 1: Title, Slug & Short Description -->
             <div class="composer-card">
                 <div class="form-group-item">
-                    <label class="field-label" for="articleTitle">Title</label>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                        <label class="field-label" for="articleTitle" style="margin-bottom:0;">Title</label>
+                        <span id="articleTitleCountBadge" class="char-count-badge">0 chars</span>
+                    </div>
                     <input type="text" name="title" id="articleTitle" class="form-input-lg" placeholder="An honest, descriptive title" value="<?= h($title) ?>" required autocomplete="off">
                 </div>
 
@@ -362,13 +365,21 @@ require_once __DIR__ . '/includes/admin-header.php';
                 <!-- TAB 1: SEO Pane (Screenshot 4, 5) -->
                 <div class="settings-tab-pane active" id="tabSeo">
                     <div class="form-group-item">
-                        <label class="field-label" for="seoTitle">SEO title (<span style="color:#64748b; font-weight:400;">&le; 60 chars recommended</span>)</label>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                            <label class="field-label" for="seoTitle" style="margin-bottom:0;">SEO title (<span style="color:#64748b; font-weight:400;">&le; 60 chars recommended</span>)</label>
+                            <span id="seoTitleCountBadge" class="char-count-badge">0 / 60 chars</span>
+                        </div>
                         <input type="text" name="seo_title" id="seoTitle" class="form-input" placeholder="Defaults to the title" value="<?= h($seo_title) ?>">
+                        <div id="seoTitleFeedback" style="font-size:0.75rem; margin-top:0.3rem; min-height:1rem;"></div>
                     </div>
 
                     <div class="form-group-item">
-                        <label class="field-label" for="metaDesc">Meta description (<span style="color:#64748b; font-weight:400;">50–160 chars</span>)</label>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                            <label class="field-label" for="metaDesc" style="margin-bottom:0;">Meta description (<span style="color:#64748b; font-weight:400;">50–160 chars</span>)</label>
+                            <span id="metaDescCountBadge" class="char-count-badge">0 / 160 chars</span>
+                        </div>
                         <textarea name="meta_description" id="metaDesc" class="form-textarea-short" rows="3" placeholder="A compelling summary for search results..."><?= h($meta_description) ?></textarea>
+                        <div id="metaDescFeedback" style="font-size:0.75rem; margin-top:0.3rem; min-height:1rem;"></div>
                     </div>
 
                     <!-- 2-column row: Focus keyword & Canonical URL -->
@@ -409,11 +420,17 @@ require_once __DIR__ . '/includes/admin-header.php';
                 <!-- TAB 2: Social / Open Graph Pane -->
                 <div class="settings-tab-pane" id="tabSocial" style="display:none;">
                     <div class="form-group-item">
-                        <label class="field-label" for="ogTitle">Open Graph Title</label>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                            <label class="field-label" for="ogTitle" style="margin-bottom:0;">Open Graph Title</label>
+                            <span id="ogTitleCountBadge" class="char-count-badge">0 / 60 chars</span>
+                        </div>
                         <input type="text" name="og_title" id="ogTitle" class="form-input" placeholder="Defaults to SEO title or article title" value="<?= h($og_title) ?>">
                     </div>
                     <div class="form-group-item">
-                        <label class="field-label" for="ogDesc">Open Graph Description</label>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                            <label class="field-label" for="ogDesc" style="margin-bottom:0;">Open Graph Description</label>
+                            <span id="ogDescCountBadge" class="char-count-badge">0 / 160 chars</span>
+                        </div>
                         <textarea name="og_description" id="ogDesc" class="form-textarea-short" rows="3" placeholder="Defaults to meta description"><?= h($og_description) ?></textarea>
                     </div>
                     <div class="form-group-item">

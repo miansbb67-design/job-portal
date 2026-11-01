@@ -90,6 +90,86 @@ document.addEventListener('DOMContentLoaded', () => {
         updateComposerMetrics();
     }
 
+    // 3.1 SEO & Meta Live Character Counters (Titles ≤60, Descriptions 50-160 chars)
+    function initSEOCharCounters() {
+        function setupCounter(inputId, badgeId, feedbackId, minLen, maxLen, type) {
+            const input = document.getElementById(inputId);
+            const badge = document.getElementById(badgeId);
+            const feedback = feedbackId ? document.getElementById(feedbackId) : null;
+            if (!input || !badge) return;
+
+            function update() {
+                const len = input.value.length;
+                badge.className = 'char-count-badge';
+
+                if (type === 'title') {
+                    if (len === 0) {
+                        badge.textContent = `0 / ${maxLen} chars`;
+                        if (feedback) feedback.textContent = '';
+                    } else if (len <= maxLen) {
+                        badge.classList.add('badge-optimal');
+                        badge.textContent = `✓ ${len} / ${maxLen} chars (Optimal)`;
+                        if (feedback) {
+                            feedback.style.color = '#059669';
+                            feedback.textContent = '✓ Fits perfectly within Google search title limit (≤ 60 chars).';
+                        }
+                    } else {
+                        const over = len - maxLen;
+                        badge.classList.add('badge-danger');
+                        badge.textContent = `⚠️ ${len} / ${maxLen} chars (+${over} over)`;
+                        if (feedback) {
+                            feedback.style.color = '#dc2626';
+                            feedback.textContent = `⚠️ Title is ${over} chars over 60. Google will truncate this title with "..." in search results.`;
+                        }
+                    }
+                } else if (type === 'desc') {
+                    if (len === 0) {
+                        badge.textContent = `0 / ${maxLen} chars`;
+                        if (feedback) feedback.textContent = '';
+                    } else if (len < minLen) {
+                        badge.classList.add('badge-warning');
+                        badge.textContent = `ℹ️ ${len} / ${maxLen} chars (Too short)`;
+                        if (feedback) {
+                            feedback.style.color = '#d97706';
+                            feedback.textContent = `ℹ️ Under ${minLen} chars. Google recommends 50–160 chars for rich search snippets.`;
+                        }
+                    } else if (len <= maxLen) {
+                        badge.classList.add('badge-optimal');
+                        badge.textContent = `✓ ${len} / ${maxLen} chars (Optimal)`;
+                        if (feedback) {
+                            feedback.style.color = '#059669';
+                            feedback.textContent = '✓ Perfect length for Google search snippet (50–160 chars).';
+                        }
+                    } else {
+                        const over = len - maxLen;
+                        badge.classList.add('badge-danger');
+                        badge.textContent = `⚠️ ${len} / ${maxLen} chars (+${over} over)`;
+                        if (feedback) {
+                            feedback.style.color = '#dc2626';
+                            feedback.textContent = `⚠️ Description is ${over} chars over 160. Google will cut off this snippet in search results.`;
+                        }
+                    }
+                } else if (type === 'plain') {
+                    badge.textContent = `${len} chars`;
+                }
+            }
+
+            input.addEventListener('input', update);
+            input.addEventListener('keyup', update);
+            input.addEventListener('paste', () => setTimeout(update, 50));
+            input.addEventListener('change', update);
+            update();
+        }
+
+        setupCounter('seoTitle', 'seoTitleCountBadge', 'seoTitleFeedback', 1, 60, 'title');
+        setupCounter('metaDesc', 'metaDescCountBadge', 'metaDescFeedback', 50, 160, 'desc');
+        setupCounter('ogTitle', 'ogTitleCountBadge', null, 1, 60, 'title');
+        setupCounter('ogDesc', 'ogDescCountBadge', null, 50, 160, 'desc');
+        setupCounter('articleTitle', 'articleTitleCountBadge', null, 1, 100, 'plain');
+    }
+
+    initSEOCharCounters();
+
     // 4. Summernote WYSIWYG Visual Editor Integration
     if (window.jQuery && typeof $.fn.summernote === 'function' && $('#articleContent').length) {
         let currentActiveEditorImg = null;
