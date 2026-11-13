@@ -75,8 +75,14 @@ $envBaseUrl = getenv('APP_URL') ?: (getenv('BASE_URL') ?: null);
 if (!empty($envBaseUrl) && strpos($envBaseUrl, 'http') === 0) {
     define('BASE_URL', rtrim($envBaseUrl, '/'));
 } else {
-    $protocol = $isHttps ? "https://" : "http://";
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $rawHost = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    if (strpos(strtolower($rawHost), 'careernexaa.com') !== false) {
+        $protocol = 'https://';
+        $host = 'careernexaa.com';
+    } else {
+        $protocol = $isHttps ? "https://" : "http://";
+        $host = $rawHost;
+    }
     
     // Auto-detect root vs subdirectory path
     $appRoot = rtrim(str_replace('\\', '/', realpath(dirname(__DIR__)) ?: dirname(__DIR__)), '/');

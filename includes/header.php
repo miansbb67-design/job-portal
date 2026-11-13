@@ -29,8 +29,35 @@ $metaAuthor = isset($metaAuthor) && !empty($metaAuthor) ? h($metaAuthor) : $site
 $metaPublisher = $siteName;
 if (!isset($canonicalUrl)) {
     $reqUri = $_SERVER['REQUEST_URI'] ?? '/';
-    $cleanUri = preg_replace('/(\/|\b)index\.php/i', '', $reqUri);
-    $canonicalUrl = BASE_URL . ($cleanUri ?: '/');
+    $pathOnly = parse_url($reqUri, PHP_URL_PATH) ?: '/';
+    $cleanPath = preg_replace('/(\/|\b)index\.php/i', '', $pathOnly);
+    
+    // Normalize legacy .php file paths to clean canonical URLs
+    $cleanPath = preg_replace('#^/(about|contact|terms|privacy-policy|cookie-policy|disclaimer)\.php$#', '/$1', $cleanPath);
+    if (preg_match('#^/categories\.php$#', $cleanPath) && isset($_GET['slug'])) {
+        $cleanPath = '/category/' . urlencode($_GET['slug']);
+    } elseif (preg_match('#^/categories\.php$#', $cleanPath)) {
+        $cleanPath = '/categories';
+    } elseif (preg_match('#^/articles\.php$#', $cleanPath) && isset($_GET['category'])) {
+        $cleanPath = '/category/' . urlencode($_GET['category']);
+    } elseif (preg_match('#^/articles\.php$#', $cleanPath)) {
+        $cleanPath = '/articles';
+    } elseif (preg_match('#^/article\.php$#', $cleanPath) && isset($_GET['slug'])) {
+        $cleanPath = '/article/' . urlencode($_GET['slug']);
+    } elseif (preg_match('#^/search(\.php)?$#', $cleanPath)) {
+        $cleanPath = '/search';
+    }
+    
+    $canonicalUrl = BASE_URL . ($cleanPath ?: '/');
+}
+
+// Strict Production Canonical URL Enforcement (Eliminates "Duplicate, Google chose different canonical than user")
+if (strpos($canonicalUrl, 'http://careernexaa.com') === 0) {
+    $canonicalUrl = 'https://careernexaa.com' . substr($canonicalUrl, strlen('http://careernexaa.com'));
+} elseif (strpos($canonicalUrl, 'https://www.careernexaa.com') === 0) {
+    $canonicalUrl = 'https://careernexaa.com' . substr($canonicalUrl, strlen('https://www.careernexaa.com'));
+} elseif (strpos($canonicalUrl, 'http://www.careernexaa.com') === 0) {
+    $canonicalUrl = 'https://careernexaa.com' . substr($canonicalUrl, strlen('http://www.careernexaa.com'));
 }
 $canonicalUrl = h($canonicalUrl);
 $ogImage = isset($ogImage) ? h($ogImage) : BASE_URL . '/assets/images/og-default.jpg';
