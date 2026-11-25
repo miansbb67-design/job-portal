@@ -160,7 +160,9 @@ try {
     <meta name="author" content="<?= $metaAuthor ?>">
     <meta name="publisher" content="<?= $metaPublisher ?>">
     <meta name="robots" content="<?= $metaRobots ?>">
+    <?php if (!empty($canonicalUrl)): ?>
     <link rel="canonical" href="<?= $canonicalUrl ?>">
+    <?php endif; ?>
     <link rel="publisher" href="<?= BASE_URL ?>/">
     <link rel="author" href="<?= BASE_URL ?>/about">
 
@@ -173,7 +175,7 @@ try {
     <meta property="og:title" content="<?= $pageTitle ?>">
     <meta property="og:description" content="<?= $metaDescription ?>">
     <meta property="og:type" content="<?= $ogType ?>">
-    <meta property="og:url" content="<?= $canonicalUrl ?>">
+    <meta property="og:url" content="<?= !empty($ogUrl) ? h($ogUrl) : (!empty($canonicalUrl) ? $canonicalUrl : h(BASE_URL . ($_SERVER['REQUEST_URI'] ?? '/'))) ?>">
     <meta property="og:image" content="<?= $ogImage ?>">
     <meta property="og:site_name" content="<?= h($siteName) ?>">
     <meta property="article:publisher" content="<?= BASE_URL ?>/">

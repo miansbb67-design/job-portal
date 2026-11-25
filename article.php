@@ -103,7 +103,9 @@ $metaAuthor = !empty($article['author_name']) ? $article['author_name'] : SITE_N
 $articleSection = !empty($article['category_name']) ? $article['category_name'] : 'Career Advice';
 $articlePublishedTime = date('c', strtotime($article['published_at'] ?? $article['created_at']));
 $articleModifiedTime = date('c', strtotime($article['updated_at'] ?? $article['created_at']));
-$canonicalUrl = get_article_url($article['slug']);
+$articleUrl = get_article_url($article['slug']);
+$ogUrl = $articleUrl;
+$canonicalUrl = !empty(trim($article['canonical_url'] ?? '')) ? trim($article['canonical_url']) : '';
 $ogType = 'article';
 $ogImage = get_article_featured_image_url($article);
 
@@ -414,13 +416,13 @@ include __DIR__ . '/includes/header.php';
         <div class="article-share-section">
             <span style="font-weight:700; color:#ffffff; font-size:0.95rem;">Share this guide:</span>
             <div class="share-links">
-                <a href="https://twitter.com/intent/tweet?text=<?= urlencode($article['title']) ?>&url=<?= urlencode($canonicalUrl) ?>" target="_blank" rel="noopener noreferrer" class="share-btn share-twitter">
+                <a href="https://twitter.com/intent/tweet?text=<?= urlencode($article['title']) ?>&url=<?= urlencode($articleUrl) ?>" target="_blank" rel="noopener noreferrer" class="share-btn share-twitter">
                     Twitter / X
                 </a>
-                <a href="https://www.linkedin.com/sharing/share-offsite/?url=<?= urlencode($canonicalUrl) ?>" target="_blank" rel="noopener noreferrer" class="share-btn share-linkedin">
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url=<?= urlencode($articleUrl) ?>" target="_blank" rel="noopener noreferrer" class="share-btn share-linkedin">
                     LinkedIn
                 </a>
-                <a href="https://www.facebook.com/sharer/sharer.php?u=<?= urlencode($canonicalUrl) ?>" target="_blank" rel="noopener noreferrer" class="share-btn share-facebook">
+                <a href="https://www.facebook.com/sharer/sharer.php?u=<?= urlencode($articleUrl) ?>" target="_blank" rel="noopener noreferrer" class="share-btn share-facebook">
                     Facebook
                 </a>
             </div>

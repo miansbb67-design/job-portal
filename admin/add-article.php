@@ -369,7 +369,7 @@ require_once __DIR__ . '/includes/admin-header.php';
                         </div>
                         <div class="form-group-item">
                             <label class="field-label" for="canonicalUrl">Canonical URL</label>
-                            <input type="text" name="canonical_url" id="canonicalUrl" class="form-input" placeholder="Leave empty for self-canonical" value="<?= h($canonical_url) ?>">
+                            <input type="text" name="canonical_url" id="canonicalUrl" class="form-input" placeholder="Optional custom canonical URL (stays empty if left blank)" value="<?= h($canonical_url) ?>">
                         </div>
                     </div>
 
